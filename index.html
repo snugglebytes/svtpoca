@@ -82,6 +82,30 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .sort-member-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:8px}
 .sort-member-row select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:4px;background:#fff;border-radius:7px;flex:1}
 .indemand-badge{position:absolute;bottom:6px;left:6px;font-size:9px;padding:3px 7px;border-radius:8px;border:2px solid #e3a9c2;background:var(--accent);font-family:'Ticketing',cursive;color:#7a3654;z-index:3}
+@keyframes indemand-glow{
+  0%,100%{box-shadow:0 0 6px 1px rgba(255,196,64,.55),0 0 14px 3px rgba(255,105,180,.35)}
+  50%{box-shadow:0 0 10px 2px rgba(255,196,64,.85),0 0 20px 5px rgba(255,105,180,.55)}
+}
+.tile.card-tile.is-indemand{
+  border:2px solid transparent;
+  background-image:linear-gradient(#fff,#fff),linear-gradient(135deg,#ffd76a,#ff9ad5,#7fd8ff,#ffd76a);
+  background-origin:border-box;
+  background-clip:padding-box, border-box;
+  animation:indemand-glow 1.8s ease-in-out infinite;
+}
+.tile.card-tile.is-indemand::before,
+.tile.card-tile.is-indemand::after{
+  content:'◆';
+  position:absolute;
+  font-size:11px;
+  line-height:1;
+  color:#ffb64a;
+  text-shadow:0 0 4px #fff7d6,0 0 2px #fff;
+  z-index:5;
+  pointer-events:none;
+}
+.tile.card-tile.is-indemand::before{top:-7px;left:-7px}
+.tile.card-tile.is-indemand::after{bottom:-7px;right:-7px}
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
 .grid.pp-6{grid-template-columns:repeat(2,1fr)}
@@ -106,8 +130,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .combo-list .ci .match{font-weight:700}
 .combo-list .ci-create{color:#5b8fb0;font-style:italic}
 /* lists panel tabs */
-.list-tabs{display:flex;gap:6px;margin-bottom:10px}
-.list-tabs .opt{flex:1;text-align:center;padding:9px 4px;background:#f8f3fa;border-radius:10px;border:2px solid var(--line);cursor:pointer;font-size:12px;font-weight:600}
+.list-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.list-tabs .opt{flex:1;min-width:70px;text-align:center;padding:9px 4px;background:#f8f3fa;border-radius:10px;border:2px solid var(--line);cursor:pointer;font-size:12px;font-weight:600}
 .list-tabs .opt.active{background:var(--yellow);border-color:#e9d38f}
 /* live search results */
 .search-results{margin:6px 0 0}
@@ -147,7 +171,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 .file-row input[type=file]{flex:1;font-size:11px}
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:70}
 .close-x{background:none;border:none;font-size:20px;cursor:pointer;float:right;color:#a493a0}
-.checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.crop-actions{display:flex;align-items:center;gap:8px;margin-top:2px}
+.crop-check{color:#3a9d4f;font-size:18px;font-weight:700;opacity:0;transition:opacity .25s ease}
+.crop-check.show{opacity:1}
+.checkbox-row{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;padding:6px 0}
 .taglist-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
 .taglist-row span{flex:1;font-size:13px}
 .taglist-row button{border:2px solid var(--line);border-radius:8px;background:#f8f3fa;cursor:pointer;font-size:12px;padding:3px 7px}
@@ -214,7 +241,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     </div>
     <div class="pg-nav" id="pg-nav"></div>
   </div>
-  <div class="sort-member-row">
+  <div class="sort-member-row" id="sort-member-row">
     Sort by member:
     <select id="sort-member-select" onchange="onSortMemberChange()">
       <option value="">Default order</option>
@@ -233,6 +260,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">☆ Wishlist</div>
+    <div class="opt" data-list="indemand" onclick="showListsPanel('indemand')">🔥 In Demand</div>
   </div>
 </div>
 
@@ -242,11 +270,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 </div>
 
 <div class="panel hidden" id="lists-panel">
-  <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
+  <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO / In Demand</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">☆ Wishlist</div>
+    <div class="opt" data-list="indemand" onclick="switchListsTab('indemand')">🔥 In Demand</div>
   </div>
   <div class="pagebar">
     <div class="pp-select">Show
@@ -314,7 +343,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
-        <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+        <div class="crop-actions">
+          <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
+          <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+          <span class="crop-check hidden" id="folder-crop-check">✓</span>
+        </div>
       </div>
     </div>
     <div class="field">
@@ -343,7 +376,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
       <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
-      <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+      <div class="crop-actions">
+        <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
+        <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+        <span class="crop-check hidden" id="card-crop-check">✓</span>
+      </div>
     </div>
     <div class="field"><label>Name / label</label><input id="card-name" placeholder="e.g. Seungkwan FML ver.A"></div>
     <div class="field">
@@ -620,13 +657,20 @@ function clearMiniSearch(){
   const el = document.getElementById('mini-search-input');
   if(el) el.value = '';
 }
-function populateSortMemberSelect(){
+function populateSortMemberSelect(cards){
   const sel = document.getElementById('sort-member-select');
+  const row = document.getElementById('sort-member-row');
   if(!sel) return;
+  cards = cards || [];
   const prev = sortMemberFilter;
+  const presentTagIds = new Set();
+  cards.forEach(c=>(c.tags||[]).forEach(t=>presentTagIds.add(t)));
+  const eligible = DATA.nodes.members.filter(f=>f.linkedTags && f.linkedTags[0] && presentTagIds.has(f.linkedTags[0]));
+  if(row) row.classList.toggle('hidden', eligible.length===0);
   sel.innerHTML = '<option value="">Default order</option>' +
-    DATA.nodes.members.map(f=>`<option value="${f.linkedTags && f.linkedTags[0] || ''}">${f.title}</option>`).join('');
-  sel.value = prev;
+    eligible.map(f=>`<option value="${f.linkedTags[0]}">${f.title}</option>`).join('');
+  sel.value = eligible.some(f=>f.linkedTags[0]===prev) ? prev : '';
+  sortMemberFilter = sel.value;
 }
 function onSortMemberChange(){
   sortMemberFilter = document.getElementById('sort-member-select').value;
@@ -662,13 +706,13 @@ function saveCustomOrderFromDom(list, cards){
 
 function renderExplorer(){
   renderBreadcrumb();
-  populateSortMemberSelect();
   const grid = document.getElementById('explorer-grid');
   grid.className = 'grid pp-' + perPage;
   grid.innerHTML = '';
   const list = findFolderList(currentPath);
   const currentFolder = currentPath.length ? findFolder(currentPath) : null;
   const cards = currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length ? cardsForTags(currentFolder.linkedTags) : [];
+  populateSortMemberSelect(cards);
 
   // combined item list: folders first, then cards — paginated together
   let items = [
@@ -782,7 +826,7 @@ function renderFolderTile(f, list, cardsInView){
 
 function renderCardTile(c, list, cardsInView){
   const div = document.createElement('div');
-  div.className = 'tile card-tile st-' + c.status;
+  div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '');
   div.draggable = true;
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
@@ -858,6 +902,7 @@ function openAddFolderModal(){
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
   document.getElementById('folder-thumb-file').value = '';
+  document.getElementById('folder-crop-check').classList.remove('show');
   selectedFolderTagIds = new Set();
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
@@ -873,6 +918,7 @@ function openEditFolder(f){
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
   document.getElementById('folder-thumb-file').value = '';
+  document.getElementById('folder-crop-check').classList.remove('show');
   selectedFolderTagIds = new Set(f.linkedTags || []);
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
@@ -1027,6 +1073,7 @@ function openCardModal(card){
   document.getElementById('crop-area').classList.add('hidden');
   const cardFileInput = document.getElementById('card-image-file');
   if(cardFileInput) cardFileInput.value = '';
+  document.getElementById('card-crop-check').classList.remove('show');
   selectedCardTagIds = new Set(card ? (card.tags||[]) : currentPathLinkedTags());
   document.getElementById('card-tag-input').value = '';
   setupCardTagCombo();
@@ -1086,8 +1133,8 @@ let croppedFolderThumbDataUrl = null;
 let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
 function startCropFor(target){
   activeCrop = target==='folder'
-    ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', areaId:'folder-crop-area', outW:300, outH:300}
-    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', areaId:'crop-area', outW:300, outH:450};
+    ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300}
+    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
 }
 function loadCropFromUrl(target){
   target = target || 'card';
@@ -1167,8 +1214,33 @@ function applyCrop(){
   const sx=outW/r.width, sy=outH/r.height;
   ctx.drawImage(img, cropState.x*sx, cropState.y*sy, img.naturalWidth*cropState.scale*sx, img.naturalHeight*cropState.scale*sy);
   const dataUrl = canvas.toDataURL('image/jpeg',0.85);
-  if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; alert('Crop applied ✓ — will be saved with this folder.'); }
-  else { croppedDataUrl = dataUrl; alert('Crop applied ✓ — will be saved with this card.'); }
+  if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; }
+  else { croppedDataUrl = dataUrl; }
+  showCropCheck();
+}
+function showCropCheck(){
+  const el = document.getElementById(activeCrop.checkId);
+  if(!el) return;
+  el.classList.remove('hidden');
+  void el.offsetWidth; // restart animation if clicked repeatedly
+  el.classList.add('show');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+function rotateCropImage(){
+  const img = document.getElementById(activeCrop.imgId);
+  if(!img.naturalWidth) return;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = h; canvas.height = w;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(h/2, w/2);
+  ctx.rotate(Math.PI/2);
+  ctx.drawImage(img, -w/2, -h/2);
+  const rotatedUrl = canvas.toDataURL('image/png');
+  img.onload = ()=>{ fitCropImage(); };
+  img.removeAttribute('crossorigin');
+  img.src = rotatedUrl;
 }
 
 /* ================= TAGS PAGE (sortable + editable) ================= */
@@ -1401,6 +1473,7 @@ function renderListsPanel(){
   grid.innerHTML = '';
   let cards;
   if(listsTab==='duplicate') cards = DATA.cards.filter(c=>c.duplicate);
+  else if(listsTab==='indemand') cards = DATA.cards.filter(c=>c.inDemand);
   else cards = DATA.cards.filter(c=>c.status===listsTab);
 
   const totalPages = Math.max(1, Math.ceil(cards.length/listsPerPage));
@@ -1411,7 +1484,8 @@ function renderListsPanel(){
   if(pageCards.length===0){
     const note = document.createElement('div');
     note.className='empty-note';
-    note.textContent = `No cards marked as ${listsTab==='duplicate'?'Duplicate':listsTab} yet.`;
+    const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='indemand' ? 'In Demand' : listsTab;
+    note.textContent = `No cards marked as ${label} yet.`;
     grid.appendChild(note);
   } else {
     pageCards.forEach(c=>grid.appendChild(renderCardTile(c)));
