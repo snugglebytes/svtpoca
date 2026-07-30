@@ -104,6 +104,21 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 @media(min-width:480px){.grid.pp-15{grid-template-columns:repeat(5,1fr)}}
 .grid.pp-13 .tile-title,.grid.pp-15 .tile-title{font-size:11px}
 .grid.pp-13 .tile-sub,.grid.pp-15 .tile-sub{font-size:9px}
+.menu-wrap{position:relative;flex-shrink:0}
+.tile-menu{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:2px solid var(--line);border-radius:10px;box-shadow:3px 3px #eadff3;z-index:15;min-width:136px;overflow:hidden}
+.tile-menu button{display:flex;align-items:center;gap:6px;width:100%;background:none;border:none;text-align:left;padding:8px 10px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--text)}
+.tile-menu button:hover{background:var(--pink)}
+.move-sec-tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.move-sec-tab{border:2px solid var(--line);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;background:#f8f3fa}
+.move-sec-tab.current{background:var(--accent);border-color:#e3a9c2}
+.move-path{font-size:11px;color:#8b7a88;margin-bottom:8px}
+.move-path span{cursor:pointer}
+.move-path span:hover{text-decoration:underline}
+#move-folder-list{max-height:240px;overflow:auto;margin-bottom:4px}
+#move-here-btn:disabled{opacity:.4;cursor:default}
+#move-here-note{font-size:11px;color:#8b7a88;margin:8px 0 0}
+.import-choice-option{margin-top:10px}
+.import-choice-note{font-size:11px;color:#a493a0;margin:5px 2px 0}
 /* combobox / tag autocomplete */
 .combo{position:relative}
 .combo-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
@@ -374,6 +389,7 @@ nav>div:active{background:#f8f3fa}
     </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="confirmSaveFolder()">Save</button>
+      <button class="btn ghost hidden" id="move-folder-btn-modal" onclick="openMoveModal('folder', editingFolderId)">📦 Move</button>
       <button class="btn danger hidden" id="delete-folder-btn" onclick="deleteCurrentFolder()">Delete</button>
     </div>
   </div>
@@ -419,6 +435,7 @@ nav>div:active{background:#f8f3fa}
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
+      <button class="btn ghost hidden" id="move-card-btn-modal" onclick="openMoveModal('card', editingCardId)">📦 Move</button>
       <button class="btn danger hidden" id="delete-card-btn" onclick="deleteCurrentCard()">Delete</button>
     </div>
   </div>
@@ -465,6 +482,37 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('templates-modal')">✕</button>
     <div class="section-title">Templates for this view</div>
     <div id="templates-list"></div>
+  </div>
+</div>
+
+<!-- MOVE MODAL -->
+<div id="move-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('move-modal')">✕</button>
+    <div class="section-title" id="move-modal-title">Move</div>
+    <div id="move-breadcrumb"></div>
+    <div id="move-folder-list"></div>
+    <div class="modal-actions">
+      <button class="btn alt" id="move-here-btn" onclick="confirmMove()">Move here</button>
+    </div>
+    <p id="move-here-note"></p>
+  </div>
+</div>
+
+<!-- IMPORT CHOICE MODAL -->
+<div id="import-choice-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="cancelImportChoice()">✕</button>
+    <div class="section-title">Import backup file</div>
+    <p style="font-size:12px;color:#8b7a88;margin-top:0" id="import-choice-summary"></p>
+    <div class="import-choice-option">
+      <button class="btn alt" style="width:100%" onclick="confirmImportMerge()">🔀 Sync (merge)</button>
+      <p class="import-choice-note">Adds this file's tags, folders, and cards to what you already have — nothing existing is deleted. Matching tags/folders are combined by name, and exact-duplicate cards are skipped.</p>
+    </div>
+    <div class="import-choice-option">
+      <button class="btn danger" style="width:100%" onclick="confirmImportReplace()">♻️ Overwrite</button>
+      <p class="import-choice-note">Replaces your entire current collection with this file's data. This can't be undone.</p>
+    </div>
   </div>
 </div>
 
@@ -556,6 +604,7 @@ function exportData(){
   a.remove();
   URL.revokeObjectURL(url);
 }
+let pendingImportData = null;
 function importData(event){
   const file = event.target.files[0];
   if(!file) return;
@@ -569,22 +618,126 @@ function importData(event){
       event.target.value='';
       return;
     }
-    if(!confirm('Importing will replace your current collection with this file\'s data. This can\'t be undone. Continue?')){
-      event.target.value='';
-      return;
-    }
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.templates) d.templates = [];
-    DATA = d;
-    save();
-    event.target.value='';
-    hideAllPanels();
-    goHome();
-    switchSection('albums');
-    alert('Import complete!');
+    pendingImportData = d;
+    function countFoldersDeep(list){ return (list||[]).reduce((n,f)=>n+1+countFoldersDeep(f.children||[]),0); }
+    const folderCount = ['albums','nonalbum','members'].reduce((n,sec)=>n+countFoldersDeep(d.nodes[sec]),0);
+    document.getElementById('import-choice-summary').textContent =
+      `This file has ${d.cards.length} card${d.cards.length===1?'':'s'}, ${folderCount} folder${folderCount===1?'':'s'}, and ${d.tags.length} tag${d.tags.length===1?'':'s'}. Choose how to bring it in:`;
+    document.getElementById('import-choice-modal').classList.remove('hidden');
   };
   reader.onerror = ()=>{ alert('Could not read that file — import cancelled.'); event.target.value=''; };
   reader.readAsText(file);
+}
+function cancelImportChoice(){
+  pendingImportData = null;
+  document.getElementById('import-choice-modal').classList.add('hidden');
+  const input = document.getElementById('import-file-input');
+  if(input) input.value = '';
+}
+function confirmImportReplace(){
+  if(!pendingImportData) return;
+  if(!confirm('Replacing will overwrite your current collection with this file\'s data. This can\'t be undone. Continue?')) return;
+  DATA = pendingImportData;
+  save();
+  finishImport('Import complete — your collection was replaced.');
+}
+function confirmImportMerge(){
+  if(!pendingImportData) return;
+  const result = mergeImportedData(DATA, pendingImportData);
+  save();
+  finishImport(`Merge complete — added ${result.tagsAdded} new tag${result.tagsAdded===1?'':'s'}, ${result.foldersAdded} new folder${result.foldersAdded===1?'':'s'}, and ${result.cardsAdded} new card${result.cardsAdded===1?'':'s'}. ${result.cardsSkipped?`(${result.cardsSkipped} exact-duplicate card${result.cardsSkipped===1?'':'s'} skipped.)`:''}`);
+}
+function finishImport(message){
+  pendingImportData = null;
+  document.getElementById('import-choice-modal').classList.add('hidden');
+  const input = document.getElementById('import-file-input');
+  if(input) input.value = '';
+  hideAllPanels();
+  goHome();
+  switchSection('albums');
+  alert(message);
+}
+/* Merge `incoming` backup data into `existing` (in place). Tags are matched
+   by name so existing tag links keep working; folders are matched by title
+   at each tree level so re-importing the same structure doesn't duplicate
+   it; cards are added unless an existing card already has the same name +
+   image/source + tag set. Returns counts for a friendly summary message. */
+function mergeImportedData(existing, incoming){
+  let tagsAdded = 0, foldersAdded = 0, cardsAdded = 0, cardsSkipped = 0;
+  const uid = (prefix)=> prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+
+  // ---- TAGS: match by lowercased name, otherwise add with a fresh id ----
+  const tagIdMap = {};
+  const existingTagByName = new Map(existing.tags.map(t=>[t.name.trim().toLowerCase(), t]));
+  (incoming.tags||[]).forEach(t=>{
+    const key = (t.name||'').trim().toLowerCase();
+    const match = existingTagByName.get(key);
+    if(match){
+      tagIdMap[t.id] = match.id;
+    } else {
+      const newTag = {id: uid('tag'), name: t.name, createdAt: t.createdAt || Date.now()};
+      existing.tags.push(newTag);
+      existingTagByName.set(key, newTag);
+      tagIdMap[t.id] = newTag.id;
+      tagsAdded++;
+    }
+  });
+  const remapTags = (arr)=> Array.from(new Set((arr||[]).map(id=>tagIdMap[id]).filter(Boolean)));
+
+  // ---- FOLDERS: recursively match by title within each level ----
+  function cloneFolderWithNewIds(f){
+    foldersAdded++;
+    return {
+      id: uid('fold'),
+      title: f.title,
+      thumb: f.thumb || '',
+      linkedTags: remapTags(f.linkedTags),
+      fixed: false,
+      children: (f.children||[]).map(cloneFolderWithNewIds)
+    };
+  }
+  function mergeFolderList(existingList, incomingList){
+    (incomingList||[]).forEach(inFolder=>{
+      const match = existingList.find(f=>f.title.trim().toLowerCase() === (inFolder.title||'').trim().toLowerCase());
+      if(match){
+        match.linkedTags = Array.from(new Set([...(match.linkedTags||[]), ...remapTags(inFolder.linkedTags)]));
+        if(!match.thumb && inFolder.thumb) match.thumb = inFolder.thumb;
+        if(!match.children) match.children = [];
+        mergeFolderList(match.children, inFolder.children||[]);
+      } else {
+        existingList.push(cloneFolderWithNewIds(inFolder));
+      }
+    });
+  }
+  ['albums','nonalbum','members'].forEach(sec=>{
+    if(!existing.nodes[sec]) existing.nodes[sec] = [];
+    mergeFolderList(existing.nodes[sec], (incoming.nodes||{})[sec]);
+  });
+
+  // ---- CARDS: skip ones that look like exact duplicates already present ----
+  const cardKey = (c, tags)=> [
+    (c.name||'').trim().toLowerCase(),
+    c.sourceUrl || c.image || '',
+    (tags||[]).slice().sort().join(',')
+  ].join('|');
+  const existingKeys = new Set(existing.cards.map(c=>cardKey(c, c.tags)));
+  (incoming.cards||[]).forEach(c=>{
+    const newTags = remapTags(c.tags);
+    const key = cardKey(c, newTags);
+    if(existingKeys.has(key)){ cardsSkipped++; return; }
+    existing.cards.push({
+      id: uid('c'),
+      image: c.image, sourceUrl: c.sourceUrl || '', name: c.name || '',
+      status: c.status || 'have', price: c.price || '', tags: newTags,
+      duplicate: !!c.duplicate, dupCount: c.dupCount || (c.duplicate ? 1 : 0), inDemand: !!c.inDemand
+    });
+    existingKeys.add(key);
+    cardsAdded++;
+  });
+
+  return {tagsAdded, foldersAdded, cardsAdded, cardsSkipped};
 }
 
 /* ================= NAV STATE ================= */
@@ -897,7 +1050,16 @@ function renderFolderTile(f, list, cardsInView){
   const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
   div.innerHTML = `
     <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
-    <div class="tile-title-row"><div class="tile-title">${f.title}</div><div class="menu-dot" title="Edit folder">⋮</div></div>
+    <div class="tile-title-row"><div class="tile-title">${f.title}</div>
+      <div class="menu-wrap">
+        <div class="menu-dot" title="Folder options">⋯</div>
+        <div class="tile-menu hidden">
+          <button type="button" class="tm-edit">✏️ Edit</button>
+          <button type="button" class="tm-duplicate">📄 Duplicate</button>
+          <button type="button" class="tm-move">📦 Move</button>
+        </div>
+      </div>
+    </div>
     <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${tagPills?`<br>${tagPills}`:''}</div>
     ${f.fixed ? '' : '<div class="del-x">✕</div>'}
   `;
@@ -905,7 +1067,11 @@ function renderFolderTile(f, list, cardsInView){
     currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
   });
   div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer(); };
-  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openEditFolder(f); };
+  const menuEl = div.querySelector('.tile-menu');
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.toggle('hidden'); };
+  menuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openEditFolder(f); };
+  menuEl.querySelector('.tm-duplicate').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); duplicateFolder(f, list); };
+  menuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openMoveModal('folder', f.id); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
 
@@ -965,14 +1131,25 @@ function renderCardTile(c, list, cardsInView){
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
     <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}${c.inDemand ? '<div class="indemand-badge">✧<span class="badge-text">In Demand</span></div>' : ''}</div>
-    <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div><div class="menu-dot" title="Edit photocard">⋮</div></div>
+    <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div>
+      <div class="menu-wrap">
+        <div class="menu-dot" title="Photocard options">⋯</div>
+        <div class="tile-menu hidden">
+          <button type="button" class="tm-edit">✏️ Edit</button>
+          <button type="button" class="tm-move">📦 Move</button>
+        </div>
+      </div>
+    </div>
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
   `;
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
   div.querySelector('.thumb').addEventListener('click', ()=>openCardModal(c));
   div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
-  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openCardModal(c); };
+  const cardMenuEl = div.querySelector('.tile-menu');
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.toggle('hidden'); };
+  cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openCardModal(c); };
+  cardMenuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openMoveModal('card', c.id); };
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
   div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
@@ -987,6 +1164,171 @@ function renderCardTile(c, list, cardsInView){
     attachTouchDrag(div, 'card', c.id, list, cardsInView);
   }
   return div;
+}
+
+/* ---- tile dropdown menus (Edit / Duplicate / Move) ---- */
+function closeAllTileMenus(except){
+  document.querySelectorAll('.tile-menu').forEach(m=>{ if(m!==except) m.classList.add('hidden'); });
+}
+document.addEventListener('click', ()=>closeAllTileMenus());
+
+function cloneFolderDeep(f){
+  return {
+    id: 'fold_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    title: f.title,
+    thumb: f.thumb || '',
+    linkedTags: [...(f.linkedTags||[])],
+    fixed: false,
+    children: (f.children||[]).map(cloneFolderDeep)
+  };
+}
+function duplicateFolder(f, list){
+  const copy = cloneFolderDeep(f);
+  copy.title = f.title + ' (copy)';
+  const idx = list.indexOf(f);
+  list.splice(idx>-1 ? idx+1 : list.length, 0, copy);
+  save();
+  renderExplorer();
+}
+
+/* ---- MOVE MODAL (Gdrive-style: browse into a folder, then "Move here") ---- */
+let moveContext = null; // {type:'folder'|'card', id}
+let moveSection = 'albums';
+let movePath = [];
+function openMoveModal(type, id){
+  moveContext = {type, id};
+  moveSection = currentSection;
+  movePath = [];
+  document.getElementById('move-modal-title').textContent = type==='folder' ? 'Move folder' : 'Move photocard';
+  document.getElementById('move-modal').classList.remove('hidden');
+  renderMoveBrowser();
+}
+function moveFolderList(){
+  let list = DATA.nodes[moveSection];
+  for(const id of movePath){
+    const f = list.find(x=>x.id===id);
+    if(!f) break;
+    list = f.children;
+  }
+  return list;
+}
+function currentMoveFolder(){
+  if(!movePath.length) return null;
+  let list = DATA.nodes[moveSection], folder=null;
+  for(const id of movePath){
+    folder = list.find(x=>x.id===id);
+    if(!folder) return null;
+    list = folder.children;
+  }
+  return folder;
+}
+function isDescendantOrSelf(folder, targetId){
+  if(!folder) return false;
+  if(folder.id === targetId) return true;
+  return (folder.children||[]).some(c=>isDescendantOrSelf(c, targetId));
+}
+function renderMoveBrowser(){
+  const bc = document.getElementById('move-breadcrumb');
+  const listEl = document.getElementById('move-folder-list');
+
+  const secTabs = ['albums','nonalbum','members'].map(sec=>{
+    const label = sec==='albums'?'📀 Albums':sec==='nonalbum'?'🎁 Non-Album':'👤 Members';
+    return `<span class="move-sec-tab ${sec===moveSection?'current':''}" data-sec="${sec}">${label}</span>`;
+  }).join('');
+
+  let cursor = DATA.nodes[moveSection];
+  let pathHtml = '<span class="move-crumb-home" data-idx="-1">🏠</span>';
+  movePath.forEach((id,idx)=>{
+    const folder = (cursor||[]).find(x=>x.id===id);
+    cursor = folder ? folder.children : [];
+    pathHtml += ` › <span class="move-crumb" data-idx="${idx}">${folder?folder.title:'?'}</span>`;
+  });
+  bc.innerHTML = `<div class="move-sec-tabs">${secTabs}</div><div class="move-path">${pathHtml}</div>`;
+
+  const currentList = moveFolderList();
+  const excludeId = moveContext.type==='folder' ? moveContext.id : null;
+  const items = (currentList||[]).filter(f=>!excludeId || !isDescendantOrSelf(f, excludeId));
+  listEl.innerHTML = '';
+  if(items.length===0){
+    listEl.innerHTML = '<div class="empty-note">No subfolders here.</div>';
+  } else {
+    items.forEach(f=>{
+      const row = document.createElement('div');
+      row.className = 'tpl-row';
+      const tagNote = moveContext.type==='card' ? (f.linkedTags && f.linkedTags.length ? '' : ' <span style="color:#c79bb0">(no tags linked)</span>') : '';
+      row.innerHTML = `<span class="tn">📁 ${f.title}${tagNote}</span><button type="button">Open</button>`;
+      row.querySelector('button').onclick = ()=>{ movePath = [...movePath, f.id]; renderMoveBrowser(); };
+      listEl.appendChild(row);
+    });
+  }
+
+  const moveBtn = document.getElementById('move-here-btn');
+  const noteEl = document.getElementById('move-here-note');
+  const here = currentMoveFolder();
+  const secLabel = moveSection==='albums'?'Albums':moveSection==='nonalbum'?'Non-Album':'Members';
+  if(moveContext.type==='card'){
+    const ok = !!(here && here.linkedTags && here.linkedTags.length);
+    moveBtn.disabled = !ok;
+    moveBtn.textContent = here ? `Move here (${here.title})` : 'Move here';
+    noteEl.textContent = !here
+      ? 'Navigate into a tagged folder to move this card there.'
+      : (ok ? `This card will be tagged to match "${here.title}", so it'll show up inside it.` : `"${here.title}" isn't linked to any tags yet, so a card can't be moved here.`);
+  } else {
+    moveBtn.disabled = false;
+    moveBtn.textContent = here ? `Move here (${here.title})` : `Move to top level`;
+    noteEl.textContent = here
+      ? `This folder will become a subfolder of "${here.title}".`
+      : `This folder will move to the top level of ${secLabel}.`;
+  }
+
+  bc.querySelectorAll('.move-sec-tab').forEach(tab=>{
+    tab.onclick = ()=>{ moveSection = tab.dataset.sec; movePath=[]; renderMoveBrowser(); };
+  });
+  const homeCrumb = bc.querySelector('.move-crumb-home');
+  if(homeCrumb) homeCrumb.onclick = ()=>{ movePath=[]; renderMoveBrowser(); };
+  bc.querySelectorAll('.move-crumb').forEach(el=>{
+    el.onclick = ()=>{ const idx=parseInt(el.dataset.idx,10); movePath = movePath.slice(0, idx+1); renderMoveBrowser(); };
+  });
+}
+function confirmMove(){
+  if(!moveContext) return;
+  const here = currentMoveFolder();
+  if(moveContext.type==='card'){
+    if(!here || !here.linkedTags || !here.linkedTags.length) return;
+    const c = DATA.cards.find(x=>x.id===moveContext.id);
+    if(!c) return;
+    c.tags = Array.from(new Set([...(c.tags||[]), ...here.linkedTags]));
+    save();
+    closeModal('move-modal');
+    renderExplorer();
+    const listsPanel = document.getElementById('lists-panel');
+    if(listsPanel && !listsPanel.classList.contains('hidden')) renderListsPanel();
+    alert(`Moved — this card now shows in "${here.title}".`);
+  } else {
+    function removeFromTree(list){
+      const idx = (list||[]).findIndex(x=>x.id===moveContext.id);
+      if(idx>-1) return list.splice(idx,1)[0];
+      for(const f of (list||[])){
+        const found = removeFromTree(f.children||[]);
+        if(found) return found;
+      }
+      return null;
+    }
+    let node = null;
+    for(const sec of ['albums','nonalbum','members']){
+      node = removeFromTree(DATA.nodes[sec]);
+      if(node) break;
+    }
+    if(!node){ closeModal('move-modal'); return; }
+    const targetList = moveFolderList();
+    targetList.push(node);
+    save();
+    closeModal('move-modal');
+    currentPath = [];
+    switchSection(moveSection);
+    alert(`Moved "${node.title}".`);
+  }
+  moveContext = null;
 }
 
 /* ---- shared touch (long-press) drag support ----
@@ -1104,6 +1446,7 @@ function openAddFolderModal(){
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
   document.getElementById('delete-folder-btn').classList.add('hidden');
+  document.getElementById('move-folder-btn-modal').classList.add('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
 }
 function openEditFolder(f){
@@ -1119,6 +1462,7 @@ function openEditFolder(f){
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
   document.getElementById('delete-folder-btn').classList.toggle('hidden', !!f.fixed);
+  document.getElementById('move-folder-btn-modal').classList.remove('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
 }
 /* ---- fuzzy matching helpers ---- */
@@ -1143,17 +1487,18 @@ function levenshtein(a,b){
 }
 function fuzzyMatchTags(query, tags){
   const nq = normalizeStr(query);
-  if(!nq) return tags.map(t=>({tag:t,score:0}));
-  return tags.map(t=>{
+  if(!nq) return []; // no default/suggested tags until the user actually types something
+  const results = [];
+  tags.forEach(t=>{
     const nt = normalizeStr(t.name);
     let score;
     if(nt===nq) score = -100;
     else if(nt.startsWith(nq)) score = -50 + (nt.length-nq.length);
     else if(nt.includes(nq)) score = -20 + (nt.length-nq.length);
-    else score = levenshtein(nq, nt);
-    return {tag:t, score};
-  }).filter(r=>r.score < 8) // cap how "close" spelling suggestions can be
-    .sort((a,b)=>a.score-b.score);
+    else return; // strict: letters must appear in the same order, contiguously — no loose/anagram matches
+    results.push({tag:t, score});
+  });
+  return results.sort((a,b)=>a.score-b.score);
 }
 
 /* ---- generic tag combobox (used for folder single-select & card multi-select) ---- */
@@ -1281,6 +1626,7 @@ function openCardModal(card){
   setupCardTagCombo();
   document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
   document.getElementById('delete-card-btn').classList.toggle('hidden', !card);
+  document.getElementById('move-card-btn-modal').classList.toggle('hidden', !card);
   document.getElementById('card-modal').classList.remove('hidden');
 }
 function currentPathLinkedTags(){
