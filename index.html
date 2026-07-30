@@ -51,6 +51,9 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .breadcrumb .sep{color:#d9c8d3}
 .section-title{font-family:'Ticketing',cursive;font-weight:normal;font-size:16px;letter-spacing:.3px;margin:0 0 10px;color:#8a6b7c}
 .title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tags-header-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tags-header-actions input{width:110px;padding:6px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;font-size:12px;background:#fdfaff;color:var(--text)}
+.tags-search-full{width:100%;box-sizing:border-box;margin:8px 0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
 .tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:6px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
@@ -339,7 +342,15 @@ nav>div:active{background:#f8f3fa}
 </div>
 
 <div class="panel hidden" id="tags-panel">
-  <div class="title-row"><b class="section-title">Tags</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
+  <div class="title-row">
+    <b class="section-title">Tags</b>
+    <div class="tags-header-actions">
+      <input id="tags-page-new" placeholder="New tag name">
+      <button class="btn small alt" onclick="addTagFromTagsPage()">Add</button>
+      <button class="btn small ghost" onclick="goHome()">Close</button>
+    </div>
+  </div>
+  <input id="tags-search-input" class="mini-search-inline tags-search-full" placeholder="Search tags..." oninput="onTagsSearch()">
   <div class="tags-sort-row">
     Sort:
     <select id="tags-sort-select" onchange="renderTagsPage()">
@@ -350,10 +361,6 @@ nav>div:active{background:#f8f3fa}
     </select>
   </div>
   <div id="tags-page-list"></div>
-  <div class="inline-add">
-    <input id="tags-page-new" placeholder="New tag name">
-    <button class="btn small alt" onclick="addTagFromTagsPage()">Add</button>
-  </div>
 </div>
 
 </div>
@@ -1845,11 +1852,19 @@ function showTagsPage(){
   hideAllPanels();
   closeSearch();
   document.getElementById('tags-panel').classList.remove('hidden');
+  tagsSearchQuery = '';
+  document.getElementById('tags-search-input').value = '';
+  renderTagsPage();
+}
+let tagsSearchQuery = '';
+function onTagsSearch(){
+  tagsSearchQuery = document.getElementById('tags-search-input').value.trim();
   renderTagsPage();
 }
 function sortedTagsForPage(){
   const mode = document.getElementById('tags-sort-select').value;
-  const arr = [...DATA.tags];
+  let arr = [...DATA.tags];
+  if(tagsSearchQuery) arr = arr.filter(t=>scoreText(tagsSearchQuery, t.name).match);
   if(mode==='alpha-asc') arr.sort((a,b)=>a.name.localeCompare(b.name));
   else if(mode==='alpha-desc') arr.sort((a,b)=>b.name.localeCompare(a.name));
   else if(mode==='date-asc') arr.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
@@ -1873,7 +1888,9 @@ function renderTagsPage(){
     wrap.appendChild(row);
   });
   if(DATA.tags.length===0){
-    wrap.innerHTML = '<div class="empty-note">No tags yet — add one below.</div>';
+    wrap.innerHTML = '<div class="empty-note">No tags yet — add one above.</div>';
+  } else if(sortedTagsForPage().length===0){
+    wrap.innerHTML = `<div class="empty-note">No tags match "${tagsSearchQuery}".</div>`;
   }
 }
 function startRenameTag(row, t){
