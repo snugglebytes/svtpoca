@@ -13,10 +13,11 @@
 :root{--bg:#fff8fc;--pink:#f7cddd;--blue:#cfeeff;--card:#fff;--line:#d9c8e6;--text:#5b4b58;--green:#cdeccb;--yellow:#fbe9b0;--red:#f5c2c2}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
-header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:4px solid var(--line);z-index:5;display:flex;align-items:center;justify-content:space-between}
+header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:4px solid var(--line);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px}
 h1{font:14px "Press Start 2P";margin:0;cursor:pointer;user-select:none}
-.icon-btn{background:none;border:none;font-size:20px;cursor:pointer}
-.wrap{padding:14px 14px 90px;max-width:640px;margin:0 auto}
+.header-icons{display:flex;gap:6px}
+.icon-btn{background:none;border:none;font-size:19px;cursor:pointer}
+.wrap{padding:14px 14px 90px;max-width:680px;margin:0 auto}
 .search{margin:12px 0;display:flex;gap:8px}
 .search input{flex:1;padding:12px;border:3px solid var(--line);font-family:inherit;background:#fff;color:var(--text);font-size:14px}
 .btn{border:3px solid var(--line);background:var(--pink);padding:10px 14px;font-family:"Press Start 2P";font-size:9px;cursor:pointer}
@@ -29,91 +30,109 @@ h1{font:14px "Press Start 2P";margin:0;cursor:pointer;user-select:none}
 .section-toggle{display:flex;gap:8px}
 .section-toggle .opt{flex:1;text-align:center;padding:10px;background:var(--blue);border:3px solid var(--line);cursor:pointer;font-size:13px;font-weight:600}
 .section-toggle .opt.active{background:var(--pink)}
-.tabs{display:flex;gap:8px;overflow:auto;margin-top:10px}
-.tab{white-space:nowrap;padding:8px 10px;background:#f4eefb;border:3px solid var(--line);cursor:pointer;font-size:13px}
-.tab.active{background:var(--yellow);font-weight:bold}
+.breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:12px;margin-top:10px;color:#8b7a88}
+.breadcrumb span{cursor:pointer;padding:2px 4px}
+.breadcrumb span.current{font-weight:700;color:var(--text);cursor:default}
+.breadcrumb .sep{color:#c9b8d3}
 .section-title{font-family:'Press Start 2P';font-size:10px;margin:0 0 10px}
 .title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
-.folder-card{background:#fff;border:4px solid var(--line);padding:8px;cursor:pointer;position:relative}
-.folder-thumb{aspect-ratio:1;background:#eef;border:3px dashed #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
-.folder-thumb img{width:100%;height:100%;object-fit:cover}
-.folder-name{font-size:13px;margin-top:6px;font-weight:600}
-.folder-count{font-size:11px;color:#8b7a88}
-.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid var(--line);width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1}
-.card{background:#fff;border:4px solid var(--line);padding:8px;position:relative}
-.card-thumb{aspect-ratio:3/4;background:#eef;border:3px dashed #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden;cursor:pointer}
-.card-thumb img{width:100%;height:100%;object-fit:cover}
-.status-badge{position:absolute;top:6px;left:6px;font-size:9px;padding:3px 6px;border-radius:8px;border:2px solid;font-family:'Press Start 2P';font-size:7px}
+.tile{background:#fff;border:4px solid var(--line);padding:8px;cursor:pointer;position:relative}
+.tile.folder .thumb{aspect-ratio:1}
+.tile.card-tile .thumb{aspect-ratio:3/4}
+.thumb{background:#eef;border:3px dashed #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.tile-title{font-size:13px;margin-top:6px;font-weight:600}
+.tile-sub{font-size:11px;color:#8b7a88}
+.tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #8fbdd9;border-radius:8px;padding:1px 6px;margin-top:3px}
+.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid var(--line);width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;z-index:2}
+.status-badge{position:absolute;top:6px;left:6px;font-size:7px;padding:3px 6px;border-radius:8px;border:2px solid;font-family:'Press Start 2P';z-index:2}
 .status-have{background:var(--green);border-color:#7fbf7a}
-.status-want{background:var(--pink);border-color:#d98fb0}
+.status-wishlist{background:var(--pink);border-color:#d98fb0}
 .status-stbo{background:var(--yellow);border-color:#e0b94a}
-.status-duplicate{background:var(--blue);border-color:#8fbdd9}
-.card-meta{font-size:12px;margin-top:6px}
+.dup-badge{position:absolute;top:6px;right:6px;font-size:7px;padding:3px 5px;border-radius:8px;border:2px solid #8fbdd9;background:var(--blue);font-family:'Press Start 2P';cursor:pointer;z-index:2}
 .card-price{font-size:11px;color:#8b7a88}
 .add-tile{border:3px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--line);cursor:pointer;background:#fdfaff}
+.add-tile.folder{aspect-ratio:1}
+.add-tile.card-tile{aspect-ratio:3/4}
+.empty-note{font-size:13px;color:#8b7a88;padding:10px 4px;grid-column:1/-1}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid var(--line);display:flex;justify-content:space-around;padding:10px 0;font:9px "Press Start 2P"}
-.fab{position:fixed;right:16px;bottom:78px;width:58px;height:58px;border-radius:50%;border:4px solid var(--line);background:var(--pink);font-size:26px;cursor:pointer;z-index:6}
+.fab-wrap{position:fixed;right:16px;bottom:78px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fab{width:58px;height:58px;border-radius:50%;border:4px solid var(--line);background:var(--pink);font-size:26px;cursor:pointer}
+.fab-menu{display:flex;flex-direction:column;gap:8px}
+.fab-menu .btn{white-space:nowrap}
 .hidden{display:none !important}
 .modal-bg{position:fixed;inset:0;background:rgba(91,75,88,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
-.modal{background:#fff;border:4px solid var(--line);padding:20px;text-align:left;max-width:340px;width:100%;box-shadow:6px 6px #eadff3;max-height:88vh;overflow:auto}
+.modal{background:#fff;border:4px solid var(--line);padding:20px;text-align:left;max-width:360px;width:100%;box-shadow:6px 6px #eadff3;max-height:88vh;overflow:auto}
 .modal .big{font-family:'Press Start 2P';font-size:14px;line-height:1.8;margin-bottom:10px;text-align:center}
 .modal .sub{font-size:13px;color:#8b7a88;text-align:center}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
 .field input,.field select{width:100%;padding:9px;border:2px solid var(--line);font-family:inherit;font-size:14px}
-.status-picker{display:flex;gap:6px;flex-wrap:wrap}
-.status-picker .opt{padding:7px 10px;border:2px solid var(--line);font-size:12px;cursor:pointer;background:#f4eefb}
-.status-picker .opt.sel{background:var(--yellow);border-color:#e0b94a;font-weight:700}
+.status-picker,.tag-picker{display:flex;gap:6px;flex-wrap:wrap}
+.status-picker .opt,.tag-picker .opt{padding:7px 10px;border:2px solid var(--line);font-size:12px;cursor:pointer;background:#f4eefb}
+.status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e0b94a;font-weight:700}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
-.crop-wrap{position:relative;width:100%;aspect-ratio:1;background:#111;overflow:hidden;touch-action:none;margin-bottom:8px}
-.crop-wrap.portrait{aspect-ratio:3/4}
+.crop-wrap{position:relative;width:100%;aspect-ratio:3/4;background:#111;overflow:hidden;touch-action:none;margin-bottom:8px}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
-#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:60}
-.empty-note{font-size:13px;color:#8b7a88;padding:10px 0}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:70}
 .close-x{background:none;border:none;font-size:20px;cursor:pointer;float:right}
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.taglist-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.taglist-row span{flex:1;font-size:13px}
+.taglist-row button{border:2px solid var(--line);background:#f4eefb;cursor:pointer;font-size:12px;padding:3px 7px}
+.inline-add{display:flex;gap:6px;margin-top:8px}
+.inline-add input{flex:1}
 </style></head><body>
 
 <canvas id="confetti-canvas"></canvas>
 
 <header>
   <h1 id="diamond-title">💎 Carat-deul</h1>
-  <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
+  <div class="header-icons">
+    <button class="icon-btn" onclick="openTagManager()" title="Manage tags">🏷️</button>
+    <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
+  </div>
 </header>
 
 <div class="wrap">
 
 <div class="search">
-  <input id="search-input" placeholder="Search folders or cards...">
+  <input id="search-input" placeholder="Search folders, cards, tags...">
   <button class="btn" onclick="runSearch()">GO</button>
 </div>
 
 <div class="panel">
   <div class="section-toggle">
-    <div class="opt active" data-section="albums" onclick="setSection('albums')">📀 Albums</div>
-    <div class="opt" data-section="nonalbum" onclick="setSection('nonalbum')">🎁 Non-Album</div>
+    <div class="opt active" data-section="albums" onclick="switchSection('albums')">📀 Albums</div>
+    <div class="opt" data-section="nonalbum" onclick="switchSection('nonalbum')">🎁 Non-Album</div>
+    <div class="opt" data-section="members" onclick="switchSection('members')">👤 Members</div>
   </div>
-  <div class="tabs" id="cat-tabs"></div>
+  <div class="breadcrumb" id="breadcrumb"></div>
 </div>
 
-<div class="panel" id="folder-panel">
-  <div class="title-row">
-    <b class="section-title" id="folder-panel-title">Folders</b>
-  </div>
-  <div class="grid" id="folder-grid"></div>
+<div class="panel" id="explorer-panel">
+  <div class="grid" id="explorer-grid"></div>
 </div>
 
 <div class="panel hidden" id="stats-panel">
-  <b class="section-title">Collection Stats</b>
+  <div class="title-row"><b class="section-title">Collection Stats</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div id="stats-body"></div>
 </div>
 
 </div>
 
-<button class="fab" id="fab-btn" onclick="fabAction()">＋</button>
+<div class="fab-wrap">
+  <div class="fab-menu hidden" id="fab-menu">
+    <button class="btn alt" onclick="openAddFolderModal()">＋ Folder</button>
+    <button class="btn" onclick="openCardModal(null)">＋ Photocard</button>
+  </div>
+  <button class="fab" onclick="toggleFabMenu()">＋</button>
+</div>
+
 <nav>
   <div style="cursor:pointer" onclick="goHome()">🏠<br>Home</div>
   <div style="cursor:pointer" onclick="showStats()">📊<br>Stats</div>
@@ -121,25 +140,24 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid 
   <div style="cursor:pointer" onclick="openInstallModal()">⬇️<br>Install</div>
 </nav>
 
-<!-- FOLDER CONTENTS MODAL -->
-<div id="folder-modal" class="modal-bg hidden">
-  <div class="modal" style="max-width:520px">
-    <button class="close-x" onclick="closeModal('folder-modal')">✕</button>
-    <div class="section-title" id="fm-title">Folder</div>
-    <div class="grid" id="fm-grid" style="margin-top:10px"></div>
-  </div>
-</div>
-
 <!-- ADD/EDIT FOLDER MODAL -->
 <div id="add-folder-modal" class="modal-bg hidden">
   <div class="modal">
     <button class="close-x" onclick="closeModal('add-folder-modal')">✕</button>
-    <div class="section-title">New Folder</div>
-    <div class="field"><label>Folder name</label><input id="new-folder-name" placeholder="e.g. BSS, Left &amp; Right Unit"></div>
-    <div class="field"><label>Thumbnail image URL (square, optional)</label><input id="new-folder-url" placeholder="https://..."></div>
+    <div class="section-title" id="folder-modal-title">New Folder</div>
+    <div class="field"><label>Folder title</label><input id="folder-title" placeholder="e.g. BSS, FML era, Hip-Hop Unit"></div>
+    <div class="field"><label>Thumbnail image URL (square)</label><input id="folder-thumb" placeholder="https://..."></div>
+    <div class="field">
+      <label>Linked tag (cards with this tag will show inside)</label>
+      <div class="tag-picker" id="folder-tag-picker"></div>
+      <div class="inline-add">
+        <input id="folder-new-tag" placeholder="or create a new tag...">
+        <button class="btn small alt" onclick="createTagInline('folder')">Add tag</button>
+      </div>
+    </div>
     <div class="modal-actions">
-      <button class="btn alt" onclick="confirmAddFolder()">Save</button>
-      <button class="btn ghost" onclick="closeModal('add-folder-modal')">Cancel</button>
+      <button class="btn alt" onclick="confirmSaveFolder()">Save</button>
+      <button class="btn danger hidden" id="delete-folder-btn" onclick="deleteCurrentFolder()">Delete</button>
     </div>
   </div>
 </div>
@@ -149,30 +167,31 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid 
   <div class="modal">
     <button class="close-x" onclick="closeModal('card-modal')">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
-    <div class="field">
-      <label>Image URL</label>
-      <input id="card-url" placeholder="Paste image URL...">
-    </div>
-    <div class="field">
-      <button class="btn small alt" onclick="loadCropFromUrl()">Load / Update Image</button>
-    </div>
+    <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
+    <div class="field"><button class="btn small alt" onclick="loadCropFromUrl()">Load / Update Image</button></div>
     <div id="crop-area" class="hidden">
-      <div class="crop-wrap portrait" id="crop-wrap">
-        <img id="crop-img">
-      </div>
+      <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
       <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
       <button class="btn small" onclick="applyCrop()">Apply Crop</button>
     </div>
     <div class="field"><label>Name / label</label><input id="card-name" placeholder="e.g. Seungkwan FML ver.A"></div>
     <div class="field">
+      <label>Tags (this card appears in every folder linked to a tag below)</label>
+      <div class="tag-picker" id="card-tag-picker"></div>
+      <div class="inline-add">
+        <input id="card-new-tag" placeholder="or create a new tag...">
+        <button class="btn small alt" onclick="createTagInline('card')">Add tag</button>
+      </div>
+    </div>
+    <div class="field">
       <label>Status</label>
       <div class="status-picker" id="card-status-picker">
         <div class="opt" data-val="have">✔ Have</div>
-        <div class="opt" data-val="want">☆ Want</div>
+        <div class="opt" data-val="wishlist">☆ Wishlist</div>
         <div class="opt" data-val="stbo">STBO</div>
-        <div class="opt" data-val="duplicate">Duplicate</div>
       </div>
     </div>
+    <div class="field checkbox-row"><input type="checkbox" id="card-duplicate"> <label style="margin:0" for="card-duplicate">Mark as duplicate (tradeable)</label></div>
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
@@ -189,6 +208,19 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid 
     <div class="modal-actions">
       <button class="btn danger" onclick="markSold()">Sold — remove it</button>
       <button class="btn ghost" onclick="closeModal('dup-modal')">Exit</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAG MANAGER MODAL -->
+<div id="tag-manager-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('tag-manager-modal')">✕</button>
+    <div class="section-title">Manage &amp; Sort Tags</div>
+    <div id="tag-manager-list"></div>
+    <div class="inline-add">
+      <input id="tag-manager-new" placeholder="New tag name">
+      <button class="btn small alt" onclick="addTagFromManager()">Add</button>
     </div>
   </div>
 </div>
@@ -218,380 +250,533 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid 
 </div>
 
 <script>
-/* ---------------- data model ---------------- */
+/* ================= DATA MODEL =================
+DATA = {
+  tags: [{id,name}],                // sortable, order = display order
+  nodes: { albums:[Folder], nonalbum:[Folder], members:[Folder] },
+  cards: [{id,image,sourceUrl,name,tags:[tagId],status,duplicate,price}]
+}
+Folder = {id,title,thumb,linkedTag,fixed,children:[Folder]}
+================================================= */
 const FIXED_MEMBERS = ["S.Coups","Jeonghan","Joshua","Jun","Hoshi","Wonwoo","Woozi","DK","Mingyu","The8","Seungkwan","Vernon","Dino"];
-const CATS = ["members","unit","rpc","benefit"];
-const CAT_LABEL = {members:"👤 Members", unit:"🎤 Unit/Group", rpc:"🎴 RPC", benefit:"🎀 Benefit"};
 
 function defaultData(){
-  const mkMemberFolders = ()=>FIXED_MEMBERS.map(n=>({id:'mem_'+n.replace(/\W/g,''), name:n, thumb:'', fixed:true}));
+  const memberTags = FIXED_MEMBERS.map(n=>({id:'tag_mem_'+n.replace(/\W/g,''), name:n}));
+  const memberFolders = FIXED_MEMBERS.map((n,i)=>({
+    id:'mfold_'+n.replace(/\W/g,''), title:n, thumb:'', linkedTag:memberTags[i].id, fixed:true, children:[]
+  }));
   return {
-    folders:{
-      albums:{ members:mkMemberFolders(), unit:[], rpc:[], benefit:[] },
-      nonalbum:{ members:mkMemberFolders(), unit:[] }
-    },
+    tags: memberTags,
+    nodes: { albums:[], nonalbum:[], members:memberFolders },
     cards: []
   };
 }
-
 let DATA = load();
 function load(){
   try{
-    const raw = localStorage.getItem('carat_data_v1');
+    const raw = localStorage.getItem('carat_data_v2');
     if(!raw) return defaultData();
     const d = JSON.parse(raw);
-    if(!d.folders || !d.cards) return defaultData();
+    if(!d.tags || !d.nodes || !d.cards) return defaultData();
     return d;
   }catch(e){ return defaultData(); }
 }
-function save(){ localStorage.setItem('carat_data_v1', JSON.stringify(DATA)); }
+function save(){ localStorage.setItem('carat_data_v2', JSON.stringify(DATA)); }
 
-/* ---------------- nav state ---------------- */
+/* ================= NAV STATE ================= */
 let currentSection = 'albums';
-let currentCat = 'members';
-let currentFolderId = null;
+let currentPath = []; // array of folder ids from root
+let editingFolderParentList = null; // list array where new/edited folder lives
+let editingFolderId = null;
 let editingCardId = null;
 let croppedDataUrl = null;
+let selectedFolderTagId = null;
+let selectedCardTagIds = new Set();
 
-function setSection(sec){
-  currentSection = sec;
-  document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
-  const cats = sec==='albums' ? CATS : ['members','unit'];
-  currentCat = cats[0];
-  renderCatTabs(cats);
-  renderFolders();
+function tree(){ return DATA.nodes[currentSection]; }
+
+function findFolderList(path){
+  // returns the children array at given path (path = array of ids), root = tree()
+  let list = tree();
+  for(const id of path){
+    const f = list.find(x=>x.id===id);
+    if(!f) return list;
+    list = f.children;
+  }
+  return list;
+}
+function findFolder(path){
+  let list = tree(), folder=null;
+  for(const id of path){
+    folder = list.find(x=>x.id===id);
+    if(!folder) return null;
+    list = folder.children;
+  }
+  return folder;
 }
 
-function renderCatTabs(cats){
-  const wrap = document.getElementById('cat-tabs');
-  wrap.innerHTML = '';
-  cats.forEach(c=>{
-    const el = document.createElement('div');
-    el.className = 'tab' + (c===currentCat?' active':'');
-    el.textContent = CAT_LABEL[c];
-    el.onclick = ()=>{ currentCat=c; renderCatTabs(cats); renderFolders(); };
-    wrap.appendChild(el);
-  });
+function switchSection(sec){
+  currentSection = sec;
+  currentPath = [];
+  document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
+  goHome();
 }
 
 function goHome(){
   document.getElementById('stats-panel').classList.add('hidden');
-  document.getElementById('folder-panel').classList.remove('hidden');
-  document.getElementById('fab-btn').classList.remove('hidden');
+  document.getElementById('explorer-panel').classList.remove('hidden');
+  document.querySelector('.fab-wrap').classList.remove('hidden');
+  renderExplorer();
 }
 
-function fabAction(){
-  if(currentCat === 'members'){
-    alert("Members are fixed to the group's official lineup, so this folder list can't be added to or removed.");
-    return;
-  }
-  openAddFolderModal();
+/* ================= EXPLORER RENDER ================= */
+function renderBreadcrumb(){
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = '';
+  const home = document.createElement('span');
+  home.textContent = '🏠 ' + (currentSection==='albums'?'Albums':currentSection==='nonalbum'?'Non-Album':'Members');
+  home.className = currentPath.length===0 ? 'current' : '';
+  home.onclick = ()=>{ currentPath=[]; renderExplorer(); };
+  bc.appendChild(home);
+
+  let list = tree();
+  currentPath.forEach((id,idx)=>{
+    const folder = list.find(x=>x.id===id);
+    list = folder ? folder.children : [];
+    const sep = document.createElement('span'); sep.className='sep'; sep.textContent='›';
+    bc.appendChild(sep);
+    const seg = document.createElement('span');
+    seg.textContent = folder ? folder.title : '?';
+    if(idx === currentPath.length-1) seg.classList.add('current');
+    else seg.onclick = ()=>{ currentPath = currentPath.slice(0,idx+1); renderExplorer(); };
+    bc.appendChild(seg);
+  });
 }
 
-/* ---------------- folder rendering ---------------- */
-function renderFolders(){
-  goHome();
-  const folders = DATA.folders[currentSection][currentCat] || [];
-  document.getElementById('folder-panel-title').textContent = CAT_LABEL[currentCat] + ' — ' + (currentSection==='albums'?'Albums':'Non-Album');
-  const grid = document.getElementById('folder-grid');
+function cardsForTag(tagId){
+  if(!tagId) return [];
+  return DATA.cards.filter(c=>c.tags && c.tags.includes(tagId));
+}
+
+function renderExplorer(){
+  renderBreadcrumb();
+  const grid = document.getElementById('explorer-grid');
   grid.innerHTML = '';
-  folders.forEach(f=>{
-    const count = DATA.cards.filter(c=>c.section===currentSection && c.cat===currentCat && c.folderId===f.id).length;
+  const list = findFolderList(currentPath);
+  const currentFolder = currentPath.length ? findFolder(currentPath) : null;
+
+  // subfolders first
+  list.forEach(f=>{
     const div = document.createElement('div');
-    div.className = 'folder-card';
+    div.className = 'tile folder';
     div.innerHTML = `
-      <div class="folder-thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
-      <div class="folder-name">${f.name}</div>
-      <div class="folder-count">${count} card${count===1?'':'s'}</div>
+      <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
+      <div class="tile-title">${f.title}</div>
+      <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${f.linkedTag?` · <span class="tag-pill">${tagName(f.linkedTag)}</span>`:''}</div>
       ${f.fixed ? '' : '<div class="del-x">✕</div>'}
     `;
-    div.querySelector('.folder-thumb').onclick = ()=>openFolder(f);
-    div.querySelector('.folder-name').onclick = ()=>openFolder(f);
+    div.querySelector('.thumb').onclick = ()=>{ currentPath = [...currentPath, f.id]; renderExplorer(); };
+    div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; renderExplorer(); };
     const delX = div.querySelector('.del-x');
-    if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolder(f); };
+    if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
+    div.oncontextmenu = (e)=>{ e.preventDefault(); openEditFolder(f); };
+    div.addEventListener('dblclick', ()=>openEditFolder(f));
     grid.appendChild(div);
   });
-  if(currentCat !== 'members'){
-    const addTile = document.createElement('div');
-    addTile.className = 'folder-card add-tile';
-    addTile.style.aspectRatio='auto';
-    addTile.innerHTML = '＋';
-    addTile.onclick = openAddFolderModal;
-    grid.appendChild(addTile);
+
+  // then cards linked to this folder's tag
+  if(currentFolder && currentFolder.linkedTag){
+    const cards = cardsForTag(currentFolder.linkedTag);
+    cards.forEach(c=>{
+      grid.appendChild(renderCardTile(c));
+    });
+  }
+
+  if(list.length===0 && (!currentFolder || !currentFolder.linkedTag || cardsForTag(currentFolder.linkedTag).length===0)){
+    const note = document.createElement('div');
+    note.className = 'empty-note';
+    note.textContent = currentFolder && currentFolder.linkedTag
+      ? 'Empty — add a folder, or upload a photocard tagged "'+tagName(currentFolder.linkedTag)+'".'
+      : 'Empty — tap ＋ to add a folder here.';
+    grid.appendChild(note);
   }
 }
 
-function deleteFolder(f){
-  if(!confirm(`Delete folder "${f.name}"? Cards inside will also be removed.`)) return;
-  DATA.folders[currentSection][currentCat] = DATA.folders[currentSection][currentCat].filter(x=>x.id!==f.id);
-  DATA.cards = DATA.cards.filter(c=>!(c.section===currentSection && c.cat===currentCat && c.folderId===f.id));
-  save(); renderFolders();
+function renderCardTile(c){
+  const div = document.createElement('div');
+  div.className = 'tile card-tile';
+  div.innerHTML = `
+    <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
+    ${c.duplicate ? '<div class="dup-badge">DUP</div>' : ''}
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}</div>
+    <div class="tile-title">${c.name||'Untitled'}</div>
+    ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
+  `;
+  const dupBadge = div.querySelector('.dup-badge');
+  if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
+  div.querySelector('.thumb').onclick = ()=>openCardModal(c);
+  div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
+  return div;
 }
 
+function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—'; }
+
+/* ================= FAB ================= */
+function toggleFabMenu(){ document.getElementById('fab-menu').classList.toggle('hidden'); }
+
+/* ================= FOLDER CRUD ================= */
 function openAddFolderModal(){
-  document.getElementById('new-folder-name').value='';
-  document.getElementById('new-folder-url').value='';
+  document.getElementById('fab-menu').classList.add('hidden');
+  editingFolderId = null;
+  document.getElementById('folder-modal-title').textContent = 'New Folder';
+  document.getElementById('folder-title').value='';
+  document.getElementById('folder-thumb').value='';
+  selectedFolderTagId = null;
+  renderTagPicker('folder-tag-picker', null, (id)=>{selectedFolderTagId=id;});
+  document.getElementById('delete-folder-btn').classList.add('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
 }
-function confirmAddFolder(){
-  const name = document.getElementById('new-folder-name').value.trim();
-  if(!name){ alert('Give the folder a name.'); return; }
-  const url = document.getElementById('new-folder-url').value.trim();
-  DATA.folders[currentSection][currentCat].push({id:'f_'+Date.now(), name, thumb:url, fixed:false});
-  save(); closeModal('add-folder-modal'); renderFolders();
+function openEditFolder(f){
+  if(f.fixed){ alert("This is a fixed member folder linked to the group's lineup — its tag can't be changed, but you can still add subfolders inside it."); }
+  editingFolderId = f.id;
+  document.getElementById('folder-modal-title').textContent = 'Edit Folder';
+  document.getElementById('folder-title').value = f.title;
+  document.getElementById('folder-thumb').value = f.thumb || '';
+  selectedFolderTagId = f.linkedTag;
+  renderTagPicker('folder-tag-picker', f.linkedTag, (id)=>{selectedFolderTagId=id;});
+  document.getElementById('delete-folder-btn').classList.toggle('hidden', !!f.fixed);
+  document.getElementById('add-folder-modal').classList.remove('hidden');
 }
-
-/* ---------------- folder contents (cards) ---------------- */
-function openFolder(f){
-  currentFolderId = f.id;
-  document.getElementById('fm-title').textContent = f.name;
-  renderFolderCards();
-  document.getElementById('folder-modal').classList.remove('hidden');
-}
-
-function renderFolderCards(){
-  const grid = document.getElementById('fm-grid');
-  grid.innerHTML = '';
-  const cards = DATA.cards.filter(c=>c.section===currentSection && c.cat===currentCat && c.folderId===currentFolderId);
-  cards.forEach(c=>{
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
-      <div class="card-thumb">${c.image ? `<img src="${c.image}">` : '🖼'}</div>
-      <div class="card-meta">${c.name||'Untitled'}</div>
-      ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
-    `;
-    div.querySelector('.card-thumb').onclick = ()=>cardClicked(c);
-    div.querySelector('.card-meta').onclick = ()=>cardClicked(c);
-    grid.appendChild(div);
+function renderTagPicker(containerId, selectedId, onPick){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  DATA.tags.forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'opt' + (t.id===selectedId?' sel':'');
+    el.textContent = t.name;
+    el.onclick = ()=>{
+      wrap.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+      el.classList.add('sel');
+      onPick(t.id);
+    };
+    wrap.appendChild(el);
   });
-  const addTile = document.createElement('div');
-  addTile.className = 'card add-tile';
-  addTile.style.aspectRatio = '3/4';
-  addTile.innerHTML = '＋';
-  addTile.onclick = ()=>openCardModal(null);
-  grid.appendChild(addTile);
 }
-
-function cardClicked(c){
-  if(c.status === 'duplicate'){
-    pendingDupCardId = c.id;
-    document.getElementById('dup-modal').classList.remove('hidden');
+function createTagInline(kind){
+  const inputId = kind==='folder' ? 'folder-new-tag' : 'card-new-tag';
+  const input = document.getElementById(inputId);
+  const name = input.value.trim();
+  if(!name) return;
+  const tag = {id:'tag_'+Date.now(), name};
+  DATA.tags.push(tag);
+  save();
+  input.value='';
+  if(kind==='folder'){
+    selectedFolderTagId = tag.id;
+    renderTagPicker('folder-tag-picker', tag.id, (id)=>{selectedFolderTagId=id;});
   } else {
-    openCardModal(c);
+    selectedCardTagIds.add(tag.id);
+    renderCardTagPicker();
   }
 }
-let pendingDupCardId = null;
-function markSold(){
-  DATA.cards = DATA.cards.filter(c=>c.id!==pendingDupCardId);
-  save(); closeModal('dup-modal'); renderFolderCards(); renderFolders();
+function confirmSaveFolder(){
+  const title = document.getElementById('folder-title').value.trim();
+  if(!title){ alert('Give the folder a title.'); return; }
+  const thumb = document.getElementById('folder-thumb').value.trim();
+  const list = findFolderList(currentPath);
+  if(editingFolderId){
+    const f = list.find(x=>x.id===editingFolderId);
+    f.title = title; f.thumb = thumb;
+    if(!f.fixed) f.linkedTag = selectedFolderTagId;
+  } else {
+    list.push({id:'fold_'+Date.now(), title, thumb, linkedTag:selectedFolderTagId, fixed:false, children:[]});
+  }
+  save(); closeModal('add-folder-modal'); renderExplorer();
+}
+function deleteCurrentFolder(){
+  const list = findFolderList(currentPath);
+  const f = list.find(x=>x.id===editingFolderId);
+  if(f) deleteFolderNode(f);
+  closeModal('add-folder-modal');
+}
+function deleteFolderNode(f){
+  if(f.fixed){ alert("Fixed member folders can't be deleted."); return; }
+  if(!confirm(`Delete folder "${f.title}" and all its subfolders? (Photocards themselves stay in your library since they're tag-based, not stored inside the folder.)`)) return;
+  const list = findFolderList(currentPath);
+  const idx = list.findIndex(x=>x.id===f.id);
+  if(idx>-1) list.splice(idx,1);
+  save(); renderExplorer();
 }
 
-/* ---------------- add/edit card ---------------- */
+/* ================= CARD CRUD ================= */
+function renderCardTagPicker(){
+  const wrap = document.getElementById('card-tag-picker');
+  wrap.innerHTML = '';
+  DATA.tags.forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'opt' + (selectedCardTagIds.has(t.id)?' sel':'');
+    el.textContent = t.name;
+    el.onclick = ()=>{
+      if(selectedCardTagIds.has(t.id)) selectedCardTagIds.delete(t.id); else selectedCardTagIds.add(t.id);
+      renderCardTagPicker();
+    };
+    wrap.appendChild(el);
+  });
+}
 function openCardModal(card){
+  document.getElementById('fab-menu').classList.add('hidden');
   editingCardId = card ? card.id : null;
   croppedDataUrl = card ? card.image : null;
   document.getElementById('card-modal-title').textContent = card ? 'Edit Photocard' : 'New Photocard';
   document.getElementById('card-url').value = card ? (card.sourceUrl||'') : '';
   document.getElementById('card-name').value = card ? (card.name||'') : '';
   document.getElementById('card-price').value = card ? (card.price||'') : '';
+  document.getElementById('card-duplicate').checked = card ? !!card.duplicate : false;
   document.getElementById('crop-area').classList.add('hidden');
+  selectedCardTagIds = new Set(card ? (card.tags||[]) : (currentPathLinkedTag() ? [currentPathLinkedTag()] : []));
+  renderCardTagPicker();
   document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
   document.getElementById('delete-card-btn').classList.toggle('hidden', !card);
   document.getElementById('card-modal').classList.remove('hidden');
 }
-
+function currentPathLinkedTag(){
+  const f = currentPath.length ? findFolder(currentPath) : null;
+  return f ? f.linkedTag : null;
+}
 document.getElementById('card-status-picker').addEventListener('click', e=>{
   if(!e.target.classList.contains('opt')) return;
   document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.remove('sel'));
   e.target.classList.add('sel');
 });
-
 function deleteCurrentCard(){
   if(!editingCardId) return;
-  if(!confirm('Delete this photocard?')) return;
+  if(!confirm('Delete this photocard from your library entirely?')) return;
   DATA.cards = DATA.cards.filter(c=>c.id!==editingCardId);
-  save(); closeModal('card-modal'); renderFolderCards(); renderFolders();
+  save(); closeModal('card-modal'); renderExplorer();
 }
-
 function saveCard(){
   const statusEl = document.querySelector('#card-status-picker .opt.sel');
-  if(!statusEl){ alert('Pick a status: Have, Want, STBO, or Duplicate.'); return; }
+  if(!statusEl){ alert('Pick a status: Have, Wishlist, or STBO.'); return; }
   const status = statusEl.dataset.val;
   const name = document.getElementById('card-name').value.trim();
   const price = document.getElementById('card-price').value.trim();
   const sourceUrl = document.getElementById('card-url').value.trim();
+  const duplicate = document.getElementById('card-duplicate').checked;
   const image = croppedDataUrl || sourceUrl;
+  const tags = Array.from(selectedCardTagIds);
+  if(tags.length===0){ alert('Add at least one tag so this card can appear in a folder.'); return; }
 
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
-    Object.assign(c, {name, status, price, sourceUrl, image});
+    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate});
   } else {
-    DATA.cards.push({
-      id:'c_'+Date.now(), section:currentSection, cat:currentCat, folderId:currentFolderId,
-      image, sourceUrl, name, status, price
-    });
+    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate});
   }
-  save(); closeModal('card-modal'); renderFolderCards(); renderFolders();
+  save(); closeModal('card-modal'); renderExplorer();
 }
 
-/* ---------------- image loading + crop ---------------- */
+let pendingDupCardId = null;
+function markSold(){
+  DATA.cards = DATA.cards.filter(c=>c.id!==pendingDupCardId);
+  save(); closeModal('dup-modal'); renderExplorer();
+}
+
+/* ================= IMAGE CROP (portrait default) ================= */
 function loadCropFromUrl(){
   const url = document.getElementById('card-url').value.trim();
   if(!url){ alert('Paste an image URL first.'); return; }
   const img = document.getElementById('crop-img');
-  img.onload = ()=>{
-    document.getElementById('crop-area').classList.remove('hidden');
-    setupCropDrag();
-    fitCropImage();
-  };
+  img.onload = ()=>{ document.getElementById('crop-area').classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
   img.onerror = ()=>alert("Couldn't load that image — check the URL (some sites block hotlinking).");
   img.crossOrigin = 'anonymous';
   img.src = url;
 }
-
 let cropState = {x:0,y:0,scale:1,dragging:false,startX:0,startY:0};
 function fitCropImage(){
   const wrap = document.getElementById('crop-wrap');
   const img = document.getElementById('crop-img');
-  const wrapRect = wrap.getBoundingClientRect();
-  const ratio = Math.max(wrapRect.width/img.naturalWidth, wrapRect.height/img.naturalHeight);
+  const r = wrap.getBoundingClientRect();
+  const ratio = Math.max(r.width/img.naturalWidth, r.height/img.naturalHeight);
   cropState.scale = ratio;
   img.style.width = (img.naturalWidth*ratio)+'px';
   img.style.height = (img.naturalHeight*ratio)+'px';
-  cropState.x = (wrapRect.width - img.naturalWidth*ratio)/2;
-  cropState.y = (wrapRect.height - img.naturalHeight*ratio)/2;
+  cropState.x = (r.width - img.naturalWidth*ratio)/2;
+  cropState.y = (r.height - img.naturalHeight*ratio)/2;
   updateCropPos();
   document.getElementById('crop-zoom').value = 100;
 }
 function updateCropPos(){
   const img = document.getElementById('crop-img');
-  img.style.left = cropState.x+'px';
-  img.style.top = cropState.y+'px';
+  img.style.left = cropState.x+'px'; img.style.top = cropState.y+'px';
 }
 function setupCropDrag(){
   const wrap = document.getElementById('crop-wrap');
   const img = document.getElementById('crop-img');
-  const start = (x,y)=>{ cropState.dragging=true; cropState.startX=x-cropState.x; cropState.startY=y-cropState.y; };
-  const move = (x,y)=>{
-    if(!cropState.dragging) return;
-    cropState.x = x - cropState.startX;
-    cropState.y = y - cropState.startY;
-    updateCropPos();
-  };
-  const end = ()=>cropState.dragging=false;
-  wrap.onmousedown = e=>start(e.clientX,e.clientY);
-  window.onmousemove = e=>move(e.clientX,e.clientY);
-  window.onmouseup = end;
-  wrap.ontouchstart = e=>{const t=e.touches[0]; start(t.clientX,t.clientY);};
-  wrap.ontouchmove = e=>{const t=e.touches[0]; move(t.clientX,t.clientY); e.preventDefault();};
-  wrap.ontouchend = end;
-  document.getElementById('crop-zoom').oninput = (e)=>{
-    const wrapRect = wrap.getBoundingClientRect();
-    const baseRatio = Math.max(wrapRect.width/img.naturalWidth, wrapRect.height/img.naturalHeight);
-    const zoom = e.target.value/100;
-    const newScale = baseRatio*zoom;
-    const cx = cropState.x + (img.naturalWidth*cropState.scale)/2;
-    const cy = cropState.y + (img.naturalHeight*cropState.scale)/2;
-    cropState.scale = newScale;
-    img.style.width = (img.naturalWidth*newScale)+'px';
-    img.style.height = (img.naturalHeight*newScale)+'px';
-    cropState.x = cx - (img.naturalWidth*newScale)/2;
-    cropState.y = cy - (img.naturalHeight*newScale)/2;
+  const start=(x,y)=>{cropState.dragging=true;cropState.startX=x-cropState.x;cropState.startY=y-cropState.y;};
+  const move=(x,y)=>{ if(!cropState.dragging)return; cropState.x=x-cropState.startX; cropState.y=y-cropState.startY; updateCropPos(); };
+  const end=()=>cropState.dragging=false;
+  wrap.onmousedown=e=>start(e.clientX,e.clientY);
+  window.onmousemove=e=>move(e.clientX,e.clientY);
+  window.onmouseup=end;
+  wrap.ontouchstart=e=>{const t=e.touches[0];start(t.clientX,t.clientY);};
+  wrap.ontouchmove=e=>{const t=e.touches[0];move(t.clientX,t.clientY);e.preventDefault();};
+  wrap.ontouchend=end;
+  document.getElementById('crop-zoom').oninput=(e)=>{
+    const r=wrap.getBoundingClientRect();
+    const base=Math.max(r.width/img.naturalWidth, r.height/img.naturalHeight);
+    const zoom=e.target.value/100, newScale=base*zoom;
+    const cx=cropState.x+(img.naturalWidth*cropState.scale)/2, cy=cropState.y+(img.naturalHeight*cropState.scale)/2;
+    cropState.scale=newScale;
+    img.style.width=(img.naturalWidth*newScale)+'px'; img.style.height=(img.naturalHeight*newScale)+'px';
+    cropState.x=cx-(img.naturalWidth*newScale)/2; cropState.y=cy-(img.naturalHeight*newScale)/2;
     updateCropPos();
   };
 }
 function applyCrop(){
   const wrap = document.getElementById('crop-wrap');
   const img = document.getElementById('crop-img');
-  const wrapRect = wrap.getBoundingClientRect();
+  const r = wrap.getBoundingClientRect();
   const canvas = document.createElement('canvas');
-  const outW = 300, outH = wrap.classList.contains('portrait') ? 400 : 300;
-  canvas.width = outW; canvas.height = outH;
+  const outW=300,outH=400;
+  canvas.width=outW; canvas.height=outH;
   const ctx = canvas.getContext('2d');
-  const scaleX = outW / wrapRect.width;
-  const scaleY = outH / wrapRect.height;
-  ctx.drawImage(img,
-    cropState.x*scaleX, cropState.y*scaleY,
-    img.naturalWidth*cropState.scale*scaleX, img.naturalHeight*cropState.scale*scaleY
-  );
-  croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const sx=outW/r.width, sy=outH/r.height;
+  ctx.drawImage(img, cropState.x*sx, cropState.y*sy, img.naturalWidth*cropState.scale*sx, img.naturalHeight*cropState.scale*sy);
+  croppedDataUrl = canvas.toDataURL('image/jpeg',0.85);
   alert('Crop applied ✓ — will be saved with this card.');
 }
 
-/* ---------------- stats ---------------- */
+/* ================= TAG MANAGER (sortable) ================= */
+function openTagManager(){
+  renderTagManagerList();
+  document.getElementById('tag-manager-modal').classList.remove('hidden');
+}
+function renderTagManagerList(){
+  const wrap = document.getElementById('tag-manager-list');
+  wrap.innerHTML = '';
+  DATA.tags.forEach((t,idx)=>{
+    const row = document.createElement('div');
+    row.className = 'taglist-row';
+    row.innerHTML = `
+      <button ${idx===0?'disabled':''} title="Move up">↑</button>
+      <button ${idx===DATA.tags.length-1?'disabled':''} title="Move down">↓</button>
+      <span>${t.name}</span>
+      <button title="Delete">✕</button>
+    `;
+    const [upBtn,downBtn,,delBtn] = row.querySelectorAll('button');
+    upBtn.onclick = ()=>{ moveTag(idx,-1); };
+    downBtn.onclick = ()=>{ moveTag(idx,1); };
+    delBtn.onclick = ()=>deleteTag(t.id);
+    wrap.appendChild(row);
+  });
+}
+function moveTag(idx,dir){
+  const j = idx+dir;
+  if(j<0||j>=DATA.tags.length) return;
+  const arr = DATA.tags;
+  [arr[idx],arr[j]] = [arr[j],arr[idx]];
+  save(); renderTagManagerList();
+}
+function deleteTag(tagId){
+  const usedByFixed = ['albums','nonalbum','members'].some(sec=>folderUsesTag(DATA.nodes[sec], tagId, true));
+  if(usedByFixed){ alert("This tag is linked to a fixed Members folder and can't be deleted."); return; }
+  if(!confirm('Delete this tag? Folders linked to it will keep existing but show nothing, and cards keep their other tags.')) return;
+  DATA.tags = DATA.tags.filter(t=>t.id!==tagId);
+  DATA.cards.forEach(c=>{ c.tags = (c.tags||[]).filter(t=>t!==tagId); });
+  ['albums','nonalbum','members'].forEach(sec=>clearTagFromFolders(DATA.nodes[sec], tagId));
+  save(); renderTagManagerList(); renderExplorer();
+}
+function folderUsesTag(list, tagId, onlyFixed){
+  for(const f of list){
+    if(f.linkedTag===tagId && (!onlyFixed || f.fixed)) return true;
+    if(f.children && folderUsesTag(f.children, tagId, onlyFixed)) return true;
+  }
+  return false;
+}
+function clearTagFromFolders(list, tagId){
+  list.forEach(f=>{
+    if(f.linkedTag===tagId && !f.fixed) f.linkedTag = null;
+    if(f.children) clearTagFromFolders(f.children, tagId);
+  });
+}
+function addTagFromManager(){
+  const input = document.getElementById('tag-manager-new');
+  const name = input.value.trim();
+  if(!name) return;
+  DATA.tags.push({id:'tag_'+Date.now(), name});
+  save(); input.value=''; renderTagManagerList();
+}
+
+/* ================= STATS ================= */
 function showStats(){
-  document.getElementById('folder-panel').classList.add('hidden');
-  document.getElementById('fab-btn').classList.add('hidden');
-  const panel = document.getElementById('stats-panel');
-  panel.classList.remove('hidden');
+  document.getElementById('explorer-panel').classList.add('hidden');
+  document.querySelector('.fab-wrap').classList.add('hidden');
+  document.getElementById('stats-panel').classList.remove('hidden');
 
   const cards = DATA.cards;
   const have = cards.filter(c=>c.status==='have');
-  const want = cards.filter(c=>c.status==='want');
+  const wishlist = cards.filter(c=>c.status==='wishlist');
   const stbo = cards.filter(c=>c.status==='stbo');
-  const dup = cards.filter(c=>c.status==='duplicate');
-
-  const albumFoldersWithCards = new Set(cards.filter(c=>c.section==='albums').map(c=>c.folderId));
+  const dup = cards.filter(c=>c.duplicate);
 
   const memberCounts = {};
   FIXED_MEMBERS.forEach(m=>memberCounts[m]=0);
+  const memberTagToName = {};
+  DATA.nodes.members.forEach(f=>{ memberTagToName[f.linkedTag] = f.title; });
   cards.forEach(c=>{
-    if(c.cat==='members'){
-      const folder = (DATA.folders[c.section].members||[]).find(f=>f.id===c.folderId);
-      if(folder) memberCounts[folder.name] = (memberCounts[folder.name]||0)+1;
-    }
+    (c.tags||[]).forEach(tid=>{
+      if(memberTagToName[tid]!==undefined) memberCounts[memberTagToName[tid]] = (memberCounts[memberTagToName[tid]]||0)+1;
+    });
   });
-  let mostMember='—', mostVal=-1, leastMember='—', leastVal=Infinity;
+  let mostMember='—',mostVal=-1,leastMember='—',leastVal=Infinity;
   Object.entries(memberCounts).forEach(([m,v])=>{
     if(v>mostVal){mostVal=v;mostMember=m;}
     if(v<leastVal){leastVal=v;leastMember=m;}
   });
 
-  const totalValue = cards.reduce((sum,c)=> sum + (parseFloat(c.price)||0), 0);
+  function countFoldersDeep(list){ return list.reduce((n,f)=>n+1+countFoldersDeep(f.children||[]),0); }
+  const albumFolderCount = countFoldersDeep(DATA.nodes.albums);
+  const nonAlbumFolderCount = countFoldersDeep(DATA.nodes.nonalbum);
+
+  const totalValue = cards.reduce((sum,c)=>sum+(parseFloat(c.price)||0),0);
 
   document.getElementById('stats-body').innerHTML = `
     <div class="stat-row"><span>Total cards logged</span><b>${cards.length}</b></div>
     <div class="stat-row"><span>Have</span><b>${have.length}</b></div>
-    <div class="stat-row"><span>Want</span><b>${want.length}</b></div>
+    <div class="stat-row"><span>Wishlist</span><b>${wishlist.length}</b></div>
     <div class="stat-row"><span>STBO</span><b>${stbo.length}</b></div>
     <div class="stat-row"><span>Duplicates (tradeable)</span><b>${dup.length}</b></div>
-    <div class="stat-row"><span>Album folders with cards</span><b>${albumFoldersWithCards.size}</b></div>
+    <div class="stat-row"><span>Album folders created</span><b>${albumFolderCount}</b></div>
+    <div class="stat-row"><span>Non-Album folders created</span><b>${nonAlbumFolderCount}</b></div>
     <div class="stat-row"><span>Most-owned member</span><b>${mostMember} (${mostVal<0?0:mostVal})</b></div>
     <div class="stat-row"><span>Least-owned member</span><b>${leastMember} (${leastVal===Infinity?0:leastVal})</b></div>
     <div class="stat-row"><span>Total spent (logged prices)</span><b>₱${totalValue.toLocaleString()}</b></div>
   `;
 }
 
-/* ---------------- search ---------------- */
+/* ================= SEARCH ================= */
 function runSearch(){
   const q = document.getElementById('search-input').value.trim().toLowerCase();
   if(!q) return;
-  const folderMatches = [];
-  ['albums','nonalbum'].forEach(sec=>{
-    Object.entries(DATA.folders[sec]).forEach(([cat,list])=>{
-      list.forEach(f=>{ if(f.name.toLowerCase().includes(q)) folderMatches.push(f.name); });
-    });
-  });
-  const cardMatches = DATA.cards.filter(c=>(c.name||'').toLowerCase().includes(q));
-  alert(`Found ${folderMatches.length} folder(s) and ${cardMatches.length} card(s) matching "${q}".`);
+  let folderHits = 0;
+  function scan(list){ list.forEach(f=>{ if(f.title.toLowerCase().includes(q)) folderHits++; scan(f.children||[]); }); }
+  ['albums','nonalbum','members'].forEach(sec=>scan(DATA.nodes[sec]));
+  const cardHits = DATA.cards.filter(c=>(c.name||'').toLowerCase().includes(q)).length;
+  const tagHits = DATA.tags.filter(t=>t.name.toLowerCase().includes(q)).length;
+  alert(`Found ${folderHits} folder(s), ${cardHits} card(s), and ${tagHits} tag(s) matching "${q}".`);
 }
 
-/* ---------------- modal helpers ---------------- */
+/* ================= MODAL HELPERS ================= */
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 function openInstallModal(){ document.getElementById('install-modal').classList.remove('hidden'); }
 
-/* ---------------- 17-click easter egg ---------------- */
+/* ================= EASTER EGG ================= */
 let diamondClicks = 0;
 document.getElementById('diamond-title').addEventListener('click',()=>{
   diamondClicks++;
-  if(diamondClicks === 17){ showEasterEgg(); diamondClicks = 0; }
+  if(diamondClicks===17){ showEasterEgg(); diamondClicks=0; }
 });
-function showEasterEgg(){
-  document.getElementById('egg-modal').classList.remove('hidden');
-  fireConfetti();
-}
+function showEasterEgg(){ document.getElementById('egg-modal').classList.remove('hidden'); fireConfetti(); }
 function fireConfetti(){
   const canvas = document.getElementById('confetti-canvas');
   const ctx = canvas.getContext('2d');
@@ -620,7 +805,7 @@ window.addEventListener('resize',()=>{
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 });
 
-/* ---------------- PWA: manifest + service worker via blob ---------------- */
+/* ================= PWA ================= */
 (function setupPWA(){
   const manifest = {
     name:"Hello, Carat-deul!", short_name:"Carat-deul",
@@ -629,18 +814,15 @@ window.addEventListener('resize',()=>{
   };
   const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
   const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = URL.createObjectURL(blob);
+  link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
   document.head.appendChild(link);
-
   if('serviceWorker' in navigator){
-    const swCode = `self.addEventListener('fetch', e=>{});`;
-    const swBlob = new Blob([swCode], {type:'application/javascript'});
+    const swBlob = new Blob([`self.addEventListener('fetch', e=>{});`], {type:'application/javascript'});
     navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
   }
 })();
 
-/* ---------------- init ---------------- */
-setSection('albums');
+/* ================= INIT ================= */
+switchSection('albums');
 </script>
 </body></html>
