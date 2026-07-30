@@ -22,11 +22,10 @@ header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));po
 h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;gap:6px}
 .icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px}
-.wrap{padding:12px 12px 90px;max-width:680px;margin:0 auto}
-.search{margin:10px 0;display:flex;gap:6px}
-.search input{flex:1;padding:9px 10px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
-.mini-search{margin:0 0 10px;display:flex;gap:6px}
-.mini-search input{flex:1;padding:7px 9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:12px}
+.wrap{padding:10px 10px 80px;max-width:680px;margin:0 auto}
+.search{margin:8px 0;display:flex;gap:6px}
+.search input{flex:1;padding:8px 9px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
+.mini-search-inline{flex:1;min-width:64px;padding:5px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:11px}
 .btn{border:2px solid var(--line);border-radius:9px;background:var(--pink);color:#7a6b76;padding:7px 11px;font-family:"Ticketing",cursive;font-weight:normal;font-size:12px;letter-spacing:.3px;cursor:pointer;transition:transform .1s ease}
 .btn:active{transform:scale(.97)}
 .btn.alt{background:var(--blue)}
@@ -36,7 +35,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .btn:disabled{opacity:.4;cursor:default}
 .toolbar-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .toolbar-row .btn{flex:1;min-width:0}
-.panel{background:#fff;border-radius:16px;border:2px solid var(--line);padding:12px;margin:12px 0;box-shadow:0 4px 14px rgba(122,107,118,.08)}
+.panel{background:#fff;border-radius:16px;border:2px solid var(--line);padding:10px;margin:10px 0;box-shadow:0 4px 14px rgba(122,107,118,.08)}
+#home-lists-bar{margin-bottom:20px}
 .section-toggle{display:flex;gap:6px}
 .section-toggle .opt{flex:1;text-align:center;padding:8px 4px;background:#f6eef4;border-radius:9px;border:2px solid var(--line);cursor:pointer;font-size:12px;font-weight:600}
 .section-toggle .opt.active{background:var(--accent);border-color:#e3a9c2}
@@ -46,19 +46,21 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .breadcrumb .sep{color:#d9c8d3}
 .section-title{font-family:'Ticketing',cursive;font-weight:normal;font-size:16px;letter-spacing:.3px;margin:0 0 10px;color:#8a6b7c}
 .title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
-.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
+.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:6px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
 .tile.folder .thumb{aspect-ratio:1}
-.tile.card-tile .thumb{aspect-ratio:3/4}
-.thumb{position:relative;background:#f6f2fb;border:2px dashed #d9c8e6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
+.tile.card-tile .thumb{aspect-ratio:2/3}
+.thumb{position:relative;background:#f6f2fb;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.menu-dot{position:absolute;bottom:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;z-index:4;line-height:1;color:var(--text)}
+.tile-title-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px}
+.tile-title-row .tile-title{margin-top:0}
+.menu-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#f8f3fa;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;line-height:1;color:var(--text)}
 .menu-dot:active{transform:scale(.92)}
-.tile-title{font-size:13px;margin-top:6px;font-weight:600}
+.tile-title{font-size:13px;margin-top:4px;font-weight:600}
 .tile-sub{font-size:11px;color:#a493a0}
-.tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px}
-.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;z-index:2}
+.tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
+.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;padding:0}
 .status-badge{position:absolute;top:6px;left:6px;font-size:10px;padding:3px 8px;border-radius:8px;border:2px solid;font-family:'Ticketing',cursive;letter-spacing:.3px;z-index:3}
 .status-have{background:var(--green);border-color:#7fbf7a}
 .status-wishlist{background:var(--yellow);border-color:#e0b94a;color:#7a5f10}
@@ -71,12 +73,15 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tile.card-tile.st-wishlist .thumb::after{background:rgba(251,233,176,.38);box-shadow:inset 0 0 0 3px rgba(224,185,74,.65)}
 .tile.card-tile.st-stbo .thumb::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
 /* pagination / per-page bar */
-.pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:nowrap}
+.pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .pagebar .pp-select{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
 .pagebar select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:3px 2px;background:#fff}
 .pagebar .pg-nav{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
 .pagebar .pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:10px;padding:2px 7px;cursor:pointer}
 .pagebar .pg-nav button:disabled{opacity:.35;cursor:default}
+.sort-member-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:8px}
+.sort-member-row select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:4px;background:#fff;border-radius:7px;flex:1}
+.indemand-badge{position:absolute;bottom:6px;left:6px;font-size:9px;padding:3px 7px;border-radius:8px;border:2px solid #e3a9c2;background:var(--accent);font-family:'Ticketing',cursive;color:#7a3654;z-index:3}
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
 .grid.pp-6{grid-template-columns:repeat(2,1fr)}
@@ -135,7 +140,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 .status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e9d38f;font-weight:700}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
-.crop-wrap{position:relative;width:100%;aspect-ratio:3/4;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
+.crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
 .crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .file-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px}
@@ -195,10 +200,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 </div>
 
 <div class="panel" id="explorer-panel">
-  <div class="mini-search">
-    <input id="mini-search-input" placeholder="Find within this folder..." oninput="onMiniSearch()">
-  </div>
   <div class="pagebar">
+    <input id="mini-search-input" class="mini-search-inline" placeholder="Find within this folder..." oninput="onMiniSearch()">
     <div class="pp-select">Show
       <select id="per-page-select" onchange="onPerPageChange()">
         <option value="4">4</option>
@@ -211,6 +214,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     </div>
     <div class="pg-nav" id="pg-nav"></div>
   </div>
+  <div class="sort-member-row">
+    Sort by member:
+    <select id="sort-member-select" onchange="onSortMemberChange()">
+      <option value="">Default order</option>
+    </select>
+  </div>
   <div class="grid pp-6" id="explorer-grid"></div>
   <div class="toolbar-row">
     <button class="btn small ghost" onclick="saveOrderAsTemplate()">💾 Save order as template</button>
@@ -222,7 +231,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
   <div class="lb-label">Quick lists</div>
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
-    <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">DUP Duplicates</div>
+    <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">☆ Wishlist</div>
   </div>
 </div>
@@ -236,7 +245,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
   <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
-    <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">DUP Duplicates</div>
+    <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">☆ Wishlist</div>
   </div>
   <div class="pagebar">
@@ -309,7 +318,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
       </div>
     </div>
     <div class="field">
-      <label>Linked tag (cards with this tag will show inside)</label>
+      <label>Linked tags (a card must have ALL of these tags to show inside)</label>
       <div class="combo" id="folder-tag-combo">
         <div class="combo-chips" id="folder-tag-chips"></div>
         <input id="folder-tag-input" placeholder="Type to search or add a tag..." autocomplete="off">
@@ -353,7 +362,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
         <div class="opt" data-val="stbo">STBO</div>
       </div>
     </div>
-    <div class="field checkbox-row"><input type="checkbox" id="card-duplicate"> <label style="margin:0" for="card-duplicate">Mark as duplicate (tradeable)</label></div>
+    <div class="field checkbox-row"><input type="checkbox" id="card-duplicate" onchange="onDuplicateCheckChange()"> <label style="margin:0" for="card-duplicate">Mark as duplicate (tradeable)</label></div>
+    <div class="field hidden" id="dup-count-row"><label>How many copies?</label><input id="card-dup-count" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+    <div class="field checkbox-row"><input type="checkbox" id="card-indemand"> <label style="margin:0" for="card-indemand">Mark as In Demand</label></div>
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
@@ -439,7 +450,7 @@ DATA = {
   viewOrders: { [contextKey]: [{type:'folder'|'card', id}] },   // custom drag order per folder-view
   templates: [{id,name,contextKey,order:[{type,id}]}]           // saved/named orders, editable
 }
-Folder = {id,title,thumb,linkedTag,fixed,children:[Folder]}
+Folder = {id,title,thumb,linkedTags:[tagId],fixed,children:[Folder]}
 ================================================= */
 const FIXED_MEMBERS = ["S.Coups","Jeonghan","Joshua","Jun","Hoshi","Wonwoo","Woozi","DK","Mingyu","The8","Seungkwan","Vernon","Dino"];
 
@@ -447,7 +458,7 @@ function defaultData(){
   const now = Date.now();
   const memberTags = FIXED_MEMBERS.map((n,i)=>({id:'tag_mem_'+n.replace(/\W/g,''), name:n, createdAt: now+i}));
   const memberFolders = FIXED_MEMBERS.map((n,i)=>({
-    id:'mfold_'+n.replace(/\W/g,''), title:n, thumb:'', linkedTag:memberTags[i].id, fixed:true, children:[]
+    id:'mfold_'+n.replace(/\W/g,''), title:n, thumb:'', linkedTags:[memberTags[i].id], fixed:true, children:[]
   }));
   return {
     tags: memberTags,
@@ -469,6 +480,15 @@ function load(){
     if(!d.templates) d.templates = [];
     let base = Date.now() - d.tags.length*1000;
     d.tags.forEach((t,i)=>{ if(!t.createdAt) t.createdAt = base + i*1000; });
+    function migrateFolderTags(list){
+      (list||[]).forEach(f=>{
+        if(!f.linkedTags){ f.linkedTags = f.linkedTag ? [f.linkedTag] : []; }
+        delete f.linkedTag;
+        migrateFolderTags(f.children);
+      });
+    }
+    ['albums','nonalbum','members'].forEach(sec=>migrateFolderTags(d.nodes[sec]));
+    d.cards.forEach(c=>{ if(c.duplicate && !c.dupCount) c.dupCount = 1; });
     return d;
   }catch(e){ return defaultData(); }
 }
@@ -481,8 +501,9 @@ let editingFolderParentList = null; // list array where new/edited folder lives
 let editingFolderId = null;
 let editingCardId = null;
 let croppedDataUrl = null;
-let selectedFolderTagId = null;
+let selectedFolderTagIds = new Set();
 let selectedCardTagIds = new Set();
+let sortMemberFilter = '';
 let perPage = 6;
 let currentPage = 1;
 let listsTab = 'stbo';
@@ -518,6 +539,7 @@ function switchSection(sec){
   currentSection = sec;
   currentPath = [];
   miniSearchQuery = '';
+  sortMemberFilter = '';
   const miniInput = document.getElementById('mini-search-input');
   if(miniInput) miniInput.value = '';
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
@@ -573,6 +595,15 @@ function cardsForTag(tagId){
   if(!tagId) return [];
   return DATA.cards.filter(c=>c.tags && c.tags.includes(tagId));
 }
+function cardsForTags(tagIds){
+  if(!tagIds || !tagIds.length) return [];
+  return DATA.cards.filter(c=>tagIds.every(tid=>c.tags && c.tags.includes(tid)));
+}
+function cardQualifiesForFolder(c, f){
+  const tagIds = f.linkedTags || [];
+  if(!tagIds.length) return false;
+  return tagIds.every(tid=>(c.tags||[]).includes(tid));
+}
 
 function onPerPageChange(){
   perPage = parseInt(document.getElementById('per-page-select').value, 10);
@@ -588,6 +619,18 @@ function clearMiniSearch(){
   miniSearchQuery = '';
   const el = document.getElementById('mini-search-input');
   if(el) el.value = '';
+}
+function populateSortMemberSelect(){
+  const sel = document.getElementById('sort-member-select');
+  if(!sel) return;
+  const prev = sortMemberFilter;
+  sel.innerHTML = '<option value="">Default order</option>' +
+    DATA.nodes.members.map(f=>`<option value="${f.linkedTags && f.linkedTags[0] || ''}">${f.title}</option>`).join('');
+  sel.value = prev;
+}
+function onSortMemberChange(){
+  sortMemberFilter = document.getElementById('sort-member-select').value;
+  renderExplorer();
 }
 
 /* context key identifies "this folder view" for custom drag order + templates */
@@ -619,12 +662,13 @@ function saveCustomOrderFromDom(list, cards){
 
 function renderExplorer(){
   renderBreadcrumb();
+  populateSortMemberSelect();
   const grid = document.getElementById('explorer-grid');
   grid.className = 'grid pp-' + perPage;
   grid.innerHTML = '';
   const list = findFolderList(currentPath);
   const currentFolder = currentPath.length ? findFolder(currentPath) : null;
-  const cards = currentFolder && currentFolder.linkedTag ? cardsForTag(currentFolder.linkedTag) : [];
+  const cards = currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length ? cardsForTags(currentFolder.linkedTags) : [];
 
   // combined item list: folders first, then cards — paginated together
   let items = [
@@ -637,6 +681,14 @@ function renderExplorer(){
     items = items.filter(it=>{
       const text = it.type==='folder' ? it.data.title : (it.data.name||'');
       return scoreText(miniSearchQuery, text).match;
+    });
+  }
+
+  if(sortMemberFilter){
+    items = [...items].sort((a,b)=>{
+      const av = a.type==='card' && (a.data.tags||[]).includes(sortMemberFilter) ? 0 : 1;
+      const bv = b.type==='card' && (b.data.tags||[]).includes(sortMemberFilter) ? 0 : 1;
+      return av - bv;
     });
   }
 
@@ -655,8 +707,8 @@ function renderExplorer(){
     note.className = 'empty-note';
     note.textContent = miniSearchQuery
       ? `No items here match "${miniSearchQuery}".`
-      : (currentFolder && currentFolder.linkedTag
-        ? 'Empty — add a folder, or upload a photocard tagged "'+tagName(currentFolder.linkedTag)+'".'
+      : (currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length
+        ? 'Empty — add a folder, or upload a photocard tagged "'+currentFolder.linkedTags.map(tagName).join('" + "')+'".'
         : 'Empty — tap ＋ to add a folder here.');
     grid.appendChild(note);
   }
@@ -681,14 +733,14 @@ function renderFolderTile(f, list, cardsInView){
   const div = document.createElement('div');
   div.className = 'tile folder';
   div.draggable = true;
+  const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
   div.innerHTML = `
-    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}<div class="menu-dot" title="Edit folder">⋮</div></div>
-    <div class="tile-title">${f.title}</div>
-    <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${f.linkedTag?` · <span class="tag-pill">${tagName(f.linkedTag)}</span>`:''}</div>
+    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
+    <div class="tile-title-row"><div class="tile-title">${f.title}</div><div class="menu-dot" title="Edit folder">⋮</div></div>
+    <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${tagPills?`<br>${tagPills}`:''}</div>
     ${f.fixed ? '' : '<div class="del-x">✕</div>'}
   `;
   div.querySelector('.thumb').addEventListener('click', (e)=>{
-    if(e.target.closest('.menu-dot')) return;
     currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
   });
   div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer(); };
@@ -714,10 +766,13 @@ function renderFolderTile(f, list, cardsInView){
       if(isSameView){
         // reorder: place the dragged card right before this folder within the same view
         reorderWithinView(list, cardsInView, {type:'card', id:dragged.id}, {type:'folder', id:f.id});
-      } else if(!f.linkedTag){
-        alert("This folder isn't linked to a tag yet, so cards can't be dropped into it.");
-      } else if(c && !(c.tags||[]).includes(f.linkedTag)){
-        c.tags=[...(c.tags||[]), f.linkedTag]; save(); renderExplorer();
+      } else if(!f.linkedTags || !f.linkedTags.length){
+        alert("This folder isn't linked to any tags yet, so cards can't be dropped into it.");
+      } else if(c && !cardQualifiesForFolder(c, f)){
+        const missing = f.linkedTags.filter(tid=>!(c.tags||[]).includes(tid)).map(tagName).join(', ');
+        alert(`This card is missing the tag${f.linkedTags.length>1?'s':''} "${missing}" required for this folder, so it can't be placed here.`);
+      } else {
+        renderExplorer();
       }
     }
     dragged=null;
@@ -731,17 +786,15 @@ function renderCardTile(c, list, cardsInView){
   div.draggable = true;
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
-    ${c.duplicate ? '<div class="dup-badge">DUP</div>' : ''}
-    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}<div class="menu-dot" title="Edit photocard">⋮</div></div>
-    <div class="tile-title">${c.name||'Untitled'}</div>
+    ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
+    ${c.inDemand ? '<div class="indemand-badge">🔥 In Demand</div>' : ''}
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}</div>
+    <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div><div class="menu-dot" title="Edit photocard">⋮</div></div>
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
   `;
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
-  div.querySelector('.thumb').addEventListener('click', (e)=>{
-    if(e.target.closest('.menu-dot')) return;
-    openCardModal(c);
-  });
+  div.querySelector('.thumb').addEventListener('click', ()=>openCardModal(c));
   div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openCardModal(c); };
 
@@ -805,14 +858,14 @@ function openAddFolderModal(){
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
   document.getElementById('folder-thumb-file').value = '';
-  selectedFolderTagId = null;
+  selectedFolderTagIds = new Set();
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
   document.getElementById('delete-folder-btn').classList.add('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
 }
 function openEditFolder(f){
-  if(f.fixed){ alert("This is a fixed member folder linked to the group's lineup — its tag can't be changed, but you can still add subfolders inside it."); }
+  if(f.fixed){ alert("This is a fixed member folder linked to the group's lineup — its tags can't be changed, but you can still add subfolders inside it."); }
   editingFolderId = f.id;
   document.getElementById('folder-modal-title').textContent = 'Edit Folder';
   document.getElementById('folder-title').value = f.title;
@@ -820,7 +873,7 @@ function openEditFolder(f){
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
   document.getElementById('folder-thumb-file').value = '';
-  selectedFolderTagId = f.linkedTag;
+  selectedFolderTagIds = new Set(f.linkedTags || []);
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
   document.getElementById('delete-folder-btn').classList.toggle('hidden', !!f.fixed);
@@ -915,10 +968,10 @@ function setupTagCombo({chipsId, inputId, listId, multi, getSelected, onAdd, onR
 
 function setupFolderTagCombo(){
   setupTagCombo({
-    chipsId:'folder-tag-chips', inputId:'folder-tag-input', listId:'folder-tag-list', multi:false,
-    getSelected: ()=>selectedFolderTagId,
-    onAdd: (id)=>{ selectedFolderTagId = id; },
-    onRemove: ()=>{ selectedFolderTagId = null; }
+    chipsId:'folder-tag-chips', inputId:'folder-tag-input', listId:'folder-tag-list', multi:true,
+    getSelected: ()=>selectedFolderTagIds,
+    onAdd: (id)=>{ selectedFolderTagIds.add(id); },
+    onRemove: (id)=>{ selectedFolderTagIds.delete(id); }
   });
 }
 function setupCardTagCombo(){
@@ -937,9 +990,9 @@ function confirmSaveFolder(){
   if(editingFolderId){
     const f = list.find(x=>x.id===editingFolderId);
     f.title = title; f.thumb = thumb;
-    if(!f.fixed) f.linkedTag = selectedFolderTagId;
+    if(!f.fixed) f.linkedTags = Array.from(selectedFolderTagIds);
   } else {
-    list.push({id:'fold_'+Date.now(), title, thumb, linkedTag:selectedFolderTagId, fixed:false, children:[]});
+    list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[]});
   }
   save(); closeModal('add-folder-modal'); renderExplorer();
 }
@@ -968,19 +1021,25 @@ function openCardModal(card){
   document.getElementById('card-name').value = card ? (card.name||'') : '';
   document.getElementById('card-price').value = card ? (card.price||'') : '';
   document.getElementById('card-duplicate').checked = card ? !!card.duplicate : false;
+  document.getElementById('card-dup-count').value = card && card.dupCount ? card.dupCount : 1;
+  document.getElementById('dup-count-row').classList.toggle('hidden', !(card && card.duplicate));
+  document.getElementById('card-indemand').checked = card ? !!card.inDemand : false;
   document.getElementById('crop-area').classList.add('hidden');
   const cardFileInput = document.getElementById('card-image-file');
   if(cardFileInput) cardFileInput.value = '';
-  selectedCardTagIds = new Set(card ? (card.tags||[]) : (currentPathLinkedTag() ? [currentPathLinkedTag()] : []));
+  selectedCardTagIds = new Set(card ? (card.tags||[]) : currentPathLinkedTags());
   document.getElementById('card-tag-input').value = '';
   setupCardTagCombo();
   document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
   document.getElementById('delete-card-btn').classList.toggle('hidden', !card);
   document.getElementById('card-modal').classList.remove('hidden');
 }
-function currentPathLinkedTag(){
+function currentPathLinkedTags(){
   const f = currentPath.length ? findFolder(currentPath) : null;
-  return f ? f.linkedTag : null;
+  return f ? (f.linkedTags || []) : [];
+}
+function onDuplicateCheckChange(){
+  document.getElementById('dup-count-row').classList.toggle('hidden', !document.getElementById('card-duplicate').checked);
 }
 document.getElementById('card-status-picker').addEventListener('click', e=>{
   if(!e.target.classList.contains('opt')) return;
@@ -1001,15 +1060,17 @@ function saveCard(){
   const price = document.getElementById('card-price').value.trim();
   const sourceUrl = document.getElementById('card-url').value.trim();
   const duplicate = document.getElementById('card-duplicate').checked;
+  const dupCount = duplicate ? Math.max(1, parseInt(document.getElementById('card-dup-count').value, 10) || 1) : undefined;
+  const inDemand = document.getElementById('card-indemand').checked;
   const image = croppedDataUrl || sourceUrl;
   const tags = Array.from(selectedCardTagIds);
   if(tags.length===0){ alert('Add at least one tag so this card can appear in a folder.'); return; }
 
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
-    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate});
+    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, inDemand});
   } else {
-    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate});
+    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, inDemand});
   }
   save(); closeModal('card-modal'); renderExplorer();
 }
@@ -1026,7 +1087,7 @@ let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
 function startCropFor(target){
   activeCrop = target==='folder'
     ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', areaId:'folder-crop-area', outW:300, outH:300}
-    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', areaId:'crop-area', outW:300, outH:400};
+    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', areaId:'crop-area', outW:300, outH:450};
 }
 function loadCropFromUrl(target){
   target = target || 'card';
@@ -1173,14 +1234,14 @@ function deleteTag(tagId){
 }
 function folderUsesTag(list, tagId, onlyFixed){
   for(const f of list){
-    if(f.linkedTag===tagId && (!onlyFixed || f.fixed)) return true;
+    if((f.linkedTags||[]).includes(tagId) && (!onlyFixed || f.fixed)) return true;
     if(f.children && folderUsesTag(f.children, tagId, onlyFixed)) return true;
   }
   return false;
 }
 function clearTagFromFolders(list, tagId){
   list.forEach(f=>{
-    if(f.linkedTag===tagId && !f.fixed) f.linkedTag = null;
+    if(!f.fixed && f.linkedTags) f.linkedTags = f.linkedTags.filter(t=>t!==tagId);
     if(f.children) clearTagFromFolders(f.children, tagId);
   });
 }
@@ -1209,7 +1270,7 @@ function confirmSaveTemplate(){
   if(!name){ alert('Give the template a name.'); return; }
   const list = findFolderList(currentPath);
   const currentFolder = currentPath.length ? findFolder(currentPath) : null;
-  const cardsInView = currentFolder && currentFolder.linkedTag ? cardsForTag(currentFolder.linkedTag) : [];
+  const cardsInView = currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length ? cardsForTags(currentFolder.linkedTags) : [];
   const key = contextKey();
   let order = DATA.viewOrders[key];
   if(!order || !order.length){
@@ -1282,7 +1343,7 @@ function showStats(){
   const memberCounts = {};
   FIXED_MEMBERS.forEach(m=>memberCounts[m]=0);
   const memberTagToName = {};
-  DATA.nodes.members.forEach(f=>{ memberTagToName[f.linkedTag] = f.title; });
+  DATA.nodes.members.forEach(f=>{ (f.linkedTags||[]).forEach(tid=>{ memberTagToName[tid] = f.title; }); });
   cards.forEach(c=>{
     (c.tags||[]).forEach(tid=>{
       if(memberTagToName[tid]!==undefined) memberCounts[memberTagToName[tid]] = (memberCounts[memberTagToName[tid]]||0)+1;
