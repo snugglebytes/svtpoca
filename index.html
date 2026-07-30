@@ -79,6 +79,9 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .pagebar .pg-nav{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
 .pagebar .pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:10px;padding:2px 7px;cursor:pointer}
 .pagebar .pg-nav button:disabled{opacity:.35;cursor:default}
+.pg-nav{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;margin:8px 0 4px}
+.pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:11px;padding:3px 9px;cursor:pointer}
+.pg-nav button:disabled{opacity:.35;cursor:default}
 .sort-member-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:8px}
 .sort-member-row select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:4px;background:#fff;border-radius:7px;flex:1}
 .indemand-badge{position:absolute;bottom:6px;left:6px;font-size:9px;padding:3px 9px;border-radius:20px;border:2px solid #f3cbe0;font-family:'Ticketing',cursive;text-transform:uppercase;letter-spacing:.5px;z-index:3;display:flex;align-items:center;gap:3px;background:linear-gradient(135deg,#ffe1f0,#eaf2ff);box-shadow:0 1px 4px rgba(219,158,196,.35);color:#e3a9c2}
@@ -117,10 +120,17 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .search-results{margin:6px 0 0}
 .search-results .sr-heading{font-size:11px;color:#8b7a88;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
 .search-results .empty-note{padding:6px 2px}
+.sr-tags-scroll{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:4px 2px;gap:6px;-webkit-overflow-scrolling:touch}
+.sr-tags-scroll .tag-pill{flex-shrink:0;margin-right:0 !important}
 /* drag & drop */
 .tile[draggable="true"]{cursor:grab}
 .tile.dragging{opacity:.35}
-.tile.drag-over{outline:3px dashed #8fbdd9;outline-offset:-3px}
+.tile{transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.tile.touch-dragging{opacity:0;transition:none}
+.touch-drag-ghost{position:fixed;pointer-events:none;z-index:9999;margin:0;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 30px rgba(122,107,118,.4);border-radius:14px;opacity:.96;transition:transform .12s ease}
+body.no-scroll{overflow:hidden;touch-action:none}
+@keyframes jiggle{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
+.tile.jiggle-hint{animation:jiggle .18s ease-in-out}
 .add-tile{border:2px dashed var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#cbb8ce;cursor:pointer;background:#fdfaff}
 .add-tile.folder{aspect-ratio:1}
 .add-tile.card-tile{aspect-ratio:3/4}
@@ -571,6 +581,7 @@ let listsTab = 'stbo';
 let listsPerPage = 6;
 let listsPage = 1;
 let dragged = null; // {type:'folder'|'card', id}
+let dragHoverKey = null; // last hovered tile key during a drag, to avoid redundant reorders
 let miniSearchQuery = '';
 const FUZZY_THRESHOLD = 6; // fuzzy tolerance for "closest result" matching, case/punctuation-insensitive
 
@@ -728,6 +739,46 @@ function saveCustomOrderFromDom(list, cards){
   save();
 }
 
+/* Re-renders the grid but animates tiles sliding from their old position to
+   their new one (FLIP technique) — mimics how mobile home-screen icons shift
+   out of the way while you drag one around. */
+function renderExplorerAnimated(){
+  const grid = document.getElementById('explorer-grid');
+  const prevRects = new Map();
+  grid.querySelectorAll('.tile[data-key]').forEach(el=>{
+    prevRects.set(el.dataset.key, el.getBoundingClientRect());
+  });
+  renderExplorer();
+  grid.querySelectorAll('.tile[data-key]').forEach(el=>{
+    const prev = prevRects.get(el.dataset.key);
+    if(!prev) return;
+    const next = el.getBoundingClientRect();
+    const dx = prev.left-next.left, dy = prev.top-next.top;
+    if(dx || dy){
+      el.style.transition = 'none';
+      el.style.transform = `translate(${dx}px,${dy}px)`;
+      requestAnimationFrame(()=>{
+        el.style.transition = '';
+        el.style.transform = '';
+      });
+    }
+  });
+}
+/* Called continuously while a drag is hovering over a new tile (mouse dragover
+   or touch-drag hit-testing). Live-reorders the grid so tiles shuffle out of
+   the way in real time, instead of showing a static drop-line indicator. */
+function handleDragHover(list, cardsInView, toType, toId){
+  if(!dragged) return;
+  const hoverKey = toType+':'+toId;
+  if(hoverKey === (dragged.type+':'+dragged.id)) return;
+  if(hoverKey === dragHoverKey) return;
+  const isSameView = dragged.type==='folder'
+    ? list.some(x=>x.id===dragged.id)
+    : (cardsInView||[]).some(x=>x.id===dragged.id);
+  if(!isSameView) return; // cross-view drop (e.g. tagging a card into a folder) is handled on release, not preview
+  dragHoverKey = hoverKey;
+  reorderWithinView(list, cardsInView, dragged, {type:toType, id:toId});
+}
 function renderExplorer(){
   renderBreadcrumb();
   const grid = document.getElementById('explorer-grid');
@@ -799,7 +850,9 @@ function renderPageNav(navId, totalPages, page, onGo){
 
 function renderFolderTile(f, list, cardsInView){
   const div = document.createElement('div');
-  div.className = 'tile folder';
+  const isDraggedNow = dragged && dragged.type==='folder' && dragged.id===f.id;
+  div.className = 'tile folder' + (isDraggedNow ? ' touch-dragging' : '');
+  div.dataset.key = 'folder:'+f.id;
   div.draggable = true;
   const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
   div.innerHTML = `
@@ -816,41 +869,57 @@ function renderFolderTile(f, list, cardsInView){
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
 
-  // drag & drop — reorder folders/cards together in this view, or drop a card onto a folder to tag it in
-  div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; div.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-  div.addEventListener('dragend', ()=>{ div.classList.remove('dragging'); div.classList.remove('drag-over'); });
-  div.addEventListener('dragover', (e)=>{ e.preventDefault(); div.classList.add('drag-over'); });
-  div.addEventListener('dragleave', ()=>div.classList.remove('drag-over'));
+  // drag & drop (mouse) — tiles live-shuffle as you hover, like a phone home screen
+  div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
+  div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
+  div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'folder', f.id); });
   div.addEventListener('drop', (e)=>{
-    e.preventDefault(); div.classList.remove('drag-over');
+    e.preventDefault();
     if(!dragged) return;
-    if(dragged.type==='folder' && dragged.id!==f.id){
-      const from = list.findIndex(x=>x.id===dragged.id);
-      const to = list.findIndex(x=>x.id===f.id);
-      if(from>-1 && to>-1){ const [moved]=list.splice(from,1); list.splice(to,0,moved); saveCustomOrderFromDom(list, cardsInView||[]); renderExplorer(); }
-    } else if(dragged.type==='card'){
-      const c = DATA.cards.find(x=>x.id===dragged.id);
+    handleDragHover(list, cardsInView, 'folder', f.id);
+    if(dragged.type==='card'){
       const isSameView = (cardsInView||[]).some(x=>x.id===dragged.id);
-      if(isSameView){
-        // reorder: place the dragged card right before this folder within the same view
-        reorderWithinView(list, cardsInView, {type:'card', id:dragged.id}, {type:'folder', id:f.id});
-      } else if(!f.linkedTags || !f.linkedTags.length){
-        alert("This folder isn't linked to any tags yet, so cards can't be dropped into it.");
-      } else if(c && !cardQualifiesForFolder(c, f)){
-        const missing = f.linkedTags.filter(tid=>!(c.tags||[]).includes(tid)).map(tagName).join(', ');
-        alert(`This card is missing the tag${f.linkedTags.length>1?'s':''} "${missing}" required for this folder, so it can't be placed here.`);
-      } else {
-        renderExplorer();
+      if(!isSameView){
+        const c = DATA.cards.find(x=>x.id===dragged.id);
+        if(!f.linkedTags || !f.linkedTags.length){
+          alert("This folder isn't linked to any tags yet, so cards can't be dropped into it.");
+        } else if(c && !cardQualifiesForFolder(c, f)){
+          const missing = f.linkedTags.filter(tid=>!(c.tags||[]).includes(tid)).map(tagName).join(', ');
+          alert(`This card is missing the tag${f.linkedTags.length>1?'s':''} "${missing}" required for this folder, so it can't be placed here.`);
+        } else {
+          renderExplorer();
+        }
       }
     }
-    dragged=null;
+    dragged=null; dragHoverKey=null;
+  });
+
+  // long-press drag (touch)
+  attachTouchDrag(div, 'folder', f.id, list, cardsInView, ()=>{
+    // on release, handle the cross-view "drop card onto folder to tag it" case for touch too
+    if(dragged && dragged.type==='card'){
+      const isSameView = (cardsInView||[]).some(x=>x.id===dragged.id);
+      if(!isSameView){
+        const c = DATA.cards.find(x=>x.id===dragged.id);
+        if(!f.linkedTags || !f.linkedTags.length){
+          alert("This folder isn't linked to any tags yet, so cards can't be dropped into it.");
+        } else if(c && !cardQualifiesForFolder(c, f)){
+          const missing = f.linkedTags.filter(tid=>!(c.tags||[]).includes(tid)).map(tagName).join(', ');
+          alert(`This card is missing the tag${f.linkedTags.length>1?'s':''} "${missing}" required for this folder, so it can't be placed here.`);
+        } else {
+          renderExplorer();
+        }
+      }
+    }
   });
   return div;
 }
 
 function renderCardTile(c, list, cardsInView){
   const div = document.createElement('div');
-  div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '');
+  const isDraggedNow = dragged && dragged.type==='card' && dragged.id===c.id;
+  div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '') + (isDraggedNow ? ' touch-dragging' : '');
+  div.dataset.key = 'card:'+c.id;
   div.draggable = true;
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
@@ -865,24 +934,90 @@ function renderCardTile(c, list, cardsInView){
   div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openCardModal(c); };
 
-  div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; div.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-  div.addEventListener('dragend', ()=>{ div.classList.remove('dragging'); div.classList.remove('drag-over'); });
+  div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
+  div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
   if(list){
-    div.addEventListener('dragover', (e)=>{ e.preventDefault(); div.classList.add('drag-over'); });
-    div.addEventListener('dragleave', ()=>div.classList.remove('drag-over'));
+    div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'card', c.id); });
     div.addEventListener('drop', (e)=>{
-      e.preventDefault(); div.classList.remove('drag-over');
+      e.preventDefault();
       if(!dragged) return;
-      const isSameView = dragged.type==='folder'
-        ? list.some(x=>x.id===dragged.id)
-        : (cardsInView||[]).some(x=>x.id===dragged.id);
-      if(isSameView && !(dragged.type==='card' && dragged.id===c.id)){
-        reorderWithinView(list, cardsInView, dragged, {type:'card', id:c.id});
-      }
-      dragged=null;
+      handleDragHover(list, cardsInView, 'card', c.id);
+      dragged=null; dragHoverKey=null;
     });
+    attachTouchDrag(div, 'card', c.id, list, cardsInView);
   }
   return div;
+}
+
+/* ---- shared touch (long-press) drag support ----
+   Native HTML5 drag-and-drop (dragstart/dragover/drop) doesn't fire on touch
+   devices, so mobile needs its own pointer handling: hold a tile for a beat to
+   pick it up, then move a finger to shuffle it into place — same idea as
+   rearranging apps on a phone's home screen. */
+const TOUCH_HOLD_MS = 350, TOUCH_MOVE_CANCEL_PX = 10;
+function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
+  let timer=null, startX=0, startY=0, primed=false, active=false, ghost=null;
+  const clearTimer = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+
+  el.addEventListener('touchstart', (e)=>{
+    if(e.touches.length!==1) return;
+    const t = e.touches[0];
+    startX=t.clientX; startY=t.clientY; primed=true;
+    clearTimer();
+    timer = setTimeout(()=>{ if(primed) beginDrag(t.clientX, t.clientY); }, TOUCH_HOLD_MS);
+  }, {passive:true});
+
+  el.addEventListener('touchmove', (e)=>{
+    const t = e.touches[0];
+    if(!active){
+      if(Math.abs(t.clientX-startX)>TOUCH_MOVE_CANCEL_PX || Math.abs(t.clientY-startY)>TOUCH_MOVE_CANCEL_PX){
+        primed=false; clearTimer();
+      }
+      return;
+    }
+    e.preventDefault();
+    moveGhost(t.clientX, t.clientY);
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const tile = under && under.closest ? under.closest('.tile[data-key]') : null;
+    if(tile && tile.dataset.key !== (type+':'+id)){
+      const [tt, tid] = tile.dataset.key.split(':');
+      handleDragHover(list, cardsInView, tt, tid);
+    }
+  }, {passive:false});
+
+  const finish = ()=>{
+    primed=false; clearTimer();
+    if(!active) return;
+    active=false;
+    document.body.classList.remove('no-scroll');
+    if(ghost){ ghost.remove(); ghost=null; }
+    if(onRelease) onRelease();
+    dragged=null; dragHoverKey=null;
+    renderExplorer();
+  };
+  el.addEventListener('touchend', finish);
+  el.addEventListener('touchcancel', finish);
+
+  function beginDrag(x, y){
+    active = true;
+    dragged = {type, id};
+    dragHoverKey = null;
+    document.body.classList.add('no-scroll');
+    if(navigator.vibrate) navigator.vibrate(12);
+    const r = el.getBoundingClientRect();
+    ghost = el.cloneNode(true);
+    ghost.className = el.className.replace('touch-dragging','') + ' touch-drag-ghost';
+    ghost.style.width = r.width+'px';
+    ghost.style.left = (x - r.width/2)+'px';
+    ghost.style.top = (y - r.height/2)+'px';
+    document.body.appendChild(ghost);
+    renderExplorer(); // reflects the "lifted" (hidden) source tile via isDraggedNow
+  }
+  function moveGhost(x, y){
+    if(!ghost) return;
+    ghost.style.left = (x - ghost.offsetWidth/2)+'px';
+    ghost.style.top = (y - ghost.offsetHeight/2)+'px';
+  }
 }
 
 /* Generic reorder used when dragging a folder or card tile onto another tile
@@ -907,7 +1042,7 @@ function reorderWithinView(list, cardsInView, fromItem, toItem){
   const [moved] = order.splice(fromIdx,1);
   order.splice(toIdx,0,moved);
   DATA.viewOrders[contextKey()] = order;
-  save(); renderExplorer();
+  save(); renderExplorerAnimated();
 }
 
 function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—'; }
@@ -1525,6 +1660,9 @@ function scoreText(query, text){
   const lev = levenshtein(nq, nt);
   return {match: lev < FUZZY_THRESHOLD && isSubsequence(nq, nt), score: lev};
 }
+let srFolderMatches = [], srCardMatches = [];
+let srFolderPage = 1, srCardPage = 1;
+const SR_PER_PAGE = 6;
 function runSearch(){
   const raw = document.getElementById('search-input').value.trim();
   const resultsPanel = document.getElementById('search-results-panel');
@@ -1578,32 +1716,25 @@ function runSearch(){
     return;
   }
 
+  srFolderMatches = folderMatches;
+  srCardMatches = cardMatches;
+  srFolderPage = 1;
+  srCardPage = 1;
+
   let html = '';
   if(folderMatches.length){
-    html += `<div class="sr-heading">Folders (${folderMatches.length})</div><div class="grid pp-6" id="sr-folders"></div>`;
+    html += `<div class="sr-heading">Folders (${folderMatches.length})</div><div class="grid pp-6" id="sr-folders"></div><div class="pg-nav" id="sr-folders-pg-nav"></div>`;
   }
   if(cardMatches.length){
-    html += `<div class="sr-heading">Photocards (${cardMatches.length})</div><div class="grid pp-6" id="sr-cards"></div>`;
+    html += `<div class="sr-heading">Photocards (${cardMatches.length})</div><div class="grid pp-6" id="sr-cards"></div><div class="pg-nav" id="sr-cards-pg-nav"></div>`;
   }
   if(tagMatches.length){
-    html += `<div class="sr-heading">Tags (${tagMatches.length})</div><div id="sr-tags"></div>`;
+    html += `<div class="sr-heading">Tags (${tagMatches.length})</div><div id="sr-tags" class="sr-tags-scroll"></div>`;
   }
   out.innerHTML = html;
 
-  if(folderMatches.length){
-    const grid = document.getElementById('sr-folders');
-    folderMatches.slice(0,12).forEach(({f,section})=>{
-      const div = document.createElement('div');
-      div.className='tile folder';
-      div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:'📁'}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${section}</div>`;
-      div.onclick = ()=>{ jumpToFolder(section, f.id); };
-      grid.appendChild(div);
-    });
-  }
-  if(cardMatches.length){
-    const grid = document.getElementById('sr-cards');
-    cardMatches.slice(0,12).forEach(({c})=>grid.appendChild(renderCardTile(c)));
-  }
+  renderSrFolders();
+  renderSrCards();
   if(tagMatches.length){
     const wrap = document.getElementById('sr-tags');
     tagMatches.forEach(({t})=>{
@@ -1614,6 +1745,32 @@ function runSearch(){
       wrap.appendChild(pill);
     });
   }
+}
+function renderSrFolders(){
+  const grid = document.getElementById('sr-folders');
+  if(!grid) return;
+  const totalPages = Math.max(1, Math.ceil(srFolderMatches.length / SR_PER_PAGE));
+  if(srFolderPage > totalPages) srFolderPage = totalPages;
+  const start = (srFolderPage-1)*SR_PER_PAGE;
+  grid.innerHTML = '';
+  srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section})=>{
+    const div = document.createElement('div');
+    div.className='tile folder';
+    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:'📁'}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${section}</div>`;
+    div.onclick = ()=>{ jumpToFolder(section, f.id); };
+    grid.appendChild(div);
+  });
+  renderPageNav('sr-folders-pg-nav', totalPages, srFolderPage, (p)=>{ srFolderPage=p; renderSrFolders(); });
+}
+function renderSrCards(){
+  const grid = document.getElementById('sr-cards');
+  if(!grid) return;
+  const totalPages = Math.max(1, Math.ceil(srCardMatches.length / SR_PER_PAGE));
+  if(srCardPage > totalPages) srCardPage = totalPages;
+  const start = (srCardPage-1)*SR_PER_PAGE;
+  grid.innerHTML = '';
+  srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>grid.appendChild(renderCardTile(c)));
+  renderPageNav('sr-cards-pg-nav', totalPages, srCardPage, (p)=>{ srCardPage=p; renderSrCards(); });
 }
 function findFolderPath(list, id, path){
   for(const f of list){
