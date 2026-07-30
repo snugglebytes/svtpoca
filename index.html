@@ -120,6 +120,18 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 #move-here-btn:disabled{opacity:.4;cursor:default}
 #move-here-note{font-size:11px;color:#8b7a88;margin:8px 0 0}
 .field-or{font-size:11px;color:#a493a0;text-align:center;margin:4px 0}
+.recent-files{margin:8px 0 4px}
+.recent-files:empty{display:none}
+.recent-files .rf-label{font-size:11px;color:#a493a0;margin-bottom:5px;font-weight:600}
+.recent-files .rf-scroll{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.recent-files .rf-item{flex:0 0 auto;width:64px;text-align:center;cursor:pointer}
+.recent-files .rf-thumb{width:64px;height:64px;border-radius:10px;background:#f6f2fb;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+.recent-files .rf-thumb img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+.recent-files .rf-title{font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.dropzone{border:2px dashed var(--line);border-radius:12px;padding:16px 10px;text-align:center;font-size:12px;color:#a493a0;cursor:pointer;background:#faf7fb;transition:background .15s,border-color .15s}
+.dropzone .dropzone-icon{font-size:20px;margin-bottom:4px}
+.dropzone .dropzone-link{color:#c47ea3;text-decoration:underline;font-weight:600}
+.dropzone.dragover{background:var(--pink);border-color:#e3a9c2;color:var(--text)}
 .import-choice-option{margin-top:10px}
 .import-choice-note{font-size:11px;color:#a493a0;margin:5px 2px 0}
 /* combobox / tag autocomplete */
@@ -230,6 +242,7 @@ nav>div:active{background:#f8f3fa}
   <input id="search-input" placeholder="Search folders, cards, tags..." oninput="runSearch()">
   <button class="btn" onclick="runSearch()">GO</button>
 </div>
+<div class="recent-files" id="recent-files"></div>
 <div class="panel hidden" id="search-results-panel">
   <div class="title-row"><b class="section-title">Search results</b><button class="btn small ghost" onclick="closeSearch()">Close</button></div>
   <div class="search-results" id="search-results"></div>
@@ -372,7 +385,11 @@ nav>div:active{background:#f8f3fa}
       <input id="folder-thumb" placeholder="Paste image URL...">
       <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
       <div class="field-or">— or —</div>
-      <div class="field"><input type="file" id="folder-file" accept="image/*" onchange="loadCropFromFile('folder', event)"></div>
+      <div class="dropzone" id="folder-dropzone">
+        <div class="dropzone-icon">📷</div>
+        <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
+        <input type="file" id="folder-file" accept="image/*" class="hidden" onchange="loadCropFromFile('folder', event)">
+      </div>
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
@@ -408,7 +425,11 @@ nav>div:active{background:#f8f3fa}
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
     <div class="field-or">— or —</div>
-    <div class="field"><label>Upload from device</label><input type="file" id="card-file" accept="image/*" onchange="loadCropFromFile('card', event)"></div>
+    <div class="dropzone" id="card-dropzone">
+      <div class="dropzone-icon">📷</div>
+      <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
+      <input type="file" id="card-file" accept="image/*" class="hidden" onchange="loadCropFromFile('card', event)">
+    </div>
     <p class="import-choice-note">Uploading a file avoids sites that block hotlinking, and the photo gets saved directly inside your JSON backup — no external link needed.</p>
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
@@ -599,7 +620,7 @@ function load(){
     return d;
   }catch(e){ return defaultData(); }
 }
-function save(){ localStorage.setItem('carat_data_v2', JSON.stringify(DATA)); }
+function save(){ localStorage.setItem('carat_data_v2', JSON.stringify(DATA)); renderRecentFiles(); }
 function exportData(){
   const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1595,7 +1616,7 @@ function confirmSaveFolder(){
     f.title = title; f.thumb = thumb;
     if(!f.fixed) f.linkedTags = Array.from(selectedFolderTagIds);
   } else {
-    list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[]});
+    list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[], createdAt: Date.now()});
   }
   save(); closeModal('add-folder-modal'); renderExplorer();
 }
@@ -2243,6 +2264,40 @@ function renderSrCards(){
   srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>grid.appendChild(renderCardTile(c)));
   renderPageNav('sr-cards-pg-nav', totalPages, srCardPage, (p)=>{ srCardPage=p; renderSrCards(); });
 }
+function collectRecentFolders(){
+  const out = [];
+  ['albums','nonalbum','members'].forEach(section=>{
+    (function walk(list){
+      (list||[]).forEach(f=>{
+        if(f.createdAt) out.push({section, folder:f});
+        if(f.children) walk(f.children);
+      });
+    })(DATA.nodes[section]);
+  });
+  out.sort((a,b)=>(b.folder.createdAt||0)-(a.folder.createdAt||0));
+  return out.slice(0,8);
+}
+function renderRecentFiles(){
+  const wrap = document.getElementById('recent-files');
+  if(!wrap) return;
+  const recent = collectRecentFolders();
+  if(!recent.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = `
+    <div class="rf-label">Recent Files</div>
+    <div class="rf-scroll" id="rf-scroll"></div>
+  `;
+  const scroll = wrap.querySelector('#rf-scroll');
+  recent.forEach(({section, folder})=>{
+    const item = document.createElement('div');
+    item.className = 'rf-item';
+    item.innerHTML = `
+      <div class="rf-thumb">${folder.thumb ? `<img src="${folder.thumb}">` : '📁'}</div>
+      <div class="rf-title">${folder.title}</div>
+    `;
+    item.onclick = ()=> jumpToFolder(section, folder.id);
+    scroll.appendChild(item);
+  });
+}
 function findFolderPath(list, id, path){
   for(const f of list){
     if(f.id===id) return [...path, f.id];
@@ -2316,7 +2371,30 @@ window.addEventListener('resize',()=>{
   }
 })();
 
+function initDropzone(zoneId, inputId, target){
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  if(!zone || !input) return;
+  zone.addEventListener('click', ()=> input.click());
+  ['dragenter','dragover'].forEach(evt=>{
+    zone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover'); });
+  });
+  ['dragleave','dragend'].forEach(evt=>{
+    zone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover'); });
+  });
+  zone.addEventListener('drop', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(!file) return;
+    loadCropFromFile(target, {target:{files:[file], value:''}});
+  });
+}
+initDropzone('card-dropzone','card-file','card');
+initDropzone('folder-dropzone','folder-file','folder');
+
 /* ================= INIT ================= */
 switchSection('albums');
+renderRecentFiles();
 </script>
 </body></html>
