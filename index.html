@@ -1,5 +1,4 @@
 <!DOCTYPE html><html><head>
-  <link rel="manifest" href="manifest.json">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>SVT Photocard Tracker</title>
@@ -322,7 +321,6 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <div class="field">
       <label>Thumbnail image (square)</label>
       <input id="folder-thumb" placeholder="Paste image URL...">
-      <div class="file-row"><span>or upload:</span><input type="file" id="folder-thumb-file" accept="image/*" onchange="loadCropFromFile('folder', this)"></div>
       <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
@@ -355,7 +353,6 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <button class="close-x" onclick="closeModal('card-modal')">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
-    <div class="file-row"><span>or upload:</span><input type="file" id="card-image-file" accept="image/*" onchange="loadCropFromFile('card', this)"></div>
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
@@ -926,7 +923,6 @@ function openAddFolderModal(){
   document.getElementById('folder-thumb').value='';
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
-  document.getElementById('folder-thumb-file').value = '';
   document.getElementById('folder-crop-check').classList.remove('show');
   selectedFolderTagIds = new Set();
   document.getElementById('folder-tag-input').value = '';
@@ -942,7 +938,6 @@ function openEditFolder(f){
   document.getElementById('folder-thumb').value = f.thumb || '';
   croppedFolderThumbDataUrl = null;
   document.getElementById('folder-crop-area').classList.add('hidden');
-  document.getElementById('folder-thumb-file').value = '';
   document.getElementById('folder-crop-check').classList.remove('show');
   selectedFolderTagIds = new Set(f.linkedTags || []);
   document.getElementById('folder-tag-input').value = '';
@@ -1104,8 +1099,6 @@ function openCardModal(card){
   document.getElementById('dup-count-row').classList.toggle('hidden', !(card && card.duplicate));
   document.getElementById('card-indemand').checked = card ? !!card.inDemand : false;
   document.getElementById('crop-area').classList.add('hidden');
-  const cardFileInput = document.getElementById('card-image-file');
-  if(cardFileInput) cardFileInput.value = '';
   document.getElementById('card-crop-check').classList.remove('show');
   selectedCardTagIds = new Set(card ? (card.tags||[]) : currentPathLinkedTags());
   document.getElementById('card-tag-input').value = '';
@@ -1180,20 +1173,6 @@ function loadCropFromUrl(target){
   img.onerror = ()=>alert("Couldn't load that image — check the URL (some sites block hotlinking).");
   img.crossOrigin = 'anonymous';
   img.src = url;
-}
-function loadCropFromFile(target, fileInput){
-  target = target || 'card';
-  const file = fileInput.files && fileInput.files[0];
-  if(!file) return;
-  startCropFor(target);
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    const img = document.getElementById(activeCrop.imgId);
-    img.onload = ()=>{ document.getElementById(activeCrop.areaId).classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
-    img.removeAttribute('crossorigin');
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
 }
 let cropState = {x:0,y:0,scale:1,dragging:false,startX:0,startY:0};
 function fitCropImage(){
