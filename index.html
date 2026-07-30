@@ -103,8 +103,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .grid.pp-9{grid-template-columns:repeat(3,1fr)}
 .grid.pp-13{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-13{grid-template-columns:repeat(4,1fr)}}
-.grid.pp-13 .tile:nth-child(13){grid-column:1/-1;justify-self:center;width:calc((100% - 2*8px)/3)}
-@media(min-width:480px){.grid.pp-13 .tile:nth-child(13){width:calc((100% - 3*8px)/4)}}
+.grid-row-center{display:flex;justify-content:center}
 .grid.pp-15{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-15{grid-template-columns:repeat(5,1fr)}}
 .grid.pp-13 .tile-title,.grid.pp-15 .tile-title{font-size:11px}
@@ -1064,6 +1063,7 @@ function renderExplorer(){
 
   renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
+  centerOrphanRow(grid);
 }
 
 function renderPageNav(navId, totalPages, page, onGo){
@@ -2136,6 +2136,7 @@ function renderListsPanel(){
   }
   renderPageNav('lists-pg-nav', totalPages, listsPage, (p)=>{ listsPage=p; renderListsPanel(); });
   renderPageNav('lists-pg-nav-bottom', totalPages, listsPage, (p)=>{ listsPage=p; renderListsPanel(); });
+  centerOrphanRow(grid);
 }
 
 /* ================= SEARCH ================= */
@@ -2272,6 +2273,7 @@ function renderSrFolders(){
     grid.appendChild(div);
   });
   renderPageNav('sr-folders-pg-nav', totalPages, srFolderPage, (p)=>{ srFolderPage=p; renderSrFolders(); });
+  centerOrphanRow(grid);
 }
 function renderSrCards(){
   const grid = document.getElementById('sr-cards');
@@ -2282,7 +2284,50 @@ function renderSrCards(){
   grid.innerHTML = '';
   srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>grid.appendChild(renderCardTile(c)));
   renderPageNav('sr-cards-pg-nav', totalPages, srCardPage, (p)=>{ srCardPage=p; renderSrCards(); });
+  centerOrphanRow(grid);
 }
+/* Centers the last row of a grid whenever it has fewer tiles than the grid's
+   column count (works for any per-page total and any breakpoint, since it
+   reads the actual rendered column count rather than assuming one). Safe to
+   call repeatedly (e.g. on every render, and on resize) since it first undoes
+   any previous wrapping before recalculating. */
+function centerOrphanRow(grid){
+  if(!grid) return;
+  const prevWrap = grid.querySelector(':scope > .grid-row-center');
+  if(prevWrap){
+    while(prevWrap.firstChild){
+      const child = prevWrap.firstChild;
+      child.style.width = '';
+      grid.insertBefore(child, prevWrap);
+    }
+    prevWrap.remove();
+  }
+  const tiles = Array.from(grid.children).filter(el=>el.classList.contains('tile'));
+  if(tiles.length===0) return;
+  const colTracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean);
+  const cols = colTracks.length;
+  if(cols < 2) return;
+  const remainder = tiles.length % cols;
+  if(remainder===0) return;
+  const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+  const orphans = tiles.slice(tiles.length - remainder);
+  const wrap = document.createElement('div');
+  wrap.className = 'grid-row-center';
+  wrap.style.gridColumn = '1 / -1';
+  wrap.style.gap = gap + 'px';
+  grid.appendChild(wrap);
+  orphans.forEach(el=>{
+    el.style.width = `calc((100% - ${gap*(cols-1)}px)/${cols})`;
+    wrap.appendChild(el);
+  });
+}
+let centerReflowTimer = null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(centerReflowTimer);
+  centerReflowTimer = setTimeout(()=>{
+    document.querySelectorAll('.grid').forEach(centerOrphanRow);
+  }, 120);
+});
 function collectRecentFolders(){
   const out = [];
   ['albums','nonalbum','members'].forEach(section=>{
