@@ -1,10 +1,10 @@
 <!DOCTYPE html><html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Hello, Carat-deul!</title>
+<title>SVT Photocard Tracker</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Carat-deul">
+<meta name="apple-mobile-web-app-title" content="SVT Photocard Tracker">
 <meta name="theme-color" content="#fbe4ec">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -179,11 +179,14 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 <canvas id="confetti-canvas"></canvas>
 
 <header>
-  <h1 id="diamond-title">💎 Carat-deul</h1>
+  <h1 id="diamond-title">💎 SVT Photocard Tracker</h1>
   <div class="header-icons">
     <button class="icon-btn" onclick="showTagsPage()" title="Manage tags">🏷️</button>
+    <button class="icon-btn" onclick="exportData()" title="Export data">⬆️</button>
+    <button class="icon-btn" onclick="document.getElementById('import-file-input').click()" title="Import data">📥</button>
     <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
   </div>
+  <input type="file" id="import-file-input" accept="application/json" class="hidden" onchange="importData(event)">
 </header>
 
 <div class="wrap">
@@ -510,6 +513,48 @@ function load(){
   }catch(e){ return defaultData(); }
 }
 function save(){ localStorage.setItem('carat_data_v2', JSON.stringify(DATA)); }
+function exportData(){
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `svt-photocard-tracker-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let d;
+    try{ d = JSON.parse(reader.result); }
+    catch(e){ alert('That file isn\'t valid JSON — import cancelled.'); event.target.value=''; return; }
+    if(!d || !d.tags || !d.nodes || !d.cards){
+      alert('This doesn\'t look like an SVT Photocard Tracker backup file — import cancelled.');
+      event.target.value='';
+      return;
+    }
+    if(!confirm('Importing will replace your current collection with this file\'s data. This can\'t be undone. Continue?')){
+      event.target.value='';
+      return;
+    }
+    if(!d.viewOrders) d.viewOrders = {};
+    if(!d.templates) d.templates = [];
+    DATA = d;
+    save();
+    event.target.value='';
+    hideAllPanels();
+    goHome();
+    switchSection('albums');
+    alert('Import complete!');
+  };
+  reader.onerror = ()=>{ alert('Could not read that file — import cancelled.'); event.target.value=''; };
+  reader.readAsText(file);
+}
 
 /* ================= NAV STATE ================= */
 let currentSection = 'albums';
@@ -1648,7 +1693,7 @@ window.addEventListener('resize',()=>{
 /* ================= PWA ================= */
 (function setupPWA(){
   const manifest = {
-    name:"Hello, Carat-deul!", short_name:"Carat-deul",
+    name:"SVT Photocard Tracker", short_name:"SVT Tracker",
     start_url:".", display:"standalone", background_color:"#fff8fc", theme_color:"#f7cddd",
     icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f7cddd'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle'%3E%F0%9F%92%8E%3C/text%3E%3C/svg%3E", sizes:"192x192", type:"image/svg+xml"}]
   };
