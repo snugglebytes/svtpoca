@@ -103,6 +103,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .grid.pp-9{grid-template-columns:repeat(3,1fr)}
 .grid.pp-13{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-13{grid-template-columns:repeat(4,1fr)}}
+.grid.pp-13 .tile:nth-child(13){grid-column:1/-1;justify-self:center;width:calc((100% - 2*8px)/3)}
+@media(min-width:480px){.grid.pp-13 .tile:nth-child(13){width:calc((100% - 3*8px)/4)}}
 .grid.pp-15{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-15{grid-template-columns:repeat(5,1fr)}}
 .grid.pp-13 .tile-title,.grid.pp-15 .tile-title{font-size:11px}
