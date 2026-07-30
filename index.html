@@ -68,6 +68,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tile-title{font-size:13px;margin-top:4px;font-weight:600}
 .tile-sub{font-size:11px;color:#a493a0}
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
+.folder-pills{position:absolute;left:3px;right:3px;bottom:3px;display:flex;flex-wrap:wrap;gap:3px;z-index:5;pointer-events:none}
+.folder-pill{background:rgba(50,35,48,.78);color:#fff;font-size:8px;line-height:1.4;padding:2px 6px;border-radius:8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;padding:0}
 .status-badge{position:absolute;top:6px;left:6px;font-size:10px;padding:3px 8px;border-radius:8px;border:2px solid;font-family:'Ticketing',cursive;letter-spacing:.3px;z-index:3}
 .status-have{background:var(--green);border-color:#7fbf7a}
@@ -893,6 +895,23 @@ function cardQualifiesForFolder(c, f){
   const tagIds = f.linkedTags || [];
   if(!tagIds.length) return false;
   return tagIds.every(tid=>(c.tags||[]).includes(tid));
+}
+/* Walks every folder tree and returns every folder a card qualifies for,
+   each with its trail of ancestor titles so folders that share a name
+   (e.g. multiple "S.Coups" subfolders under different parents) can be
+   told apart. Used for the folder pills shown on search-result cards. */
+function foldersForCard(c){
+  const results = [];
+  ['albums','nonalbum','members'].forEach(section=>{
+    (function walk(list, trail){
+      (list||[]).forEach(f=>{
+        const newTrail = [...trail, f.title];
+        if(cardQualifiesForFolder(c, f)) results.push({section, folder:f, trail:newTrail});
+        if(f.children) walk(f.children, newTrail);
+      });
+    })(DATA.nodes[section], []);
+  });
+  return results;
 }
 
 function onPerPageChange(){
@@ -2282,7 +2301,25 @@ function renderSrCards(){
   if(srCardPage > totalPages) srCardPage = totalPages;
   const start = (srCardPage-1)*SR_PER_PAGE;
   grid.innerHTML = '';
-  srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>grid.appendChild(renderCardTile(c)));
+  srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>{
+    const tile = renderCardTile(c);
+    const folders = foldersForCard(c);
+    if(folders.length){
+      const thumb = tile.querySelector('.thumb');
+      const pillsWrap = document.createElement('div');
+      pillsWrap.className = 'folder-pills';
+      folders.forEach(({trail})=>{
+        const label = trail.length>1 ? trail.slice(-2).join(' › ') : trail[0];
+        const pill = document.createElement('span');
+        pill.className = 'folder-pill';
+        pill.textContent = label;
+        pill.title = trail.join(' › ');
+        pillsWrap.appendChild(pill);
+      });
+      thumb.appendChild(pillsWrap);
+    }
+    grid.appendChild(tile);
+  });
   renderPageNav('sr-cards-pg-nav', totalPages, srCardPage, (p)=>{ srCardPage=p; renderSrCards(); });
   centerOrphanRow(grid);
 }
