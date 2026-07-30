@@ -21,20 +21,24 @@ body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:
 header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 10px rgba(122,107,118,.06)}
 h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;gap:6px}
-.icon-btn{background:none;border:none;font-size:19px;cursor:pointer}
-.wrap{padding:14px 14px 90px;max-width:680px;margin:0 auto}
-.search{margin:12px 0;display:flex;gap:8px}
-.search input{flex:1;padding:12px;border:2px solid var(--line);border-radius:10px;font-family:inherit;background:#fff;color:var(--text);font-size:14px}
-.btn{border:2px solid var(--line);border-radius:10px;background:var(--pink);color:#7a6b76;padding:10px 14px;font-family:"Ticketing",cursive;font-weight:normal;font-size:13px;letter-spacing:.3px;cursor:pointer;transition:transform .1s ease}
+.icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px}
+.wrap{padding:12px 12px 90px;max-width:680px;margin:0 auto}
+.search{margin:10px 0;display:flex;gap:6px}
+.search input{flex:1;padding:9px 10px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
+.mini-search{margin:0 0 10px;display:flex;gap:6px}
+.mini-search input{flex:1;padding:7px 9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:12px}
+.btn{border:2px solid var(--line);border-radius:9px;background:var(--pink);color:#7a6b76;padding:7px 11px;font-family:"Ticketing",cursive;font-weight:normal;font-size:12px;letter-spacing:.3px;cursor:pointer;transition:transform .1s ease}
 .btn:active{transform:scale(.97)}
 .btn.alt{background:var(--blue)}
 .btn.ghost{background:#fff}
 .btn.danger{background:var(--red)}
-.btn.small{padding:6px 10px;font-size:11px}
+.btn.small{padding:5px 8px;font-size:10px}
 .btn:disabled{opacity:.4;cursor:default}
-.panel{background:#fff;border-radius:16px;border:2px solid var(--line);padding:14px;margin:14px 0;box-shadow:0 4px 14px rgba(122,107,118,.08)}
-.section-toggle{display:flex;gap:8px}
-.section-toggle .opt{flex:1;text-align:center;padding:10px;background:#f6eef4;border-radius:10px;border:2px solid var(--line);cursor:pointer;font-size:13px;font-weight:600}
+.toolbar-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.toolbar-row .btn{flex:1;min-width:0}
+.panel{background:#fff;border-radius:16px;border:2px solid var(--line);padding:12px;margin:12px 0;box-shadow:0 4px 14px rgba(122,107,118,.08)}
+.section-toggle{display:flex;gap:6px}
+.section-toggle .opt{flex:1;text-align:center;padding:8px 4px;background:#f6eef4;border-radius:9px;border:2px solid var(--line);cursor:pointer;font-size:12px;font-weight:600}
 .section-toggle .opt.active{background:var(--accent);border-color:#e3a9c2}
 .breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:12px;margin-top:10px;color:#a493a0}
 .breadcrumb span{cursor:pointer;padding:2px 4px}
@@ -47,8 +51,10 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
 .tile.folder .thumb{aspect-ratio:1}
 .tile.card-tile .thumb{aspect-ratio:3/4}
-.thumb{background:#f6f2fb;border:2px dashed #d9c8e6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
+.thumb{position:relative;background:#f6f2fb;border:2px dashed #d9c8e6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.menu-dot{position:absolute;bottom:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;z-index:4;line-height:1;color:var(--text)}
+.menu-dot:active{transform:scale(.92)}
 .tile-title{font-size:13px;margin-top:6px;font-weight:600}
 .tile-sub{font-size:11px;color:#a493a0}
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px}
@@ -65,11 +71,11 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tile.card-tile.st-wishlist .thumb::after{background:rgba(251,233,176,.38);box-shadow:inset 0 0 0 3px rgba(224,185,74,.65)}
 .tile.card-tile.st-stbo .thumb::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
 /* pagination / per-page bar */
-.pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px;flex-wrap:nowrap}
-.pagebar .pp-select{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap}
-.pagebar select{border:2px solid var(--line);font-family:inherit;font-size:11px;padding:4px 2px;background:#fff}
-.pagebar .pg-nav{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap}
-.pagebar .pg-nav button{border:2px solid var(--line);border-radius:8px;background:#f8f3fa;font-size:11px;padding:3px 8px;cursor:pointer}
+.pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:nowrap}
+.pagebar .pp-select{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
+.pagebar select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:3px 2px;background:#fff}
+.pagebar .pg-nav{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
+.pagebar .pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:10px;padding:2px 7px;cursor:pointer}
 .pagebar .pg-nav button:disabled{opacity:.35;cursor:default}
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
@@ -130,7 +136,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
 .crop-wrap{position:relative;width:100%;aspect-ratio:3/4;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
+.crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.file-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px}
+.file-row input[type=file]{flex:1;font-size:11px}
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:70}
 .close-x{background:none;border:none;font-size:20px;cursor:pointer;float:right;color:#a493a0}
 .checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px}
@@ -139,6 +148,20 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 .taglist-row button{border:2px solid var(--line);border-radius:8px;background:#f8f3fa;cursor:pointer;font-size:12px;padding:3px 7px}
 .inline-add{display:flex;gap:6px;margin-top:8px}
 .inline-add input{flex:1}
+/* home quick-lists bar */
+.home-lists-bar .lb-label{font-size:11px;color:#a493a0;margin-bottom:6px}
+/* tags page */
+.tags-sort-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tags-sort-row select{border:2px solid var(--line);font-family:inherit;font-size:11px;padding:5px;background:#fff;border-radius:8px}
+.tag-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px dashed var(--line)}
+.tag-row .tn{flex:1;font-size:13px}
+.tag-row .tn input{width:100%;padding:6px;border:2px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px}
+.tag-row .tdate{font-size:10px;color:#a493a0}
+.tag-row button{border:2px solid var(--line);border-radius:8px;background:#f8f3fa;cursor:pointer;font-size:11px;padding:4px 8px}
+/* templates */
+.tpl-row{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--line);font-size:12px}
+.tpl-row .tn{flex:1}
+.tpl-row button{border:2px solid var(--line);border-radius:8px;background:#f8f3fa;cursor:pointer;font-size:11px;padding:4px 8px}
 </style></head><body>
 
 <canvas id="confetti-canvas"></canvas>
@@ -146,7 +169,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 <header>
   <h1 id="diamond-title">💎 Carat-deul</h1>
   <div class="header-icons">
-    <button class="icon-btn" onclick="openTagManager()" title="Manage tags">🏷️</button>
+    <button class="icon-btn" onclick="showTagsPage()" title="Manage tags">🏷️</button>
     <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
   </div>
 </header>
@@ -172,6 +195,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 </div>
 
 <div class="panel" id="explorer-panel">
+  <div class="mini-search">
+    <input id="mini-search-input" placeholder="Find within this folder..." oninput="onMiniSearch()">
+  </div>
   <div class="pagebar">
     <div class="pp-select">Show
       <select id="per-page-select" onchange="onPerPageChange()">
@@ -186,6 +212,19 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <div class="pg-nav" id="pg-nav"></div>
   </div>
   <div class="grid pp-6" id="explorer-grid"></div>
+  <div class="toolbar-row">
+    <button class="btn small ghost" onclick="saveOrderAsTemplate()">💾 Save order as template</button>
+    <button class="btn small ghost" onclick="openTemplatesModal()">📐 Templates</button>
+  </div>
+</div>
+
+<div class="panel hidden" id="home-lists-bar">
+  <div class="lb-label">Quick lists</div>
+  <div class="list-tabs">
+    <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
+    <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">DUP Duplicates</div>
+    <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">☆ Wishlist</div>
+  </div>
 </div>
 
 <div class="panel hidden" id="stats-panel">
@@ -196,9 +235,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 <div class="panel hidden" id="lists-panel">
   <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div class="list-tabs">
-    <div class="opt active" data-list="wishlist" onclick="switchListsTab('wishlist')">☆ Wishlist</div>
-    <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">DUP Duplicates</div>
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
+    <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">DUP Duplicates</div>
+    <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">☆ Wishlist</div>
   </div>
   <div class="pagebar">
     <div class="pp-select">Show
@@ -216,6 +255,24 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
   <div class="grid pp-6" id="lists-grid"></div>
 </div>
 
+<div class="panel hidden" id="tags-panel">
+  <div class="title-row"><b class="section-title">Tags</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
+  <div class="tags-sort-row">
+    Sort:
+    <select id="tags-sort-select" onchange="renderTagsPage()">
+      <option value="alpha-asc">A → Z</option>
+      <option value="alpha-desc">Z → A</option>
+      <option value="date-asc">Oldest added</option>
+      <option value="date-desc">Newest added</option>
+    </select>
+  </div>
+  <div id="tags-page-list"></div>
+  <div class="inline-add">
+    <input id="tags-page-new" placeholder="New tag name">
+    <button class="btn small alt" onclick="addTagFromTagsPage()">Add</button>
+  </div>
+</div>
+
 </div>
 
 <div class="fab-wrap">
@@ -229,7 +286,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 <nav>
   <div style="cursor:pointer" onclick="goHome()">🏠<br>Home</div>
   <div style="cursor:pointer" onclick="showStats()">📊<br>Stats</div>
-  <div style="cursor:pointer" onclick="showListsPanel()">📋<br>Lists</div>
+  <div style="cursor:pointer" onclick="showTagsPage()">🏷️<br>Tags</div>
   <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">🔍<br>Search</div>
   <div style="cursor:pointer" onclick="openInstallModal()">⬇️<br>Install</div>
 </nav>
@@ -240,7 +297,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <button class="close-x" onclick="closeModal('add-folder-modal')">✕</button>
     <div class="section-title" id="folder-modal-title">New Folder</div>
     <div class="field"><label>Folder title</label><input id="folder-title" placeholder="e.g. BSS, FML era, Hip-Hop Unit"></div>
-    <div class="field"><label>Thumbnail image URL (square)</label><input id="folder-thumb" placeholder="https://..."></div>
+    <div class="field">
+      <label>Thumbnail image (square)</label>
+      <input id="folder-thumb" placeholder="Paste image URL...">
+      <div class="file-row"><span>or upload:</span><input type="file" id="folder-thumb-file" accept="image/*" onchange="loadCropFromFile('folder', this)"></div>
+      <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
+      <div id="folder-crop-area" class="hidden">
+        <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
+        <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
+        <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+      </div>
+    </div>
     <div class="field">
       <label>Linked tag (cards with this tag will show inside)</label>
       <div class="combo" id="folder-tag-combo">
@@ -262,7 +329,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
     <button class="close-x" onclick="closeModal('card-modal')">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
-    <div class="field"><button class="btn small alt" onclick="loadCropFromUrl()">Load / Update Image</button></div>
+    <div class="file-row"><span>or upload:</span><input type="file" id="card-image-file" accept="image/*" onchange="loadCropFromFile('card', this)"></div>
+    <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
       <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
@@ -306,16 +374,35 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
   </div>
 </div>
 
-<!-- TAG MANAGER MODAL -->
-<div id="tag-manager-modal" class="modal-bg hidden">
+<!-- INFO / NOTICE MODAL (generic) -->
+<div id="info-modal" class="modal-bg hidden">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('tag-manager-modal')">✕</button>
-    <div class="section-title">Manage &amp; Sort Tags</div>
-    <div id="tag-manager-list"></div>
-    <div class="inline-add">
-      <input id="tag-manager-new" placeholder="New tag name">
-      <button class="btn small alt" onclick="addTagFromManager()">Add</button>
+    <div class="big" style="font-size:14px" id="info-modal-title">Notice</div>
+    <p class="sub" id="info-modal-text"></p>
+    <div class="modal-actions">
+      <button class="btn" style="width:100%" onclick="closeModal('info-modal')">Got it</button>
     </div>
+  </div>
+</div>
+
+<!-- SAVE TEMPLATE MODAL -->
+<div id="save-template-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('save-template-modal')">✕</button>
+    <div class="section-title">Save order as template</div>
+    <div class="field"><label>Template name</label><input id="template-name-input" placeholder="e.g. My display order"></div>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="confirmSaveTemplate()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATES LIST MODAL -->
+<div id="templates-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('templates-modal')">✕</button>
+    <div class="section-title">Templates for this view</div>
+    <div id="templates-list"></div>
   </div>
 </div>
 
@@ -346,23 +433,28 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 <script>
 /* ================= DATA MODEL =================
 DATA = {
-  tags: [{id,name}],                // sortable, order = display order
+  tags: [{id,name,createdAt}],                // sortable, order = default display order
   nodes: { albums:[Folder], nonalbum:[Folder], members:[Folder] },
-  cards: [{id,image,sourceUrl,name,tags:[tagId],status,duplicate,price}]
+  cards: [{id,image,sourceUrl,name,tags:[tagId],status,duplicate,price}],
+  viewOrders: { [contextKey]: [{type:'folder'|'card', id}] },   // custom drag order per folder-view
+  templates: [{id,name,contextKey,order:[{type,id}]}]           // saved/named orders, editable
 }
 Folder = {id,title,thumb,linkedTag,fixed,children:[Folder]}
 ================================================= */
 const FIXED_MEMBERS = ["S.Coups","Jeonghan","Joshua","Jun","Hoshi","Wonwoo","Woozi","DK","Mingyu","The8","Seungkwan","Vernon","Dino"];
 
 function defaultData(){
-  const memberTags = FIXED_MEMBERS.map(n=>({id:'tag_mem_'+n.replace(/\W/g,''), name:n}));
+  const now = Date.now();
+  const memberTags = FIXED_MEMBERS.map((n,i)=>({id:'tag_mem_'+n.replace(/\W/g,''), name:n, createdAt: now+i}));
   const memberFolders = FIXED_MEMBERS.map((n,i)=>({
     id:'mfold_'+n.replace(/\W/g,''), title:n, thumb:'', linkedTag:memberTags[i].id, fixed:true, children:[]
   }));
   return {
     tags: memberTags,
     nodes: { albums:[], nonalbum:[], members:memberFolders },
-    cards: []
+    cards: [],
+    viewOrders: {},
+    templates: []
   };
 }
 let DATA = load();
@@ -372,6 +464,11 @@ function load(){
     if(!raw) return defaultData();
     const d = JSON.parse(raw);
     if(!d.tags || !d.nodes || !d.cards) return defaultData();
+    // migrations for older saves
+    if(!d.viewOrders) d.viewOrders = {};
+    if(!d.templates) d.templates = [];
+    let base = Date.now() - d.tags.length*1000;
+    d.tags.forEach((t,i)=>{ if(!t.createdAt) t.createdAt = base + i*1000; });
     return d;
   }catch(e){ return defaultData(); }
 }
@@ -388,10 +485,12 @@ let selectedFolderTagId = null;
 let selectedCardTagIds = new Set();
 let perPage = 6;
 let currentPage = 1;
-let listsTab = 'wishlist';
+let listsTab = 'stbo';
 let listsPerPage = 6;
 let listsPage = 1;
 let dragged = null; // {type:'folder'|'card', id}
+let miniSearchQuery = '';
+const FUZZY_THRESHOLD = 6; // fuzzy tolerance for "closest result" matching, case/punctuation-insensitive
 
 function tree(){ return DATA.nodes[currentSection]; }
 
@@ -418,6 +517,9 @@ function findFolder(path){
 function switchSection(sec){
   currentSection = sec;
   currentPath = [];
+  miniSearchQuery = '';
+  const miniInput = document.getElementById('mini-search-input');
+  if(miniInput) miniInput.value = '';
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
   goHome();
 }
@@ -425,11 +527,22 @@ function switchSection(sec){
 function goHome(){
   document.getElementById('stats-panel').classList.add('hidden');
   document.getElementById('lists-panel').classList.add('hidden');
+  const tagsPanel = document.getElementById('tags-panel');
+  if(tagsPanel) tagsPanel.classList.add('hidden');
   closeSearch();
   document.getElementById('explorer-panel').classList.remove('hidden');
+  document.getElementById('home-lists-bar').classList.remove('hidden');
   document.querySelector('.fab-wrap').classList.remove('hidden');
   currentPage = 1;
   renderExplorer();
+}
+function hideAllPanels(){
+  document.getElementById('explorer-panel').classList.add('hidden');
+  document.getElementById('home-lists-bar').classList.add('hidden');
+  document.getElementById('stats-panel').classList.add('hidden');
+  document.getElementById('lists-panel').classList.add('hidden');
+  document.getElementById('tags-panel').classList.add('hidden');
+  document.querySelector('.fab-wrap').classList.add('hidden');
 }
 
 /* ================= EXPLORER RENDER ================= */
@@ -439,7 +552,7 @@ function renderBreadcrumb(){
   const home = document.createElement('span');
   home.textContent = '🏠 ' + (currentSection==='albums'?'Albums':currentSection==='nonalbum'?'Non-Album':'Members');
   home.className = currentPath.length===0 ? 'current' : '';
-  home.onclick = ()=>{ currentPath=[]; renderExplorer(); };
+  home.onclick = ()=>{ currentPath=[]; clearMiniSearch(); renderExplorer(); };
   bc.appendChild(home);
 
   let list = tree();
@@ -451,7 +564,7 @@ function renderBreadcrumb(){
     const seg = document.createElement('span');
     seg.textContent = folder ? folder.title : '?';
     if(idx === currentPath.length-1) seg.classList.add('current');
-    else seg.onclick = ()=>{ currentPath = currentPath.slice(0,idx+1); renderExplorer(); };
+    else seg.onclick = ()=>{ currentPath = currentPath.slice(0,idx+1); clearMiniSearch(); renderExplorer(); };
     bc.appendChild(seg);
   });
 }
@@ -466,6 +579,43 @@ function onPerPageChange(){
   currentPage = 1;
   renderExplorer();
 }
+function onMiniSearch(){
+  miniSearchQuery = document.getElementById('mini-search-input').value.trim();
+  currentPage = 1;
+  renderExplorer();
+}
+function clearMiniSearch(){
+  miniSearchQuery = '';
+  const el = document.getElementById('mini-search-input');
+  if(el) el.value = '';
+}
+
+/* context key identifies "this folder view" for custom drag order + templates */
+function contextKey(){
+  return currentSection + '|' + currentPath.join('/');
+}
+function applyCustomOrder(items){
+  const key = contextKey();
+  const order = DATA.viewOrders[key];
+  if(!order || !order.length) return items;
+  const itemKey = it => it.type+':'+it.data.id;
+  const rank = new Map(order.map((o,i)=>[o.type+':'+o.id, i]));
+  return [...items].sort((a,b)=>{
+    const ra = rank.has(itemKey(a)) ? rank.get(itemKey(a)) : Infinity;
+    const rb = rank.has(itemKey(b)) ? rank.get(itemKey(b)) : Infinity;
+    return ra - rb;
+  });
+}
+function saveCustomOrderFromDom(list, cards){
+  // called after a drag-drop reorder to persist the on-screen order for this context
+  const key = contextKey();
+  const order = [
+    ...list.map(f=>({type:'folder', id:f.id})),
+    ...cards.map(c=>({type:'card', id:c.id}))
+  ];
+  DATA.viewOrders[key] = order;
+  save();
+}
 
 function renderExplorer(){
   renderBreadcrumb();
@@ -477,10 +627,18 @@ function renderExplorer(){
   const cards = currentFolder && currentFolder.linkedTag ? cardsForTag(currentFolder.linkedTag) : [];
 
   // combined item list: folders first, then cards — paginated together
-  const items = [
+  let items = [
     ...list.map(f=>({type:'folder', data:f})),
     ...cards.map(c=>({type:'card', data:c}))
   ];
+  items = applyCustomOrder(items);
+
+  if(miniSearchQuery){
+    items = items.filter(it=>{
+      const text = it.type==='folder' ? it.data.title : (it.data.name||'');
+      return scoreText(miniSearchQuery, text).match;
+    });
+  }
 
   const totalPages = Math.max(1, Math.ceil(items.length / perPage));
   if(currentPage > totalPages) currentPage = totalPages;
@@ -488,16 +646,18 @@ function renderExplorer(){
   const pageItems = items.slice(start, start+perPage);
 
   pageItems.forEach(item=>{
-    if(item.type==='folder') grid.appendChild(renderFolderTile(item.data, list));
-    else grid.appendChild(renderCardTile(item.data));
+    if(item.type==='folder') grid.appendChild(renderFolderTile(item.data, list, cards));
+    else grid.appendChild(renderCardTile(item.data, list, cards));
   });
 
   if(items.length===0){
     const note = document.createElement('div');
     note.className = 'empty-note';
-    note.textContent = currentFolder && currentFolder.linkedTag
-      ? 'Empty — add a folder, or upload a photocard tagged "'+tagName(currentFolder.linkedTag)+'".'
-      : 'Empty — tap ＋ to add a folder here.';
+    note.textContent = miniSearchQuery
+      ? `No items here match "${miniSearchQuery}".`
+      : (currentFolder && currentFolder.linkedTag
+        ? 'Empty — add a folder, or upload a photocard tagged "'+tagName(currentFolder.linkedTag)+'".'
+        : 'Empty — tap ＋ to add a folder here.');
     grid.appendChild(note);
   }
 
@@ -517,24 +677,26 @@ function renderPageNav(navId, totalPages, page, onGo){
   if(next) next.onclick = ()=>onGo(page+1);
 }
 
-function renderFolderTile(f, list){
+function renderFolderTile(f, list, cardsInView){
   const div = document.createElement('div');
   div.className = 'tile folder';
   div.draggable = true;
   div.innerHTML = `
-    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
+    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}<div class="menu-dot" title="Edit folder">⋮</div></div>
     <div class="tile-title">${f.title}</div>
     <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${f.linkedTag?` · <span class="tag-pill">${tagName(f.linkedTag)}</span>`:''}</div>
     ${f.fixed ? '' : '<div class="del-x">✕</div>'}
   `;
-  div.querySelector('.thumb').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; renderExplorer(); };
-  div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; renderExplorer(); };
+  div.querySelector('.thumb').addEventListener('click', (e)=>{
+    if(e.target.closest('.menu-dot')) return;
+    currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
+  });
+  div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer(); };
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openEditFolder(f); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
-  div.oncontextmenu = (e)=>{ e.preventDefault(); openEditFolder(f); };
-  div.addEventListener('dblclick', ()=>openEditFolder(f));
 
-  // drag & drop — reorder folders, or drop a card onto a folder to tag it in
+  // drag & drop — reorder folders/cards together in this view, or drop a card onto a folder to tag it in
   div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; div.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
   div.addEventListener('dragend', ()=>{ div.classList.remove('dragging'); div.classList.remove('drag-over'); });
   div.addEventListener('dragover', (e)=>{ e.preventDefault(); div.classList.add('drag-over'); });
@@ -545,12 +707,17 @@ function renderFolderTile(f, list){
     if(dragged.type==='folder' && dragged.id!==f.id){
       const from = list.findIndex(x=>x.id===dragged.id);
       const to = list.findIndex(x=>x.id===f.id);
-      if(from>-1 && to>-1){ const [moved]=list.splice(from,1); list.splice(to,0,moved); save(); renderExplorer(); }
+      if(from>-1 && to>-1){ const [moved]=list.splice(from,1); list.splice(to,0,moved); saveCustomOrderFromDom(list, cardsInView||[]); renderExplorer(); }
     } else if(dragged.type==='card'){
-      if(!f.linkedTag){ alert("This folder isn't linked to a tag yet, so cards can't be dropped into it."); }
-      else {
-        const c = DATA.cards.find(x=>x.id===dragged.id);
-        if(c && !(c.tags||[]).includes(f.linkedTag)){ c.tags=[...(c.tags||[]), f.linkedTag]; save(); renderExplorer(); }
+      const c = DATA.cards.find(x=>x.id===dragged.id);
+      const isSameView = (cardsInView||[]).some(x=>x.id===dragged.id);
+      if(isSameView){
+        // reorder: place the dragged card right before this folder within the same view
+        reorderWithinView(list, cardsInView, {type:'card', id:dragged.id}, {type:'folder', id:f.id});
+      } else if(!f.linkedTag){
+        alert("This folder isn't linked to a tag yet, so cards can't be dropped into it.");
+      } else if(c && !(c.tags||[]).includes(f.linkedTag)){
+        c.tags=[...(c.tags||[]), f.linkedTag]; save(); renderExplorer();
       }
     }
     dragged=null;
@@ -558,25 +725,69 @@ function renderFolderTile(f, list){
   return div;
 }
 
-function renderCardTile(c){
+function renderCardTile(c, list, cardsInView){
   const div = document.createElement('div');
   div.className = 'tile card-tile st-' + c.status;
   div.draggable = true;
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? '<div class="dup-badge">DUP</div>' : ''}
-    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}</div>
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}<div class="menu-dot" title="Edit photocard">⋮</div></div>
     <div class="tile-title">${c.name||'Untitled'}</div>
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
   `;
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
-  div.querySelector('.thumb').onclick = ()=>openCardModal(c);
+  div.querySelector('.thumb').addEventListener('click', (e)=>{
+    if(e.target.closest('.menu-dot')) return;
+    openCardModal(c);
+  });
   div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); openCardModal(c); };
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; div.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-  div.addEventListener('dragend', ()=>div.classList.remove('dragging'));
+  div.addEventListener('dragend', ()=>{ div.classList.remove('dragging'); div.classList.remove('drag-over'); });
+  if(list){
+    div.addEventListener('dragover', (e)=>{ e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', ()=>div.classList.remove('drag-over'));
+    div.addEventListener('drop', (e)=>{
+      e.preventDefault(); div.classList.remove('drag-over');
+      if(!dragged) return;
+      const isSameView = dragged.type==='folder'
+        ? list.some(x=>x.id===dragged.id)
+        : (cardsInView||[]).some(x=>x.id===dragged.id);
+      if(isSameView && !(dragged.type==='card' && dragged.id===c.id)){
+        reorderWithinView(list, cardsInView, dragged, {type:'card', id:c.id});
+      }
+      dragged=null;
+    });
+  }
   return div;
+}
+
+/* Generic reorder used when dragging a folder or card tile onto another tile
+   within the SAME folder view (combined folders+cards custom order). */
+function reorderWithinView(list, cardsInView, fromItem, toItem){
+  cardsInView = cardsInView || [];
+  let order = [
+    ...list.map(f=>({type:'folder', id:f.id})),
+    ...cardsInView.map(c=>({type:'card', id:c.id}))
+  ];
+  const existing = DATA.viewOrders[contextKey()];
+  if(existing && existing.length){
+    // respect the currently-applied custom order as the starting point
+    const known = new Set(order.map(o=>o.type+':'+o.id));
+    const ordered = existing.filter(o=>known.has(o.type+':'+o.id));
+    const missing = order.filter(o=>!existing.some(e=>e.type===o.type&&e.id===o.id));
+    order = [...ordered, ...missing];
+  }
+  const fromIdx = order.findIndex(o=>o.type===fromItem.type && o.id===fromItem.id);
+  const toIdx = order.findIndex(o=>o.type===toItem.type && o.id===toItem.id);
+  if(fromIdx<0 || toIdx<0) return;
+  const [moved] = order.splice(fromIdx,1);
+  order.splice(toIdx,0,moved);
+  DATA.viewOrders[contextKey()] = order;
+  save(); renderExplorer();
 }
 
 function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—'; }
@@ -591,6 +802,9 @@ function openAddFolderModal(){
   document.getElementById('folder-modal-title').textContent = 'New Folder';
   document.getElementById('folder-title').value='';
   document.getElementById('folder-thumb').value='';
+  croppedFolderThumbDataUrl = null;
+  document.getElementById('folder-crop-area').classList.add('hidden');
+  document.getElementById('folder-thumb-file').value = '';
   selectedFolderTagId = null;
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
@@ -603,6 +817,9 @@ function openEditFolder(f){
   document.getElementById('folder-modal-title').textContent = 'Edit Folder';
   document.getElementById('folder-title').value = f.title;
   document.getElementById('folder-thumb').value = f.thumb || '';
+  croppedFolderThumbDataUrl = null;
+  document.getElementById('folder-crop-area').classList.add('hidden');
+  document.getElementById('folder-thumb-file').value = '';
   selectedFolderTagId = f.linkedTag;
   document.getElementById('folder-tag-input').value = '';
   setupFolderTagCombo();
@@ -715,7 +932,7 @@ function setupCardTagCombo(){
 function confirmSaveFolder(){
   const title = document.getElementById('folder-title').value.trim();
   if(!title){ alert('Give the folder a title.'); return; }
-  const thumb = document.getElementById('folder-thumb').value.trim();
+  const thumb = croppedFolderThumbDataUrl || document.getElementById('folder-thumb').value.trim();
   const list = findFolderList(currentPath);
   if(editingFolderId){
     const f = list.find(x=>x.id===editingFolderId);
@@ -752,6 +969,8 @@ function openCardModal(card){
   document.getElementById('card-price').value = card ? (card.price||'') : '';
   document.getElementById('card-duplicate').checked = card ? !!card.duplicate : false;
   document.getElementById('crop-area').classList.add('hidden');
+  const cardFileInput = document.getElementById('card-image-file');
+  if(cardFileInput) cardFileInput.value = '';
   selectedCardTagIds = new Set(card ? (card.tags||[]) : (currentPathLinkedTag() ? [currentPathLinkedTag()] : []));
   document.getElementById('card-tag-input').value = '';
   setupCardTagCombo();
@@ -801,20 +1020,44 @@ function markSold(){
   save(); closeModal('dup-modal'); renderExplorer();
 }
 
-/* ================= IMAGE CROP (portrait default) ================= */
-function loadCropFromUrl(){
-  const url = document.getElementById('card-url').value.trim();
+/* ================= IMAGE CROP (card = portrait 3:4, folder = square 1:1) ================= */
+let croppedFolderThumbDataUrl = null;
+let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
+function startCropFor(target){
+  activeCrop = target==='folder'
+    ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', areaId:'folder-crop-area', outW:300, outH:300}
+    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', areaId:'crop-area', outW:300, outH:400};
+}
+function loadCropFromUrl(target){
+  target = target || 'card';
+  startCropFor(target);
+  const urlInputId = target==='folder' ? 'folder-thumb' : 'card-url';
+  const url = document.getElementById(urlInputId).value.trim();
   if(!url){ alert('Paste an image URL first.'); return; }
-  const img = document.getElementById('crop-img');
-  img.onload = ()=>{ document.getElementById('crop-area').classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
+  const img = document.getElementById(activeCrop.imgId);
+  img.onload = ()=>{ document.getElementById(activeCrop.areaId).classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
   img.onerror = ()=>alert("Couldn't load that image — check the URL (some sites block hotlinking).");
   img.crossOrigin = 'anonymous';
   img.src = url;
 }
+function loadCropFromFile(target, fileInput){
+  target = target || 'card';
+  const file = fileInput.files && fileInput.files[0];
+  if(!file) return;
+  startCropFor(target);
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = document.getElementById(activeCrop.imgId);
+    img.onload = ()=>{ document.getElementById(activeCrop.areaId).classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
+    img.removeAttribute('crossorigin');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 let cropState = {x:0,y:0,scale:1,dragging:false,startX:0,startY:0};
 function fitCropImage(){
-  const wrap = document.getElementById('crop-wrap');
-  const img = document.getElementById('crop-img');
+  const wrap = document.getElementById(activeCrop.wrapId);
+  const img = document.getElementById(activeCrop.imgId);
   const r = wrap.getBoundingClientRect();
   const ratio = Math.max(r.width/img.naturalWidth, r.height/img.naturalHeight);
   cropState.scale = ratio;
@@ -823,15 +1066,15 @@ function fitCropImage(){
   cropState.x = (r.width - img.naturalWidth*ratio)/2;
   cropState.y = (r.height - img.naturalHeight*ratio)/2;
   updateCropPos();
-  document.getElementById('crop-zoom').value = 100;
+  document.getElementById(activeCrop.zoomId).value = 100;
 }
 function updateCropPos(){
-  const img = document.getElementById('crop-img');
+  const img = document.getElementById(activeCrop.imgId);
   img.style.left = cropState.x+'px'; img.style.top = cropState.y+'px';
 }
 function setupCropDrag(){
-  const wrap = document.getElementById('crop-wrap');
-  const img = document.getElementById('crop-img');
+  const wrap = document.getElementById(activeCrop.wrapId);
+  const img = document.getElementById(activeCrop.imgId);
   const start=(x,y)=>{cropState.dragging=true;cropState.startX=x-cropState.x;cropState.startY=y-cropState.y;};
   const move=(x,y)=>{ if(!cropState.dragging)return; cropState.x=x-cropState.startX; cropState.y=y-cropState.startY; updateCropPos(); };
   const end=()=>cropState.dragging=false;
@@ -841,7 +1084,7 @@ function setupCropDrag(){
   wrap.ontouchstart=e=>{const t=e.touches[0];start(t.clientX,t.clientY);};
   wrap.ontouchmove=e=>{const t=e.touches[0];move(t.clientX,t.clientY);e.preventDefault();};
   wrap.ontouchend=end;
-  document.getElementById('crop-zoom').oninput=(e)=>{
+  document.getElementById(activeCrop.zoomId).oninput=(e)=>{
     const r=wrap.getBoundingClientRect();
     const base=Math.max(r.width/img.naturalWidth, r.height/img.naturalHeight);
     const zoom=e.target.value/100, newScale=base*zoom;
@@ -853,58 +1096,80 @@ function setupCropDrag(){
   };
 }
 function applyCrop(){
-  const wrap = document.getElementById('crop-wrap');
-  const img = document.getElementById('crop-img');
+  const wrap = document.getElementById(activeCrop.wrapId);
+  const img = document.getElementById(activeCrop.imgId);
   const r = wrap.getBoundingClientRect();
   const canvas = document.createElement('canvas');
-  const outW=300,outH=400;
+  const outW=activeCrop.outW, outH=activeCrop.outH;
   canvas.width=outW; canvas.height=outH;
   const ctx = canvas.getContext('2d');
   const sx=outW/r.width, sy=outH/r.height;
   ctx.drawImage(img, cropState.x*sx, cropState.y*sy, img.naturalWidth*cropState.scale*sx, img.naturalHeight*cropState.scale*sy);
-  croppedDataUrl = canvas.toDataURL('image/jpeg',0.85);
-  alert('Crop applied ✓ — will be saved with this card.');
+  const dataUrl = canvas.toDataURL('image/jpeg',0.85);
+  if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; alert('Crop applied ✓ — will be saved with this folder.'); }
+  else { croppedDataUrl = dataUrl; alert('Crop applied ✓ — will be saved with this card.'); }
 }
 
-/* ================= TAG MANAGER (sortable) ================= */
-function openTagManager(){
-  renderTagManagerList();
-  document.getElementById('tag-manager-modal').classList.remove('hidden');
+/* ================= TAGS PAGE (sortable + editable) ================= */
+function showTagsPage(){
+  hideAllPanels();
+  closeSearch();
+  document.getElementById('tags-panel').classList.remove('hidden');
+  renderTagsPage();
 }
-function renderTagManagerList(){
-  const wrap = document.getElementById('tag-manager-list');
+function sortedTagsForPage(){
+  const mode = document.getElementById('tags-sort-select').value;
+  const arr = [...DATA.tags];
+  if(mode==='alpha-asc') arr.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(mode==='alpha-desc') arr.sort((a,b)=>b.name.localeCompare(a.name));
+  else if(mode==='date-asc') arr.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  else if(mode==='date-desc') arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return arr;
+}
+function renderTagsPage(){
+  const wrap = document.getElementById('tags-page-list');
   wrap.innerHTML = '';
-  DATA.tags.forEach((t,idx)=>{
+  sortedTagsForPage().forEach(t=>{
     const row = document.createElement('div');
-    row.className = 'taglist-row';
+    row.className = 'tag-row';
     row.innerHTML = `
-      <button ${idx===0?'disabled':''} title="Move up">↑</button>
-      <button ${idx===DATA.tags.length-1?'disabled':''} title="Move down">↓</button>
-      <span>${t.name}</span>
+      <span class="tn">${t.name}</span>
+      <button title="Rename">✎</button>
       <button title="Delete">✕</button>
     `;
-    const [upBtn,downBtn,,delBtn] = row.querySelectorAll('button');
-    upBtn.onclick = ()=>{ moveTag(idx,-1); };
-    downBtn.onclick = ()=>{ moveTag(idx,1); };
+    const [nameSpan, renameBtn, delBtn] = row.querySelectorAll('.tn, button');
+    renameBtn.onclick = ()=>startRenameTag(row, t);
     delBtn.onclick = ()=>deleteTag(t.id);
     wrap.appendChild(row);
   });
+  if(DATA.tags.length===0){
+    wrap.innerHTML = '<div class="empty-note">No tags yet — add one below.</div>';
+  }
 }
-function moveTag(idx,dir){
-  const j = idx+dir;
-  if(j<0||j>=DATA.tags.length) return;
-  const arr = DATA.tags;
-  [arr[idx],arr[j]] = [arr[j],arr[idx]];
-  save(); renderTagManagerList();
+function startRenameTag(row, t){
+  const nameSpan = row.querySelector('.tn');
+  nameSpan.innerHTML = `<input value="${t.name.replace(/"/g,'&quot;')}">`;
+  const input = nameSpan.querySelector('input');
+  input.focus(); input.select();
+  const commit = ()=>{
+    const val = input.value.trim();
+    if(val) t.name = val;
+    save(); renderTagsPage(); renderExplorer();
+  };
+  input.onblur = commit;
+  input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); if(e.key==='Escape'){ input.value=t.name; input.blur(); } };
 }
 function deleteTag(tagId){
   const usedByFixed = ['albums','nonalbum','members'].some(sec=>folderUsesTag(DATA.nodes[sec], tagId, true));
-  if(usedByFixed){ alert("This tag is linked to a fixed Members folder and can't be deleted."); return; }
+  if(usedByFixed){
+    showInfoModal("Can't delete this tag", "This tag is linked to a fixed Members folder and can't be deleted.");
+    return;
+  }
   if(!confirm('Delete this tag? Folders linked to it will keep existing but show nothing, and cards keep their other tags.')) return;
   DATA.tags = DATA.tags.filter(t=>t.id!==tagId);
   DATA.cards.forEach(c=>{ c.tags = (c.tags||[]).filter(t=>t!==tagId); });
   ['albums','nonalbum','members'].forEach(sec=>clearTagFromFolders(DATA.nodes[sec], tagId));
-  save(); renderTagManagerList(); renderExplorer();
+  save(); renderTagsPage(); renderExplorer();
 }
 function folderUsesTag(list, tagId, onlyFixed){
   for(const f of list){
@@ -919,20 +1184,93 @@ function clearTagFromFolders(list, tagId){
     if(f.children) clearTagFromFolders(f.children, tagId);
   });
 }
-function addTagFromManager(){
-  const input = document.getElementById('tag-manager-new');
+function addTagFromTagsPage(){
+  const input = document.getElementById('tags-page-new');
   const name = input.value.trim();
   if(!name) return;
-  DATA.tags.push({id:'tag_'+Date.now(), name});
-  save(); input.value=''; renderTagManagerList();
+  DATA.tags.push({id:'tag_'+Date.now(), name, createdAt: Date.now()});
+  save(); input.value=''; renderTagsPage();
+}
+
+/* ================= GENERIC INFO / NOTICE MODAL ================= */
+function showInfoModal(title, text){
+  document.getElementById('info-modal-title').textContent = title;
+  document.getElementById('info-modal-text').textContent = text;
+  document.getElementById('info-modal').classList.remove('hidden');
+}
+
+/* ================= REORDER TEMPLATES ================= */
+function saveOrderAsTemplate(){
+  document.getElementById('template-name-input').value = '';
+  document.getElementById('save-template-modal').classList.remove('hidden');
+}
+function confirmSaveTemplate(){
+  const name = document.getElementById('template-name-input').value.trim();
+  if(!name){ alert('Give the template a name.'); return; }
+  const list = findFolderList(currentPath);
+  const currentFolder = currentPath.length ? findFolder(currentPath) : null;
+  const cardsInView = currentFolder && currentFolder.linkedTag ? cardsForTag(currentFolder.linkedTag) : [];
+  const key = contextKey();
+  let order = DATA.viewOrders[key];
+  if(!order || !order.length){
+    order = [...list.map(f=>({type:'folder', id:f.id})), ...cardsInView.map(c=>({type:'card', id:c.id}))];
+  }
+  const existing = DATA.templates.find(t=>t.name===name && t.contextKey===key);
+  if(existing){ existing.order = order; }
+  else { DATA.templates.push({id:'tpl_'+Date.now(), name, contextKey:key, order}); }
+  save();
+  closeModal('save-template-modal');
+  alert('Template saved ✓ — find it anytime via 📐 Templates.');
+}
+function openTemplatesModal(){
+  renderTemplatesList();
+  document.getElementById('templates-modal').classList.remove('hidden');
+}
+function renderTemplatesList(){
+  const wrap = document.getElementById('templates-list');
+  const key = contextKey();
+  const list = DATA.templates.filter(t=>t.contextKey===key);
+  wrap.innerHTML = '';
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty-note">No templates saved for this folder yet.</div>';
+    return;
+  }
+  list.forEach(t=>{
+    const row = document.createElement('div');
+    row.className = 'tpl-row';
+    row.innerHTML = `<span class="tn">${t.name}</span><button>Apply</button><button>Update</button><button>Delete</button>`;
+    const [nameEl, applyBtn, updateBtn, delBtn] = row.querySelectorAll('.tn, button');
+    applyBtn.onclick = ()=>applyTemplate(t.id);
+    updateBtn.onclick = ()=>updateTemplate(t.id);
+    delBtn.onclick = ()=>deleteTemplate(t.id);
+    wrap.appendChild(row);
+  });
+}
+function applyTemplate(id){
+  const t = DATA.templates.find(x=>x.id===id);
+  if(!t) return;
+  DATA.viewOrders[t.contextKey] = t.order;
+  save(); closeModal('templates-modal'); renderExplorer();
+}
+function updateTemplate(id){
+  const t = DATA.templates.find(x=>x.id===id);
+  if(!t) return;
+  const order = DATA.viewOrders[contextKey()];
+  if(!order || !order.length){ alert('Drag items into the order you want first, then update the template.'); return; }
+  t.order = order;
+  save();
+  alert('Template updated ✓');
+}
+function deleteTemplate(id){
+  if(!confirm('Delete this template?')) return;
+  DATA.templates = DATA.templates.filter(t=>t.id!==id);
+  save(); renderTemplatesList();
 }
 
 /* ================= STATS ================= */
 function showStats(){
-  document.getElementById('explorer-panel').classList.add('hidden');
-  document.getElementById('lists-panel').classList.add('hidden');
+  hideAllPanels();
   closeSearch();
-  document.querySelector('.fab-wrap').classList.add('hidden');
   document.getElementById('stats-panel').classList.remove('hidden');
 
   const cards = DATA.cards;
@@ -977,12 +1315,11 @@ function showStats(){
 }
 
 /* ================= LISTS PANEL (Wishlist / Duplicates / STBO) ================= */
-function showListsPanel(){
-  document.getElementById('explorer-panel').classList.add('hidden');
-  document.getElementById('stats-panel').classList.add('hidden');
+function showListsPanel(tab){
+  hideAllPanels();
   closeSearch();
-  document.querySelector('.fab-wrap').classList.add('hidden');
   document.getElementById('lists-panel').classList.remove('hidden');
+  if(tab){ listsTab = tab; document.querySelectorAll('.list-tabs .opt').forEach(o=>o.classList.toggle('active', o.dataset.list===tab)); }
   listsPage = 1;
   renderListsPanel();
 }
@@ -1026,12 +1363,19 @@ function closeSearch(){
   document.getElementById('search-results-panel').classList.add('hidden');
 }
 function scoreText(query, text){
+  // Case / punctuation / space insensitive. Any exact word or letter-sequence
+  // match (a substring match once both sides are normalized) is ALWAYS
+  // included, regardless of how different the overall lengths are — only
+  // the ranking score below is influenced by length. Fuzzy/typo tolerance
+  // (levenshtein) is used only as a fallback for near-misses.
   const nq = normalizeStr(query), nt = normalizeStr(text);
-  if(!nq) return 999;
-  if(nt===nq) return -100;
-  if(nt.startsWith(nq)) return -50 + (nt.length-nq.length);
-  if(nt.includes(nq)) return -20 + (nt.length-nq.length);
-  return levenshtein(nq, nt);
+  if(!nq) return {match:true, score:999};
+  if(!nt) return {match:false, score:999};
+  if(nt===nq) return {match:true, score:-100};
+  if(nt.startsWith(nq)) return {match:true, score:-50};
+  if(nt.includes(nq)) return {match:true, score:-20};
+  const lev = levenshtein(nq, nt);
+  return {match: lev < FUZZY_THRESHOLD, score: lev};
 }
 function runSearch(){
   const raw = document.getElementById('search-input').value.trim();
@@ -1039,20 +1383,15 @@ function runSearch(){
   const out = document.getElementById('search-results');
   if(!raw){ resultsPanel.classList.add('hidden'); return; }
 
-  document.getElementById('explorer-panel').classList.add('hidden');
-  document.getElementById('stats-panel').classList.add('hidden');
-  document.getElementById('lists-panel').classList.add('hidden');
-  document.querySelector('.fab-wrap').classList.add('hidden');
+  hideAllPanels();
   resultsPanel.classList.remove('hidden');
-
-  const THRESHOLD = 6; // fuzzy tolerance for "closest result" matching, case/punctuation-insensitive
 
   // folders (across all sections)
   let folderMatches = [];
   function scanFolders(list, section, path){
     list.forEach(f=>{
-      const s = scoreText(raw, f.title);
-      if(s < THRESHOLD) folderMatches.push({f, section, s});
+      const r = scoreText(raw, f.title);
+      if(r.match) folderMatches.push({f, section, s:r.score});
       scanFolders(f.children||[], section, [...path, f.id]);
     });
   }
@@ -1061,15 +1400,15 @@ function runSearch(){
 
   // cards
   let cardMatches = DATA.cards
-    .map(c=>({c, s:scoreText(raw, c.name||'')}))
-    .filter(r=>r.s<THRESHOLD)
-    .sort((a,b)=>a.s-b.s);
+    .map(c=>({c, ...scoreText(raw, c.name||'')}))
+    .filter(r=>r.match)
+    .sort((a,b)=>a.score-b.score);
 
   // tags
   let tagMatches = DATA.tags
-    .map(t=>({t, s:scoreText(raw, t.name)}))
-    .filter(r=>r.s<THRESHOLD)
-    .sort((a,b)=>a.s-b.s);
+    .map(t=>({t, ...scoreText(raw, t.name)}))
+    .filter(r=>r.match)
+    .sort((a,b)=>a.score-b.score);
 
   if(folderMatches.length===0 && cardMatches.length===0 && tagMatches.length===0){
     out.innerHTML = `<div class="empty-note">No close matches for "${raw}".</div>`;
