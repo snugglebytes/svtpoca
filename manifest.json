@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "Hello, Carat-deul!",
+  "short_name": "SVT Photocard Tracker",
+  "description": "A cute photocard collection tracker.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#fbe4ec",
+  "theme_color": "#fbe4ec",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
