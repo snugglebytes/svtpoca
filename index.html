@@ -906,6 +906,14 @@ function openEditFolder(f){
 }
 /* ---- fuzzy matching helpers ---- */
 function normalizeStr(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function isSubsequence(nq, nt){
+  // true if every char of nq appears in nt in the same order (not nec. contiguous)
+  let i=0;
+  for(let j=0;j<nt.length && i<nq.length;j++){
+    if(nt[j]===nq[i]) i++;
+  }
+  return i===nq.length;
+}
 function levenshtein(a,b){
   const m=a.length, n=b.length;
   if(m===0) return n; if(n===0) return m;
@@ -1489,7 +1497,7 @@ function scoreText(query, text){
   if(nt.startsWith(nq)) return {match:true, score:-50};
   if(nt.includes(nq)) return {match:true, score:-20};
   const lev = levenshtein(nq, nt);
-  return {match: lev < FUZZY_THRESHOLD, score: lev};
+  return {match: lev < FUZZY_THRESHOLD && isSubsequence(nq, nt), score: lev};
 }
 function runSearch(){
   const raw = document.getElementById('search-input').value.trim();
@@ -1512,9 +1520,19 @@ function runSearch(){
   ['albums','nonalbum','members'].forEach(sec=>scanFolders(DATA.nodes[sec], sec, []));
   folderMatches.sort((a,b)=>a.s-b.s);
 
-  // cards
+  // cards — match by name, OR by any tag on the card (so searching a member
+  // tag like "s.coups" surfaces their tagged photocards, not just the tag itself)
   let cardMatches = DATA.cards
-    .map(c=>({c, ...scoreText(raw, c.name||'')}))
+    .map(c=>{
+      const nameScore = scoreText(raw, c.name||'');
+      if(nameScore.match) return {c, ...nameScore};
+      const tagScore = (c.tags||[])
+        .map(tid=>scoreText(raw, tagName(tid)))
+        .filter(r=>r.match)
+        .sort((a,b)=>a.score-b.score)[0];
+      if(tagScore) return {c, ...tagScore};
+      return {c, match:false, score:999};
+    })
     .filter(r=>r.match)
     .sort((a,b)=>a.score-b.score);
 
