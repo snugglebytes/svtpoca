@@ -138,7 +138,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid 
 .modal .sub{font-size:13px;color:#a493a0;text-align:center}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
-.field input,.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
+.field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
+.checkbox-row input[type=checkbox]{width:auto;flex-shrink:0}
 .status-picker,.tag-picker{display:flex;gap:6px;flex-wrap:wrap}
 .status-picker .opt,.tag-picker .opt{padding:7px 12px;border-radius:8px;border:2px solid var(--line);font-size:12px;cursor:pointer;background:#f8f3fa}
 .status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e9d38f;font-weight:700}
