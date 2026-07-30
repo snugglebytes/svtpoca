@@ -1520,18 +1520,23 @@ function runSearch(){
   ['albums','nonalbum','members'].forEach(sec=>scanFolders(DATA.nodes[sec], sec, []));
   folderMatches.sort((a,b)=>a.s-b.s);
 
-  // cards — match by name, OR by any tag on the card (so searching a member
-  // tag like "s.coups" surfaces their tagged photocards, not just the tag itself)
+  // cards — match by name, OR by any tag on the card. Query can contain
+  // multiple terms (e.g. "s.coups soundwave" or "s.coups fts"); each term
+  // just needs to match the name OR one of the tags, and ALL terms must be
+  // satisfied (in any combination of fields) for the card to show up.
+  const terms = raw.split(/\s+/).filter(Boolean);
   let cardMatches = DATA.cards
     .map(c=>{
-      const nameScore = scoreText(raw, c.name||'');
-      if(nameScore.match) return {c, ...nameScore};
-      const tagScore = (c.tags||[])
-        .map(tid=>scoreText(raw, tagName(tid)))
-        .filter(r=>r.match)
-        .sort((a,b)=>a.score-b.score)[0];
-      if(tagScore) return {c, ...tagScore};
-      return {c, match:false, score:999};
+      const cardTagNames = (c.tags||[]).map(tagName);
+      let total = 0;
+      for(const term of terms){
+        const candidates = [scoreText(term, c.name||''), ...cardTagNames.map(tn=>scoreText(term, tn))]
+          .filter(r=>r.match)
+          .sort((a,b)=>a.score-b.score);
+        if(!candidates.length) return {c, match:false, score:999};
+        total += candidates[0].score;
+      }
+      return {c, match:true, score:total};
     })
     .filter(r=>r.match)
     .sort((a,b)=>a.score-b.score);
