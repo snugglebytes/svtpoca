@@ -1,0 +1,646 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Hello, Carat-deul!</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Carat-deul">
+<meta name="theme-color" content="#f7cddd">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff8fc;--pink:#f7cddd;--blue:#cfeeff;--card:#fff;--line:#d9c8e6;--text:#5b4b58;--green:#cdeccb;--yellow:#fbe9b0;--red:#f5c2c2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
+header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:4px solid var(--line);z-index:5;display:flex;align-items:center;justify-content:space-between}
+h1{font:14px "Press Start 2P";margin:0;cursor:pointer;user-select:none}
+.icon-btn{background:none;border:none;font-size:20px;cursor:pointer}
+.wrap{padding:14px 14px 90px;max-width:640px;margin:0 auto}
+.search{margin:12px 0;display:flex;gap:8px}
+.search input{flex:1;padding:12px;border:3px solid var(--line);font-family:inherit;background:#fff;color:var(--text);font-size:14px}
+.btn{border:3px solid var(--line);background:var(--pink);padding:10px 14px;font-family:"Press Start 2P";font-size:9px;cursor:pointer}
+.btn.alt{background:var(--blue)}
+.btn.ghost{background:#fff}
+.btn.danger{background:var(--red)}
+.btn.small{padding:6px 8px;font-size:8px}
+.btn:disabled{opacity:.4;cursor:default}
+.panel{background:#fff;border:4px solid var(--line);padding:12px;margin:14px 0;box-shadow:4px 4px #eadff3}
+.section-toggle{display:flex;gap:8px}
+.section-toggle .opt{flex:1;text-align:center;padding:10px;background:var(--blue);border:3px solid var(--line);cursor:pointer;font-size:13px;font-weight:600}
+.section-toggle .opt.active{background:var(--pink)}
+.tabs{display:flex;gap:8px;overflow:auto;margin-top:10px}
+.tab{white-space:nowrap;padding:8px 10px;background:#f4eefb;border:3px solid var(--line);cursor:pointer;font-size:13px}
+.tab.active{background:var(--yellow);font-weight:bold}
+.section-title{font-family:'Press Start 2P';font-size:10px;margin:0 0 10px}
+.title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+.folder-card{background:#fff;border:4px solid var(--line);padding:8px;cursor:pointer;position:relative}
+.folder-thumb{aspect-ratio:1;background:#eef;border:3px dashed #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
+.folder-thumb img{width:100%;height:100%;object-fit:cover}
+.folder-name{font-size:13px;margin-top:6px;font-weight:600}
+.folder-count{font-size:11px;color:#8b7a88}
+.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid var(--line);width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1}
+.card{background:#fff;border:4px solid var(--line);padding:8px;position:relative}
+.card-thumb{aspect-ratio:3/4;background:#eef;border:3px dashed #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden;cursor:pointer}
+.card-thumb img{width:100%;height:100%;object-fit:cover}
+.status-badge{position:absolute;top:6px;left:6px;font-size:9px;padding:3px 6px;border-radius:8px;border:2px solid;font-family:'Press Start 2P';font-size:7px}
+.status-have{background:var(--green);border-color:#7fbf7a}
+.status-want{background:var(--pink);border-color:#d98fb0}
+.status-stbo{background:var(--yellow);border-color:#e0b94a}
+.status-duplicate{background:var(--blue);border-color:#8fbdd9}
+.card-meta{font-size:12px;margin-top:6px}
+.card-price{font-size:11px;color:#8b7a88}
+.add-tile{border:3px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--line);cursor:pointer;background:#fdfaff}
+.stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid var(--line);display:flex;justify-content:space-around;padding:10px 0;font:9px "Press Start 2P"}
+.fab{position:fixed;right:16px;bottom:78px;width:58px;height:58px;border-radius:50%;border:4px solid var(--line);background:var(--pink);font-size:26px;cursor:pointer;z-index:6}
+.hidden{display:none !important}
+.modal-bg{position:fixed;inset:0;background:rgba(91,75,88,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:#fff;border:4px solid var(--line);padding:20px;text-align:left;max-width:340px;width:100%;box-shadow:6px 6px #eadff3;max-height:88vh;overflow:auto}
+.modal .big{font-family:'Press Start 2P';font-size:14px;line-height:1.8;margin-bottom:10px;text-align:center}
+.modal .sub{font-size:13px;color:#8b7a88;text-align:center}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+.field input,.field select{width:100%;padding:9px;border:2px solid var(--line);font-family:inherit;font-size:14px}
+.status-picker{display:flex;gap:6px;flex-wrap:wrap}
+.status-picker .opt{padding:7px 10px;border:2px solid var(--line);font-size:12px;cursor:pointer;background:#f4eefb}
+.status-picker .opt.sel{background:var(--yellow);border-color:#e0b94a;font-weight:700}
+.modal-actions{display:flex;gap:8px;margin-top:14px}
+.modal-actions .btn{flex:1}
+.crop-wrap{position:relative;width:100%;aspect-ratio:1;background:#111;overflow:hidden;touch-action:none;margin-bottom:8px}
+.crop-wrap.portrait{aspect-ratio:3/4}
+.crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:60}
+.empty-note{font-size:13px;color:#8b7a88;padding:10px 0}
+.close-x{background:none;border:none;font-size:20px;cursor:pointer;float:right}
+</style></head><body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<header>
+  <h1 id="diamond-title">💎 Carat-deul</h1>
+  <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
+</header>
+
+<div class="wrap">
+
+<div class="search">
+  <input id="search-input" placeholder="Search folders or cards...">
+  <button class="btn" onclick="runSearch()">GO</button>
+</div>
+
+<div class="panel">
+  <div class="section-toggle">
+    <div class="opt active" data-section="albums" onclick="setSection('albums')">📀 Albums</div>
+    <div class="opt" data-section="nonalbum" onclick="setSection('nonalbum')">🎁 Non-Album</div>
+  </div>
+  <div class="tabs" id="cat-tabs"></div>
+</div>
+
+<div class="panel" id="folder-panel">
+  <div class="title-row">
+    <b class="section-title" id="folder-panel-title">Folders</b>
+  </div>
+  <div class="grid" id="folder-grid"></div>
+</div>
+
+<div class="panel hidden" id="stats-panel">
+  <b class="section-title">Collection Stats</b>
+  <div id="stats-body"></div>
+</div>
+
+</div>
+
+<button class="fab" id="fab-btn" onclick="fabAction()">＋</button>
+<nav>
+  <div style="cursor:pointer" onclick="goHome()">🏠<br>Home</div>
+  <div style="cursor:pointer" onclick="showStats()">📊<br>Stats</div>
+  <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">🔍<br>Search</div>
+  <div style="cursor:pointer" onclick="openInstallModal()">⬇️<br>Install</div>
+</nav>
+
+<!-- FOLDER CONTENTS MODAL -->
+<div id="folder-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:520px">
+    <button class="close-x" onclick="closeModal('folder-modal')">✕</button>
+    <div class="section-title" id="fm-title">Folder</div>
+    <div class="grid" id="fm-grid" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT FOLDER MODAL -->
+<div id="add-folder-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('add-folder-modal')">✕</button>
+    <div class="section-title">New Folder</div>
+    <div class="field"><label>Folder name</label><input id="new-folder-name" placeholder="e.g. BSS, Left &amp; Right Unit"></div>
+    <div class="field"><label>Thumbnail image URL (square, optional)</label><input id="new-folder-url" placeholder="https://..."></div>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="confirmAddFolder()">Save</button>
+      <button class="btn ghost" onclick="closeModal('add-folder-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT CARD MODAL -->
+<div id="card-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('card-modal')">✕</button>
+    <div class="section-title" id="card-modal-title">Photocard</div>
+    <div class="field">
+      <label>Image URL</label>
+      <input id="card-url" placeholder="Paste image URL...">
+    </div>
+    <div class="field">
+      <button class="btn small alt" onclick="loadCropFromUrl()">Load / Update Image</button>
+    </div>
+    <div id="crop-area" class="hidden">
+      <div class="crop-wrap portrait" id="crop-wrap">
+        <img id="crop-img">
+      </div>
+      <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
+      <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+    </div>
+    <div class="field"><label>Name / label</label><input id="card-name" placeholder="e.g. Seungkwan FML ver.A"></div>
+    <div class="field">
+      <label>Status</label>
+      <div class="status-picker" id="card-status-picker">
+        <div class="opt" data-val="have">✔ Have</div>
+        <div class="opt" data-val="want">☆ Want</div>
+        <div class="opt" data-val="stbo">STBO</div>
+        <div class="opt" data-val="duplicate">Duplicate</div>
+      </div>
+    </div>
+    <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="saveCard()">Save</button>
+      <button class="btn danger hidden" id="delete-card-btn" onclick="deleteCurrentCard()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- DUPLICATE ACTION MODAL -->
+<div id="dup-modal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="big" style="font-size:12px">Duplicate card</div>
+    <p class="sub">Has this duplicate been sold?</p>
+    <div class="modal-actions">
+      <button class="btn danger" onclick="markSold()">Sold — remove it</button>
+      <button class="btn ghost" onclick="closeModal('dup-modal')">Exit</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL MODAL -->
+<div id="install-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('install-modal')">✕</button>
+    <div class="section-title">Install as a webapp</div>
+    <p style="font-size:13px">
+      <b>iPhone (Safari):</b> tap the Share icon, then "Add to Home Screen".<br><br>
+      <b>Android (Chrome):</b> tap the ⋮ menu, then "Add to Home screen" / "Install app".<br><br>
+      <b>Desktop (Chrome/Edge):</b> click the install icon (⊕) in the address bar.
+    </p>
+    <p style="font-size:12px;color:#8b7a88">Your data is saved on this device only, so install and open it from the same browser each time.</p>
+  </div>
+</div>
+
+<!-- EASTER EGG MODAL -->
+<div id="egg-modal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="big">aju nice!</div>
+    <div style="font-size:22px;margin-bottom:6px;text-align:center">(ﾉ´ヮ´)ﾉ*:･ﾟ✧</div>
+    <div class="sub">You clicked 💎 17 times. Going Going~</div>
+    <button class="btn" style="margin-top:14px;width:100%" onclick="closeModal('egg-modal')">Close</button>
+  </div>
+</div>
+
+<script>
+/* ---------------- data model ---------------- */
+const FIXED_MEMBERS = ["S.Coups","Jeonghan","Joshua","Jun","Hoshi","Wonwoo","Woozi","DK","Mingyu","The8","Seungkwan","Vernon","Dino"];
+const CATS = ["members","unit","rpc","benefit"];
+const CAT_LABEL = {members:"👤 Members", unit:"🎤 Unit/Group", rpc:"🎴 RPC", benefit:"🎀 Benefit"};
+
+function defaultData(){
+  const mkMemberFolders = ()=>FIXED_MEMBERS.map(n=>({id:'mem_'+n.replace(/\W/g,''), name:n, thumb:'', fixed:true}));
+  return {
+    folders:{
+      albums:{ members:mkMemberFolders(), unit:[], rpc:[], benefit:[] },
+      nonalbum:{ members:mkMemberFolders(), unit:[] }
+    },
+    cards: []
+  };
+}
+
+let DATA = load();
+function load(){
+  try{
+    const raw = localStorage.getItem('carat_data_v1');
+    if(!raw) return defaultData();
+    const d = JSON.parse(raw);
+    if(!d.folders || !d.cards) return defaultData();
+    return d;
+  }catch(e){ return defaultData(); }
+}
+function save(){ localStorage.setItem('carat_data_v1', JSON.stringify(DATA)); }
+
+/* ---------------- nav state ---------------- */
+let currentSection = 'albums';
+let currentCat = 'members';
+let currentFolderId = null;
+let editingCardId = null;
+let croppedDataUrl = null;
+
+function setSection(sec){
+  currentSection = sec;
+  document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
+  const cats = sec==='albums' ? CATS : ['members','unit'];
+  currentCat = cats[0];
+  renderCatTabs(cats);
+  renderFolders();
+}
+
+function renderCatTabs(cats){
+  const wrap = document.getElementById('cat-tabs');
+  wrap.innerHTML = '';
+  cats.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'tab' + (c===currentCat?' active':'');
+    el.textContent = CAT_LABEL[c];
+    el.onclick = ()=>{ currentCat=c; renderCatTabs(cats); renderFolders(); };
+    wrap.appendChild(el);
+  });
+}
+
+function goHome(){
+  document.getElementById('stats-panel').classList.add('hidden');
+  document.getElementById('folder-panel').classList.remove('hidden');
+  document.getElementById('fab-btn').classList.remove('hidden');
+}
+
+function fabAction(){
+  if(currentCat === 'members'){
+    alert("Members are fixed to the group's official lineup, so this folder list can't be added to or removed.");
+    return;
+  }
+  openAddFolderModal();
+}
+
+/* ---------------- folder rendering ---------------- */
+function renderFolders(){
+  goHome();
+  const folders = DATA.folders[currentSection][currentCat] || [];
+  document.getElementById('folder-panel-title').textContent = CAT_LABEL[currentCat] + ' — ' + (currentSection==='albums'?'Albums':'Non-Album');
+  const grid = document.getElementById('folder-grid');
+  grid.innerHTML = '';
+  folders.forEach(f=>{
+    const count = DATA.cards.filter(c=>c.section===currentSection && c.cat===currentCat && c.folderId===f.id).length;
+    const div = document.createElement('div');
+    div.className = 'folder-card';
+    div.innerHTML = `
+      <div class="folder-thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
+      <div class="folder-name">${f.name}</div>
+      <div class="folder-count">${count} card${count===1?'':'s'}</div>
+      ${f.fixed ? '' : '<div class="del-x">✕</div>'}
+    `;
+    div.querySelector('.folder-thumb').onclick = ()=>openFolder(f);
+    div.querySelector('.folder-name').onclick = ()=>openFolder(f);
+    const delX = div.querySelector('.del-x');
+    if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolder(f); };
+    grid.appendChild(div);
+  });
+  if(currentCat !== 'members'){
+    const addTile = document.createElement('div');
+    addTile.className = 'folder-card add-tile';
+    addTile.style.aspectRatio='auto';
+    addTile.innerHTML = '＋';
+    addTile.onclick = openAddFolderModal;
+    grid.appendChild(addTile);
+  }
+}
+
+function deleteFolder(f){
+  if(!confirm(`Delete folder "${f.name}"? Cards inside will also be removed.`)) return;
+  DATA.folders[currentSection][currentCat] = DATA.folders[currentSection][currentCat].filter(x=>x.id!==f.id);
+  DATA.cards = DATA.cards.filter(c=>!(c.section===currentSection && c.cat===currentCat && c.folderId===f.id));
+  save(); renderFolders();
+}
+
+function openAddFolderModal(){
+  document.getElementById('new-folder-name').value='';
+  document.getElementById('new-folder-url').value='';
+  document.getElementById('add-folder-modal').classList.remove('hidden');
+}
+function confirmAddFolder(){
+  const name = document.getElementById('new-folder-name').value.trim();
+  if(!name){ alert('Give the folder a name.'); return; }
+  const url = document.getElementById('new-folder-url').value.trim();
+  DATA.folders[currentSection][currentCat].push({id:'f_'+Date.now(), name, thumb:url, fixed:false});
+  save(); closeModal('add-folder-modal'); renderFolders();
+}
+
+/* ---------------- folder contents (cards) ---------------- */
+function openFolder(f){
+  currentFolderId = f.id;
+  document.getElementById('fm-title').textContent = f.name;
+  renderFolderCards();
+  document.getElementById('folder-modal').classList.remove('hidden');
+}
+
+function renderFolderCards(){
+  const grid = document.getElementById('fm-grid');
+  grid.innerHTML = '';
+  const cards = DATA.cards.filter(c=>c.section===currentSection && c.cat===currentCat && c.folderId===currentFolderId);
+  cards.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
+      <div class="card-thumb">${c.image ? `<img src="${c.image}">` : '🖼'}</div>
+      <div class="card-meta">${c.name||'Untitled'}</div>
+      ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
+    `;
+    div.querySelector('.card-thumb').onclick = ()=>cardClicked(c);
+    div.querySelector('.card-meta').onclick = ()=>cardClicked(c);
+    grid.appendChild(div);
+  });
+  const addTile = document.createElement('div');
+  addTile.className = 'card add-tile';
+  addTile.style.aspectRatio = '3/4';
+  addTile.innerHTML = '＋';
+  addTile.onclick = ()=>openCardModal(null);
+  grid.appendChild(addTile);
+}
+
+function cardClicked(c){
+  if(c.status === 'duplicate'){
+    pendingDupCardId = c.id;
+    document.getElementById('dup-modal').classList.remove('hidden');
+  } else {
+    openCardModal(c);
+  }
+}
+let pendingDupCardId = null;
+function markSold(){
+  DATA.cards = DATA.cards.filter(c=>c.id!==pendingDupCardId);
+  save(); closeModal('dup-modal'); renderFolderCards(); renderFolders();
+}
+
+/* ---------------- add/edit card ---------------- */
+function openCardModal(card){
+  editingCardId = card ? card.id : null;
+  croppedDataUrl = card ? card.image : null;
+  document.getElementById('card-modal-title').textContent = card ? 'Edit Photocard' : 'New Photocard';
+  document.getElementById('card-url').value = card ? (card.sourceUrl||'') : '';
+  document.getElementById('card-name').value = card ? (card.name||'') : '';
+  document.getElementById('card-price').value = card ? (card.price||'') : '';
+  document.getElementById('crop-area').classList.add('hidden');
+  document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
+  document.getElementById('delete-card-btn').classList.toggle('hidden', !card);
+  document.getElementById('card-modal').classList.remove('hidden');
+}
+
+document.getElementById('card-status-picker').addEventListener('click', e=>{
+  if(!e.target.classList.contains('opt')) return;
+  document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.remove('sel'));
+  e.target.classList.add('sel');
+});
+
+function deleteCurrentCard(){
+  if(!editingCardId) return;
+  if(!confirm('Delete this photocard?')) return;
+  DATA.cards = DATA.cards.filter(c=>c.id!==editingCardId);
+  save(); closeModal('card-modal'); renderFolderCards(); renderFolders();
+}
+
+function saveCard(){
+  const statusEl = document.querySelector('#card-status-picker .opt.sel');
+  if(!statusEl){ alert('Pick a status: Have, Want, STBO, or Duplicate.'); return; }
+  const status = statusEl.dataset.val;
+  const name = document.getElementById('card-name').value.trim();
+  const price = document.getElementById('card-price').value.trim();
+  const sourceUrl = document.getElementById('card-url').value.trim();
+  const image = croppedDataUrl || sourceUrl;
+
+  if(editingCardId){
+    const c = DATA.cards.find(x=>x.id===editingCardId);
+    Object.assign(c, {name, status, price, sourceUrl, image});
+  } else {
+    DATA.cards.push({
+      id:'c_'+Date.now(), section:currentSection, cat:currentCat, folderId:currentFolderId,
+      image, sourceUrl, name, status, price
+    });
+  }
+  save(); closeModal('card-modal'); renderFolderCards(); renderFolders();
+}
+
+/* ---------------- image loading + crop ---------------- */
+function loadCropFromUrl(){
+  const url = document.getElementById('card-url').value.trim();
+  if(!url){ alert('Paste an image URL first.'); return; }
+  const img = document.getElementById('crop-img');
+  img.onload = ()=>{
+    document.getElementById('crop-area').classList.remove('hidden');
+    setupCropDrag();
+    fitCropImage();
+  };
+  img.onerror = ()=>alert("Couldn't load that image — check the URL (some sites block hotlinking).");
+  img.crossOrigin = 'anonymous';
+  img.src = url;
+}
+
+let cropState = {x:0,y:0,scale:1,dragging:false,startX:0,startY:0};
+function fitCropImage(){
+  const wrap = document.getElementById('crop-wrap');
+  const img = document.getElementById('crop-img');
+  const wrapRect = wrap.getBoundingClientRect();
+  const ratio = Math.max(wrapRect.width/img.naturalWidth, wrapRect.height/img.naturalHeight);
+  cropState.scale = ratio;
+  img.style.width = (img.naturalWidth*ratio)+'px';
+  img.style.height = (img.naturalHeight*ratio)+'px';
+  cropState.x = (wrapRect.width - img.naturalWidth*ratio)/2;
+  cropState.y = (wrapRect.height - img.naturalHeight*ratio)/2;
+  updateCropPos();
+  document.getElementById('crop-zoom').value = 100;
+}
+function updateCropPos(){
+  const img = document.getElementById('crop-img');
+  img.style.left = cropState.x+'px';
+  img.style.top = cropState.y+'px';
+}
+function setupCropDrag(){
+  const wrap = document.getElementById('crop-wrap');
+  const img = document.getElementById('crop-img');
+  const start = (x,y)=>{ cropState.dragging=true; cropState.startX=x-cropState.x; cropState.startY=y-cropState.y; };
+  const move = (x,y)=>{
+    if(!cropState.dragging) return;
+    cropState.x = x - cropState.startX;
+    cropState.y = y - cropState.startY;
+    updateCropPos();
+  };
+  const end = ()=>cropState.dragging=false;
+  wrap.onmousedown = e=>start(e.clientX,e.clientY);
+  window.onmousemove = e=>move(e.clientX,e.clientY);
+  window.onmouseup = end;
+  wrap.ontouchstart = e=>{const t=e.touches[0]; start(t.clientX,t.clientY);};
+  wrap.ontouchmove = e=>{const t=e.touches[0]; move(t.clientX,t.clientY); e.preventDefault();};
+  wrap.ontouchend = end;
+  document.getElementById('crop-zoom').oninput = (e)=>{
+    const wrapRect = wrap.getBoundingClientRect();
+    const baseRatio = Math.max(wrapRect.width/img.naturalWidth, wrapRect.height/img.naturalHeight);
+    const zoom = e.target.value/100;
+    const newScale = baseRatio*zoom;
+    const cx = cropState.x + (img.naturalWidth*cropState.scale)/2;
+    const cy = cropState.y + (img.naturalHeight*cropState.scale)/2;
+    cropState.scale = newScale;
+    img.style.width = (img.naturalWidth*newScale)+'px';
+    img.style.height = (img.naturalHeight*newScale)+'px';
+    cropState.x = cx - (img.naturalWidth*newScale)/2;
+    cropState.y = cy - (img.naturalHeight*newScale)/2;
+    updateCropPos();
+  };
+}
+function applyCrop(){
+  const wrap = document.getElementById('crop-wrap');
+  const img = document.getElementById('crop-img');
+  const wrapRect = wrap.getBoundingClientRect();
+  const canvas = document.createElement('canvas');
+  const outW = 300, outH = wrap.classList.contains('portrait') ? 400 : 300;
+  canvas.width = outW; canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+  const scaleX = outW / wrapRect.width;
+  const scaleY = outH / wrapRect.height;
+  ctx.drawImage(img,
+    cropState.x*scaleX, cropState.y*scaleY,
+    img.naturalWidth*cropState.scale*scaleX, img.naturalHeight*cropState.scale*scaleY
+  );
+  croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  alert('Crop applied ✓ — will be saved with this card.');
+}
+
+/* ---------------- stats ---------------- */
+function showStats(){
+  document.getElementById('folder-panel').classList.add('hidden');
+  document.getElementById('fab-btn').classList.add('hidden');
+  const panel = document.getElementById('stats-panel');
+  panel.classList.remove('hidden');
+
+  const cards = DATA.cards;
+  const have = cards.filter(c=>c.status==='have');
+  const want = cards.filter(c=>c.status==='want');
+  const stbo = cards.filter(c=>c.status==='stbo');
+  const dup = cards.filter(c=>c.status==='duplicate');
+
+  const albumFoldersWithCards = new Set(cards.filter(c=>c.section==='albums').map(c=>c.folderId));
+
+  const memberCounts = {};
+  FIXED_MEMBERS.forEach(m=>memberCounts[m]=0);
+  cards.forEach(c=>{
+    if(c.cat==='members'){
+      const folder = (DATA.folders[c.section].members||[]).find(f=>f.id===c.folderId);
+      if(folder) memberCounts[folder.name] = (memberCounts[folder.name]||0)+1;
+    }
+  });
+  let mostMember='—', mostVal=-1, leastMember='—', leastVal=Infinity;
+  Object.entries(memberCounts).forEach(([m,v])=>{
+    if(v>mostVal){mostVal=v;mostMember=m;}
+    if(v<leastVal){leastVal=v;leastMember=m;}
+  });
+
+  const totalValue = cards.reduce((sum,c)=> sum + (parseFloat(c.price)||0), 0);
+
+  document.getElementById('stats-body').innerHTML = `
+    <div class="stat-row"><span>Total cards logged</span><b>${cards.length}</b></div>
+    <div class="stat-row"><span>Have</span><b>${have.length}</b></div>
+    <div class="stat-row"><span>Want</span><b>${want.length}</b></div>
+    <div class="stat-row"><span>STBO</span><b>${stbo.length}</b></div>
+    <div class="stat-row"><span>Duplicates (tradeable)</span><b>${dup.length}</b></div>
+    <div class="stat-row"><span>Album folders with cards</span><b>${albumFoldersWithCards.size}</b></div>
+    <div class="stat-row"><span>Most-owned member</span><b>${mostMember} (${mostVal<0?0:mostVal})</b></div>
+    <div class="stat-row"><span>Least-owned member</span><b>${leastMember} (${leastVal===Infinity?0:leastVal})</b></div>
+    <div class="stat-row"><span>Total spent (logged prices)</span><b>₱${totalValue.toLocaleString()}</b></div>
+  `;
+}
+
+/* ---------------- search ---------------- */
+function runSearch(){
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  if(!q) return;
+  const folderMatches = [];
+  ['albums','nonalbum'].forEach(sec=>{
+    Object.entries(DATA.folders[sec]).forEach(([cat,list])=>{
+      list.forEach(f=>{ if(f.name.toLowerCase().includes(q)) folderMatches.push(f.name); });
+    });
+  });
+  const cardMatches = DATA.cards.filter(c=>(c.name||'').toLowerCase().includes(q));
+  alert(`Found ${folderMatches.length} folder(s) and ${cardMatches.length} card(s) matching "${q}".`);
+}
+
+/* ---------------- modal helpers ---------------- */
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function openInstallModal(){ document.getElementById('install-modal').classList.remove('hidden'); }
+
+/* ---------------- 17-click easter egg ---------------- */
+let diamondClicks = 0;
+document.getElementById('diamond-title').addEventListener('click',()=>{
+  diamondClicks++;
+  if(diamondClicks === 17){ showEasterEgg(); diamondClicks = 0; }
+});
+function showEasterEgg(){
+  document.getElementById('egg-modal').classList.remove('hidden');
+  fireConfetti();
+}
+function fireConfetti(){
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#f7cddd','#cfeeff','#fbe9b0','#cdeccb','#d9c8e6','#ffffff'];
+  let particles = [];
+  for(let i=0;i<160;i++){
+    particles.push({x:Math.random()*canvas.width,y:-20-Math.random()*canvas.height,w:6+Math.random()*6,h:6+Math.random()*10,
+      color:colors[Math.floor(Math.random()*colors.length)],speed:2+Math.random()*4,drift:-2+Math.random()*4,rot:Math.random()*360,rotSpeed:-6+Math.random()*12});
+  }
+  let frame=0; const maxFrames=200;
+  function animate(){
+    frame++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.y+=p.speed; p.x+=p.drift; p.rot+=p.rotSpeed;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(frame<maxFrames) requestAnimationFrame(animate); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  animate();
+}
+window.addEventListener('resize',()=>{
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+});
+
+/* ---------------- PWA: manifest + service worker via blob ---------------- */
+(function setupPWA(){
+  const manifest = {
+    name:"Hello, Carat-deul!", short_name:"Carat-deul",
+    start_url:".", display:"standalone", background_color:"#fff8fc", theme_color:"#f7cddd",
+    icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f7cddd'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle'%3E%F0%9F%92%8E%3C/text%3E%3C/svg%3E", sizes:"192x192", type:"image/svg+xml"}]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+
+  if('serviceWorker' in navigator){
+    const swCode = `self.addEventListener('fetch', e=>{});`;
+    const swBlob = new Blob([swCode], {type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  }
+})();
+
+/* ---------------- init ---------------- */
+setSection('albums');
+</script>
+</body></html>
