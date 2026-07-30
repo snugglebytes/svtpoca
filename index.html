@@ -119,6 +119,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 #move-folder-list{max-height:240px;overflow:auto;margin-bottom:4px}
 #move-here-btn:disabled{opacity:.4;cursor:default}
 #move-here-note{font-size:11px;color:#8b7a88;margin:8px 0 0}
+.field-or{font-size:11px;color:#a493a0;text-align:center;margin:4px 0}
 .import-choice-option{margin-top:10px}
 .import-choice-note{font-size:11px;color:#a493a0;margin:5px 2px 0}
 /* combobox / tag autocomplete */
@@ -370,6 +371,8 @@ nav>div:active{background:#f8f3fa}
       <label>Thumbnail image (square)</label>
       <input id="folder-thumb" placeholder="Paste image URL...">
       <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
+      <div class="field-or">— or —</div>
+      <div class="field"><input type="file" id="folder-file" accept="image/*" onchange="loadCropFromFile('folder', event)"></div>
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
@@ -404,6 +407,9 @@ nav>div:active{background:#f8f3fa}
     <div class="section-title" id="card-modal-title">Photocard</div>
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
+    <div class="field-or">— or —</div>
+    <div class="field"><label>Upload from device</label><input type="file" id="card-file" accept="image/*" onchange="loadCropFromFile('card', event)"></div>
+    <p class="import-choice-note">Uploading a file avoids sites that block hotlinking, and the photo gets saved directly inside your JSON backup — no external link needed.</p>
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
       <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
@@ -1697,6 +1703,24 @@ function loadCropFromUrl(target){
   img.onerror = ()=>alert("Couldn't load that image — check the URL (some sites block hotlinking).");
   img.crossOrigin = 'anonymous';
   img.src = url;
+}
+function loadCropFromFile(target, event){
+  target = target || 'card';
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); event.target.value=''; return; }
+  startCropFor(target);
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = document.getElementById(activeCrop.imgId);
+    img.onload = ()=>{ document.getElementById(activeCrop.areaId).classList.remove('hidden'); setupCropDrag(); fitCropImage(); };
+    img.onerror = ()=>alert("Couldn't read that image file.");
+    img.removeAttribute('crossorigin'); // not needed for local data — no CORS/hotlink issue with an uploaded file
+    img.src = reader.result;
+  };
+  reader.onerror = ()=>alert('Could not read that file.');
+  reader.readAsDataURL(file);
+  event.target.value = '';
 }
 let cropState = {x:0,y:0,scale:1,tilt:0,dragging:false,startX:0,startY:0};
 function fitCropImage(){
