@@ -258,7 +258,7 @@ nav>div:active{background:#f8f3fa}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
 .binder-new-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:#a493a0;font-size:12px;min-height:150px}
 .binder-new-tile.disabled{opacity:.45;cursor:not-allowed}
-.binder-viewer-modal .modal{max-width:520px}
+.binder-viewer-modal .modal{max-width:640px;width:100%}
 @keyframes binderOpenAnim{
   0%{opacity:0;transform:perspective(900px) rotateY(-35deg) scale(.92);}
   100%{opacity:1;transform:perspective(900px) rotateY(0deg) scale(1);}
@@ -289,6 +289,9 @@ nav>div:active{background:#f8f3fa}
 .binder-sides{display:flex;gap:10px}
 .binder-side{flex:1;min-width:0;border-radius:10px;padding:8px;border:2px solid var(--line)}
 .binder-side-label{font-size:10px;text-align:center;color:#8a6b7c;margin-bottom:6px;font-weight:600}
+.binder-slot.fake-back{cursor:default;background:repeating-linear-gradient(135deg,rgba(90,74,85,.16),rgba(90,74,85,.16) 6px,rgba(90,74,85,.24) 6px,rgba(90,74,85,.24) 12px);border-style:solid;border-color:rgba(122,107,118,.3)}
+.binder-slot.fake-back::before{content:'';display:block;padding-top:150%}
+.binder-side-cover{border-color:transparent;box-shadow:none;pointer-events:none;cursor:default}
 .binder-slots{display:grid;gap:6px}
 .binder-slots-13p{display:flex;flex-direction:column;gap:6px}
 .binder-slots-13p-row{display:flex;gap:6px}
@@ -667,9 +670,9 @@ nav>div:active{background:#f8f3fa}
         <div class="opt" data-val="6">6</div>
         <div class="opt" data-val="9">9</div>
         <div class="opt" data-val="12">12</div>
-        <div class="opt" data-val="13">13p</div>
+        <div class="opt" data-val="13">13</div>
       </div>
-      <div class="field-hint">Every page in this binder will use this same grid count. 13p uses the classic 4 + 4 + 5 pocket-page layout.</div>
+      <div class="field-hint">Every page in this binder will use this same grid count. 12 uses a 4 + 4 + 4 layout and 13 uses the classic 4 + 4 + 5 pocket-page layout.</div>
     </div>
     <div class="field">
       <label>Cover</label>
@@ -2613,58 +2616,100 @@ function renderBinderViewer(turnDirection){
     void sidesWrap.offsetWidth; // restart animation
     sidesWrap.classList.add(turnDirection==='prev' ? 'turning-prev' : 'turning-next');
   }
-  const sideCount = b.backToBack ? 2 : 1;
   const cols = b.grids<=4 ? 2 : 3;
-  for(let s=0; s<sideCount; s++){
-    const sideDiv = document.createElement('div');
-    sideDiv.className = 'binder-side';
-    sideDiv.style.background = b.pageColor;
-    const label = document.createElement('div');
-    label.className = 'binder-side-label';
-    label.textContent = b.backToBack ? (s===0?'Front':'Back') : 'Page';
-    sideDiv.appendChild(label);
+  const rowLayouts = {12:[4,4,4], 13:[4,4,5]};
+  const rowSizes = rowLayouts[b.grids] || null;
+  const hasRowLayout = !!rowSizes;
+
+  function buildSlotsShape(fillFn){
     const slotsDiv = document.createElement('div');
-    const sideIndex = viewingBinderPage*sideCount + s;
-    const is13p = b.grids === 13;
-    if(is13p){
-      slotsDiv.className = 'binder-slots binder-slots-13p';
-    } else {
-      slotsDiv.className = 'binder-slots';
-      slotsDiv.style.gridTemplateColumns = `repeat(${cols},1fr)`;
-    }
-    // 13p pages use the classic uneven pocket layout: rows of 4, 4, then 5
-    const rowSizes = is13p ? [4,4,5] : null;
+    if(hasRowLayout){ slotsDiv.className = 'binder-slots binder-slots-13p'; }
+    else { slotsDiv.className = 'binder-slots'; slotsDiv.style.gridTemplateColumns = `repeat(${cols},1fr)`; }
     let rowDiv = null, rowRemaining = 0, rowIdx = -1;
     for(let g=0; g<b.grids; g++){
-      if(is13p && rowRemaining===0){
+      if(hasRowLayout && rowRemaining===0){
         rowIdx++;
         rowRemaining = rowSizes[rowIdx];
         rowDiv = document.createElement('div');
         rowDiv.className = 'binder-slots-13p-row';
         slotsDiv.appendChild(rowDiv);
       }
-      const slotIndex = sideIndex*b.grids + g;
-      const cardId = b.slots[slotIndex];
-      const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
-      const slotDiv = document.createElement('div');
-      slotDiv.className = 'binder-slot' + (card ? ' filled' : '') + (card && card.status==='wishlist' ? ' st-wishlist' : card && card.status==='stbo' ? ' st-stbo' : '');
-      if(card && card.image) slotDiv.innerHTML = `<img src="${card.image}">`;
-      else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
-      else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
-      slotDiv.onclick = ()=>{
-        if(card){
-          if(confirm(`Remove "${card.name||'this photocard'}" from this slot?`)){
-            b.slots[slotIndex] = null; save(); renderBinderViewer();
-          }
-        } else {
-          openCardPicker(b.id, slotIndex);
-        }
-      };
-      if(is13p){ rowDiv.appendChild(slotDiv); rowRemaining--; }
+      const slotDiv = fillFn(g);
+      if(hasRowLayout){ rowDiv.appendChild(slotDiv); rowRemaining--; }
       else slotsDiv.appendChild(slotDiv);
     }
-    sideDiv.appendChild(slotsDiv);
-    sidesWrap.appendChild(sideDiv);
+    return slotsDiv;
+  }
+  function buildRealSlot(sideIndex, g){
+    const slotIndex = sideIndex*b.grids + g;
+    const cardId = b.slots[slotIndex];
+    const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
+    const slotDiv = document.createElement('div');
+    slotDiv.className = 'binder-slot' + (card ? ' filled' : '') + (card && card.status==='wishlist' ? ' st-wishlist' : card && card.status==='stbo' ? ' st-stbo' : '');
+    if(card && card.image) slotDiv.innerHTML = `<img src="${card.image}">`;
+    else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
+    else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
+    slotDiv.onclick = ()=>{
+      if(card){
+        if(confirm(`Remove "${card.name||'this photocard'}" from this slot?`)){
+          b.slots[slotIndex] = null; save(); renderBinderViewer();
+        }
+      } else {
+        openCardPicker(b.id, slotIndex);
+      }
+    };
+    return slotDiv;
+  }
+  function buildFakeBackSlot(){
+    const slotDiv = document.createElement('div');
+    slotDiv.className = 'binder-slot fake-back';
+    return slotDiv;
+  }
+  function buildSideEl(label, contentEl){
+    const sideDiv = document.createElement('div');
+    sideDiv.className = 'binder-side';
+    sideDiv.style.background = b.pageColor;
+    sideDiv.appendChild(contentEl);
+    return sideDiv;
+  }
+  function buildBlankCoverEl(){
+    const sideDiv = document.createElement('div');
+    sideDiv.className = 'binder-side binder-side-cover';
+    sideDiv.style.background = b.pageColor;
+    return sideDiv;
+  }
+
+  if(b.backToBack){
+    // pages genuinely have real content on both sides — show front & back as-is
+    for(let s=0; s<2; s++){
+      const sideIndex = viewingBinderPage*2 + s;
+      const slotsDiv = buildSlotsShape(g=>buildRealSlot(sideIndex, g));
+      sidesWrap.appendChild(buildSideEl(null, slotsDiv));
+    }
+  } else {
+    // single-sided binder: always render a 2-page spread. The "other" side has
+    // no real data, so it's imitated as either a blank cover (start/end of the
+    // binder) or a darker "back of the previous page" panel (everywhere else).
+    const isFirst = viewingBinderPage === 0;
+    const isLast = viewingBinderPage === b.pages - 1;
+    const realSlotsDiv = buildSlotsShape(g=>buildRealSlot(viewingBinderPage, g));
+    const realSideEl = buildSideEl(null, realSlotsDiv);
+    if(isFirst){
+      // nothing precedes page 1 — that's the inside of the front cover, not a card back.
+      // left cover panel is purely decorative: plain page color, no slots, not clickable.
+      sidesWrap.appendChild(buildBlankCoverEl());
+      sidesWrap.appendChild(realSideEl);
+    } else if(isLast){
+      // nothing follows the last page — that's the inside of the back cover.
+      // sides are flipped from the "first page" case: content on the left, cover on the right.
+      // right cover panel is purely decorative: plain page color, no slots, not clickable.
+      sidesWrap.appendChild(realSideEl);
+      sidesWrap.appendChild(buildBlankCoverEl());
+    } else {
+      const fakeSlotsDiv = buildSlotsShape(()=>buildFakeBackSlot());
+      sidesWrap.appendChild(buildSideEl(null, fakeSlotsDiv));
+      sidesWrap.appendChild(realSideEl);
+    }
   }
 }
 function openCardPicker(binderId, slotIndex){
