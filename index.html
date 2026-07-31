@@ -295,6 +295,7 @@ nav>div:active{background:#f8f3fa}
 .binder-slot.fake-back{cursor:default;background:repeating-linear-gradient(135deg,rgba(90,74,85,.16),rgba(90,74,85,.16) 6px,rgba(90,74,85,.24) 6px,rgba(90,74,85,.24) 12px);border-style:solid;border-color:rgba(122,107,118,.3)}
 .binder-slot.fake-back::before{content:'';display:block;padding-top:150%}
 .binder-side-cover{border-color:transparent;box-shadow:none;pointer-events:none;cursor:default}
+.binder-side-grey{background:#d3cdd1}
 .binder-slots{display:grid;gap:6px}
 .binder-slots-13p{display:flex;flex-direction:column;gap:6px}
 .binder-slots-13p-row{display:flex;gap:6px}
@@ -2707,15 +2708,21 @@ function renderBinderViewer(turnDirection){
     sideDiv.style.background = b.pageColor;
     return sideDiv;
   }
+  function buildGreyCoverEl(){
+    const sideDiv = document.createElement('div');
+    sideDiv.className = 'binder-side binder-side-cover binder-side-grey';
+    return sideDiv;
+  }
   function buildFakeBackSideEl(){
     return buildSideEl(buildSlotsShape(()=>buildFakeBackSlot()));
   }
-  function buildCoverPageEl(){
-    // the same cover color/image + optional text is used for both the front and back cover
+  function buildCoverPageEl(forcePlainColor){
+    // the front cover mirrors whatever the cover is set to (color or image); the back
+    // cover is always a plain color, even when the cover itself is an uploaded image.
     const coverDiv = document.createElement('div');
     coverDiv.className = 'binder-cover-page';
-    if(b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
-    else { coverDiv.style.background = (b.cover && b.cover.value) || DEFAULT_COVER_COLOR; }
+    if(!forcePlainColor && b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
+    else { coverDiv.style.background = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR; }
     if(b.coverText){
       const t = document.createElement('div');
       t.className = 'binder-cover-page-text';
@@ -2727,15 +2734,15 @@ function renderBinderViewer(turnDirection){
 
   if(atFrontCover){
     // same 2-panel spread width as interior pages, so opening the binder feels seamless:
-    // left panel is blank (nothing precedes the front cover), right panel is the cover art.
-    sidesWrap.appendChild(buildBlankCoverEl());
+    // left panel is greyed out (nothing precedes the front cover), right panel is the cover art.
+    sidesWrap.appendChild(buildGreyCoverEl());
     sidesWrap.appendChild(buildCoverPageEl());
     return;
   }
   if(atBackCover){
-    // left panel is the back cover art, right panel imitates the "back of the last page".
-    sidesWrap.appendChild(buildCoverPageEl());
+    // left panel imitates the "back of the last page", right panel is the back cover (always plain color).
     sidesWrap.appendChild(buildFakeBackSideEl());
+    sidesWrap.appendChild(buildCoverPageEl(true));
     return;
   }
 
