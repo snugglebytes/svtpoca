@@ -174,7 +174,8 @@ body.no-scroll{overflow:hidden;touch-action:none}
 .add-tile{border:2px dashed var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#cbb8ce;cursor:pointer;background:#fdfaff}
 .add-tile.folder{aspect-ratio:1}
 .add-tile.card-tile{aspect-ratio:3/4}
-.empty-note{font-size:13px;color:#8b7a88;padding:10px 4px;grid-column:1/-1}
+.empty-note{font-size:13px;color:#8b7a88;padding:10px 4px;grid-column:1/-1;text-align:center}
+.empty-note .btn{display:inline-block}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px;color:#7a6b76}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Ticketing",cursive;color:#a493a0;box-sizing:border-box}
 nav>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;line-height:1.3}
@@ -188,6 +189,11 @@ nav>div:active{background:#f8f3fa}
 .modal{background:#fff;border-radius:18px;border:2px solid var(--line);padding:20px;text-align:left;max-width:360px;width:100%;box-shadow:0 8px 26px rgba(122,107,118,.16);max-height:88vh;overflow:auto}
 .modal .big{font-family:'Ticketing',cursive;font-weight:normal;font-size:20px;letter-spacing:.3px;line-height:1.8;margin-bottom:10px;text-align:center;color:#8a6b7c}
 .modal .sub{font-size:13px;color:#a493a0;text-align:center}
+.preview-modal{max-width:420px;padding:14px;text-align:center}
+.preview-image-wrap{display:flex;align-items:center;justify-content:center;margin:8px 0 12px}
+.preview-image-wrap img{max-width:100%;max-height:60vh;border-radius:12px;object-fit:contain;box-shadow:0 4px 14px rgba(122,107,118,.15)}
+.preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin-bottom:4px}
+.preview-meta{font-size:12px;color:var(--text)}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
 .field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
@@ -232,12 +238,12 @@ nav>div:active{background:#f8f3fa}
 <canvas id="confetti-canvas"></canvas>
 
 <header>
-  <h1 id="diamond-title">💎 SVT Photocard Tracker</h1>
+  <h1 id="diamond-title">SVT Photocard Tracker</h1>
   <div class="header-icons">
-    <button class="icon-btn" onclick="showTagsPage()" title="Manage tags">🏷️</button>
-    <button class="btn small ghost data-btn" onclick="exportData()" title="Export data">⬆️ Export</button>
-    <button class="btn small ghost data-btn" onclick="document.getElementById('import-file-input').click()" title="Import data">📥 Import</button>
-    <button class="icon-btn" onclick="openInstallModal()" title="Install as app">⬇️</button>
+    <button class="btn small ghost" onclick="showTagsPage()" title="Manage tags">Tags</button>
+    <button class="btn small ghost data-btn" onclick="exportData()" title="Export data">Export</button>
+    <button class="btn small ghost data-btn" onclick="document.getElementById('import-file-input').click()" title="Import data">Import</button>
+    <button class="btn small ghost" onclick="openInstallModal()" title="Install as app">Install</button>
   </div>
   <input type="file" id="import-file-input" accept="application/json" class="hidden" onchange="importData(event)">
 </header>
@@ -256,9 +262,9 @@ nav>div:active{background:#f8f3fa}
 
 <div class="panel">
   <div class="section-toggle">
-    <div class="opt active" data-section="albums" onclick="switchSection('albums')">📀 Albums</div>
-    <div class="opt" data-section="nonalbum" onclick="switchSection('nonalbum')">🎁 Non-Album</div>
-    <div class="opt" data-section="members" onclick="switchSection('members')">👤 Members</div>
+    <div class="opt active" data-section="albums" onclick="switchSection('albums')">Albums</div>
+    <div class="opt" data-section="nonalbum" onclick="switchSection('nonalbum')">Non-Album</div>
+    <div class="opt" data-section="members" onclick="switchSection('members')">Members</div>
   </div>
   <div class="breadcrumb" id="breadcrumb"></div>
 </div>
@@ -287,11 +293,11 @@ nav>div:active{background:#f8f3fa}
   <div class="grid pp-6" id="explorer-grid"></div>
   <div class="toolbar-row">
     <div class="toolbar-left">
-      <button class="btn small ghost" id="alpha-sort-btn" onclick="toggleAlphaSort()" title="Sort items alphabetically">🔤 A–Z</button>
+      <button class="btn small ghost" id="alpha-sort-btn" onclick="toggleAlphaSort()" title="Sort items alphabetically">A–Z</button>
     </div>
     <div class="toolbar-center">
-      <button class="btn small ghost" onclick="saveOrderAsTemplate()">💾 Save order as template</button>
-      <button class="btn small ghost" onclick="openTemplatesModal()">📐 Templates</button>
+      <button class="btn small ghost" onclick="saveOrderAsTemplate()">Save order as template</button>
+      <button class="btn small ghost" onclick="openTemplatesModal()">Templates</button>
     </div>
     <div class="toolbar-right pg-nav" id="pg-nav-bottom"></div>
   </div>
@@ -302,8 +308,8 @@ nav>div:active{background:#f8f3fa}
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">Duplicates</div>
-    <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">☆ Wishlist</div>
-    <div class="opt" data-list="indemand" onclick="showListsPanel('indemand')">🔥 In Demand</div>
+    <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">Wishlist</div>
+    <div class="opt" data-list="indemand" onclick="showListsPanel('indemand')">In Demand</div>
   </div>
 </div>
 
@@ -317,8 +323,8 @@ nav>div:active{background:#f8f3fa}
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">Duplicates</div>
-    <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">☆ Wishlist</div>
-    <div class="opt" data-list="indemand" onclick="switchListsTab('indemand')">🔥 In Demand</div>
+    <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">Wishlist</div>
+    <div class="opt" data-list="indemand" onclick="switchListsTab('indemand')">In Demand</div>
   </div>
   <div class="pagebar">
     <input id="lists-mini-search-input" class="mini-search-inline" placeholder="Find within this list..." oninput="onListsMiniSearch()">
@@ -337,7 +343,7 @@ nav>div:active{background:#f8f3fa}
   <div class="grid pp-6" id="lists-grid"></div>
   <div class="toolbar-row">
     <div class="toolbar-left">
-      <button class="btn small ghost" id="lists-alpha-sort-btn" onclick="toggleListsAlphaSort()" title="Sort items alphabetically">🔤 A–Z</button>
+      <button class="btn small ghost" id="lists-alpha-sort-btn" onclick="toggleListsAlphaSort()" title="Sort items alphabetically">A–Z</button>
     </div>
     <div class="toolbar-center"></div>
     <div class="toolbar-right pg-nav" id="lists-pg-nav-bottom"></div>
@@ -377,11 +383,11 @@ nav>div:active{background:#f8f3fa}
 </div>
 
 <nav>
-  <div style="cursor:pointer" onclick="goHome()">🏠<br>Home</div>
-  <div style="cursor:pointer" onclick="showStats()">📊<br>Stats</div>
-  <div style="cursor:pointer" onclick="showTagsPage()">🏷️<br>Tags</div>
-  <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">🔍<br>Search</div>
-  <div style="cursor:pointer" onclick="openInstallModal()">⬇️<br>Install</div>
+  <div style="cursor:pointer" onclick="goHome()">Home</div>
+  <div style="cursor:pointer" onclick="showStats()">Stats</div>
+  <div style="cursor:pointer" onclick="showTagsPage()">Tags</div>
+  <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">Search</div>
+  <div style="cursor:pointer" onclick="openInstallModal()">Install</div>
 </nav>
 
 <!-- ADD/EDIT FOLDER MODAL -->
@@ -396,7 +402,6 @@ nav>div:active{background:#f8f3fa}
       <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
       <div class="field-or">— or —</div>
       <div class="dropzone" id="folder-dropzone">
-        <div class="dropzone-icon">📷</div>
         <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
         <input type="file" id="folder-file" accept="image/*" class="hidden" onchange="loadCropFromFile('folder', event)">
       </div>
@@ -421,7 +426,7 @@ nav>div:active{background:#f8f3fa}
     </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="confirmSaveFolder()">Save</button>
-      <button class="btn ghost hidden" id="move-folder-btn-modal" onclick="openMoveModal('folder', editingFolderId)">📦 Move</button>
+      <button class="btn ghost hidden" id="move-folder-btn-modal" onclick="openMoveModal('folder', editingFolderId)">Move</button>
       <button class="btn danger hidden" id="delete-folder-btn" onclick="deleteCurrentFolder()">Delete</button>
     </div>
   </div>
@@ -436,7 +441,6 @@ nav>div:active{background:#f8f3fa}
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
     <div class="field-or">— or —</div>
     <div class="dropzone" id="card-dropzone">
-      <div class="dropzone-icon">📷</div>
       <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
       <input type="file" id="card-file" accept="image/*" class="hidden" onchange="loadCropFromFile('card', event)">
     </div>
@@ -463,8 +467,8 @@ nav>div:active{background:#f8f3fa}
     <div class="field">
       <label>Status</label>
       <div class="status-picker" id="card-status-picker">
-        <div class="opt" data-val="have">✔ Have</div>
-        <div class="opt" data-val="wishlist">☆ Wishlist</div>
+        <div class="opt" data-val="have">Have</div>
+        <div class="opt" data-val="wishlist">Wishlist</div>
         <div class="opt" data-val="stbo">STBO</div>
       </div>
     </div>
@@ -474,9 +478,19 @@ nav>div:active{background:#f8f3fa}
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
-      <button class="btn ghost hidden" id="move-card-btn-modal" onclick="openMoveModal('card', editingCardId)">📦 Move</button>
+      <button class="btn ghost hidden" id="move-card-btn-modal" onclick="openMoveModal('card', editingCardId)">Move</button>
       <button class="btn danger hidden" id="delete-card-btn" onclick="deleteCurrentCard()">Delete</button>
     </div>
+  </div>
+</div>
+
+<!-- CARD PREVIEW MODAL (tap a photocard's thumbnail to view it, Gdrive-style) -->
+<div id="card-preview-modal" class="modal-bg hidden" onclick="if(event.target===this) closeModal('card-preview-modal')">
+  <div class="modal preview-modal">
+    <button class="close-x" onclick="closeModal('card-preview-modal')">✕</button>
+    <div class="preview-image-wrap"><img id="card-preview-img" src="" alt=""></div>
+    <div class="preview-title" id="card-preview-title"></div>
+    <div class="preview-meta" id="card-preview-meta"></div>
   </div>
 </div>
 
@@ -545,11 +559,11 @@ nav>div:active{background:#f8f3fa}
     <div class="section-title">Import backup file</div>
     <p style="font-size:12px;color:#8b7a88;margin-top:0" id="import-choice-summary"></p>
     <div class="import-choice-option">
-      <button class="btn alt" style="width:100%" onclick="confirmImportMerge()">🔀 Sync (merge)</button>
+      <button class="btn alt" style="width:100%" onclick="confirmImportMerge()">Sync (merge)</button>
       <p class="import-choice-note">Adds this file's tags, folders, and cards to what you already have — nothing existing is deleted. Matching tags/folders are combined by name, and exact-duplicate cards are skipped.</p>
     </div>
     <div class="import-choice-option">
-      <button class="btn danger" style="width:100%" onclick="confirmImportReplace()">♻️ Overwrite</button>
+      <button class="btn danger" style="width:100%" onclick="confirmImportReplace()">Overwrite</button>
       <p class="import-choice-note">Replaces your entire current collection with this file's data. This can't be undone.</p>
     </div>
   </div>
@@ -573,8 +587,8 @@ nav>div:active{background:#f8f3fa}
 <div id="egg-modal" class="modal-bg hidden">
   <div class="modal">
     <div class="big">aju nice!</div>
-    <div style="font-size:22px;margin-bottom:6px;text-align:center">(ﾉ´ヮ´)ﾉ*:･ﾟ✧</div>
-    <div class="sub">You clicked 💎 17 times. Going Going~</div>
+    <div style="font-size:22px;margin-bottom:6px;text-align:center">(ﾉ´ヮ´)ﾉ*:･ﾟ</div>
+    <div class="sub">You clicked 17 times. Going Going~</div>
     <button class="btn" style="margin-top:14px;width:100%" onclick="closeModal('egg-modal')">Close</button>
   </div>
 </div>
@@ -864,7 +878,7 @@ function renderBreadcrumb(){
   const bc = document.getElementById('breadcrumb');
   bc.innerHTML = '';
   const home = document.createElement('span');
-  home.textContent = '🏠 ' + (currentSection==='albums'?'Albums':currentSection==='nonalbum'?'Non-Album':'Members');
+  home.textContent = (currentSection==='albums'?'Albums':currentSection==='nonalbum'?'Non-Album':'Members');
   home.className = currentPath.length===0 ? 'current' : '';
   home.onclick = ()=>{ currentPath=[]; clearMiniSearch(); renderExplorer(); };
   bc.appendChild(home);
@@ -1080,11 +1094,22 @@ function renderExplorer(){
   if(items.length===0){
     const note = document.createElement('div');
     note.className = 'empty-note';
-    note.textContent = miniSearchQuery
-      ? `No items here match "${miniSearchQuery}".`
-      : (currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length
+    if(miniSearchQuery){
+      note.textContent = `No items here match "${miniSearchQuery}".`;
+    } else {
+      const msg = document.createElement('div');
+      msg.textContent = currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length
         ? 'Empty — add a folder, or upload a photocard tagged "'+currentFolder.linkedTags.map(tagName).join('" + "')+'".'
-        : 'Empty — tap ＋ to add a folder here.');
+        : 'Empty — add a folder to get started.';
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn small alt';
+      addBtn.style.marginTop = '8px';
+      addBtn.textContent = '+ Add';
+      addBtn.onclick = ()=>{ document.getElementById('fab-menu').classList.remove('hidden'); };
+      note.appendChild(msg);
+      note.appendChild(addBtn);
+    }
     grid.appendChild(note);
   }
 
@@ -1114,14 +1139,14 @@ function renderFolderTile(f, list, cardsInView){
   div.draggable = true;
   const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
   div.innerHTML = `
-    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : '📁'}</div>
+    <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : ''}</div>
     <div class="tile-title-row"><div class="tile-title">${f.title}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Folder options">⋯</div>
         <div class="tile-menu hidden">
-          <button type="button" class="tm-edit">✏️ Edit</button>
-          <button type="button" class="tm-duplicate">📄 Duplicate</button>
-          <button type="button" class="tm-move">📦 Move</button>
+          <button type="button" class="tm-edit">Edit</button>
+          <button type="button" class="tm-duplicate">Duplicate</button>
+          <button type="button" class="tm-move">Move</button>
         </div>
       </div>
     </div>
@@ -1187,7 +1212,7 @@ function renderFolderTile(f, list, cardsInView){
 }
 
 function renderCardTile(c, list, cardsInView, onOpen){
-  const openFn = onOpen || (()=>openCardModal(c));
+  const openFn = onOpen || (()=>openCardPreview(c));
   const div = document.createElement('div');
   const isDraggedNow = dragged && dragged.type==='card' && dragged.id===c.id;
   div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '') + (isDraggedNow ? ' touch-dragging' : '');
@@ -1196,13 +1221,13 @@ function renderCardTile(c, list, cardsInView, onOpen){
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
-    <div class="thumb">${c.image ? `<img src="${c.image}">` : '🖼'}${c.inDemand ? '<div class="indemand-badge">✧<span class="badge-text">In Demand</span></div>' : ''}</div>
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${c.inDemand ? '<div class="indemand-badge"><span class="badge-text">In Demand</span></div>' : ''}</div>
     <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
         <div class="tile-menu hidden">
-          <button type="button" class="tm-edit">✏️ Edit</button>
-          <button type="button" class="tm-move">📦 Move</button>
+          <button type="button" class="tm-edit">Edit</button>
+          <button type="button" class="tm-move">Move</button>
         </div>
       </div>
     </div>
@@ -1298,12 +1323,12 @@ function renderMoveBrowser(){
   const listEl = document.getElementById('move-folder-list');
 
   const secTabs = ['albums','nonalbum','members'].map(sec=>{
-    const label = sec==='albums'?'📀 Albums':sec==='nonalbum'?'🎁 Non-Album':'👤 Members';
+    const label = sec==='albums'?'Albums':sec==='nonalbum'?'Non-Album':'Members';
     return `<span class="move-sec-tab ${sec===moveSection?'current':''}" data-sec="${sec}">${label}</span>`;
   }).join('');
 
   let cursor = DATA.nodes[moveSection];
-  let pathHtml = '<span class="move-crumb-home" data-idx="-1">🏠</span>';
+  let pathHtml = '<span class="move-crumb-home" data-idx="-1">Home</span>';
   movePath.forEach((id,idx)=>{
     const folder = (cursor||[]).find(x=>x.id===id);
     cursor = folder ? folder.children : [];
@@ -1322,7 +1347,7 @@ function renderMoveBrowser(){
       const row = document.createElement('div');
       row.className = 'tpl-row';
       const tagNote = moveContext.type==='card' ? (f.linkedTags && f.linkedTags.length ? '' : ' <span style="color:#c79bb0">(no tags linked)</span>') : '';
-      row.innerHTML = `<span class="tn">📁 ${f.title}${tagNote}</span><button type="button">Open</button>`;
+      row.innerHTML = `<span class="tn">${f.title}${tagNote}</span><button type="button">Open</button>`;
       row.querySelector('button').onclick = ()=>{ movePath = [...movePath, f.id]; renderMoveBrowser(); };
       listEl.appendChild(row);
     });
@@ -1672,6 +1697,22 @@ function deleteFolderNode(f){
   save(); renderExplorer();
 }
 
+/* ================= CARD PREVIEW (tap thumbnail = view, not edit) ================= */
+function openCardPreview(c){
+  if(!c) return;
+  document.getElementById('card-preview-img').src = c.image || '';
+  document.getElementById('card-preview-title').textContent = c.name || 'Untitled';
+  const statusLabel = c.status==='have' ? 'Have' : c.status==='wishlist' ? 'Wishlist' : 'STBO';
+  const tagsLabel = (c.tags||[]).map(tagName).join(', ');
+  const metaParts = [statusLabel];
+  if(c.price) metaParts.push('₱'+c.price);
+  if(c.duplicate) metaParts.push('Duplicate'+(c.dupCount>1?' ×'+c.dupCount:''));
+  if(c.inDemand) metaParts.push('In Demand');
+  if(tagsLabel) metaParts.push(tagsLabel);
+  document.getElementById('card-preview-meta').textContent = metaParts.join(' · ');
+  document.getElementById('card-preview-modal').classList.remove('hidden');
+}
+
 /* ================= CARD CRUD ================= */
 function openCardModal(card){
   document.getElementById('fab-menu').classList.add('hidden');
@@ -1909,8 +1950,8 @@ function renderTagsPage(){
     row.className = 'tag-row';
     row.innerHTML = `
       <span class="tn">${t.name}</span>
-      <button title="Rename">✎</button>
-      <button title="Delete">✕</button>
+      <button type="button" class="btn small ghost" title="Rename">Rename</button>
+      <button type="button" class="btn small danger" title="Delete">Delete</button>
     `;
     const [nameSpan, renameBtn, delBtn] = row.querySelectorAll('.tn, button');
     renameBtn.onclick = ()=>startRenameTag(row, t);
@@ -1997,7 +2038,7 @@ function confirmSaveTemplate(){
   else { DATA.templates.push({id:'tpl_'+Date.now(), name, contextKey:key, order}); }
   save();
   closeModal('save-template-modal');
-  alert('Template saved ✓ — find it anytime via 📐 Templates.');
+  alert('Template saved — find it anytime via Templates.');
 }
 function openTemplatesModal(){
   renderTemplatesList();
@@ -2036,7 +2077,7 @@ function updateTemplate(id){
   if(!order || !order.length){ alert('Drag items into the order you want first, then update the template.'); return; }
   t.order = order;
   save();
-  alert('Template updated ✓');
+  alert('Template updated.');
 }
 function deleteTemplate(id){
   if(!confirm('Delete this template?')) return;
@@ -2296,7 +2337,7 @@ function renderSrFolders(){
   srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section,trail})=>{
     const div = document.createElement('div');
     div.className='tile folder';
-    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:'📁'}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
+    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:''}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
     if(trail && trail.length){
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'folder-pills';
@@ -2321,7 +2362,7 @@ function renderSrCards(){
   grid.innerHTML = '';
   srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>{
     const tile = renderCardTile(c, null, null, ()=>jumpToCardLocation(c));
-    const folders = foldersForCard(c);
+    const folders = foldersForCard(c).filter(f=>f.section!=='members');
     if(folders.length){
       const thumb = tile.querySelector('.thumb');
       const pillsWrap = document.createElement('div');
@@ -2409,7 +2450,7 @@ function renderRecentFiles(){
     const item = document.createElement('div');
     item.className = 'rf-item';
     item.innerHTML = `
-      <div class="rf-thumb">${folder.thumb ? `<img src="${folder.thumb}">` : '📁'}</div>
+      <div class="rf-thumb">${folder.thumb ? `<img src="${folder.thumb}">` : ''}</div>
       <div class="rf-title">${folder.title}</div>
     `;
     item.onclick = ()=> jumpToFolder(section, folder.id);
@@ -2438,10 +2479,10 @@ function jumpToFolder(section, folderId){
    back to the edit modal if the card isn't linked to any folder. */
 function jumpToCardLocation(c){
   const folders = foldersForCard(c);
-  if(!folders.length){ openCardModal(c); return; }
+  if(!folders.length){ openCardPreview(c); return; }
   const {section, folder} = folders[0];
   const p = findFolderPath(DATA.nodes[section], folder.id, []);
-  if(!p){ openCardModal(c); return; }
+  if(!p){ openCardPreview(c); return; }
   currentSection = section;
   currentPath = p; // land inside the folder so the card itself shows
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===section));
