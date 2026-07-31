@@ -65,10 +65,12 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
   .wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 }
 .tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
-.tile.folder .thumb{aspect-ratio:1}
-.tile.card-tile .thumb{aspect-ratio:2/3;border-radius:12px 12px 10px 10px}
-.thumb{position:relative;background:#f6f2fb;border:none;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
-.thumb img{width:100%;height:100%;object-fit:cover;border-radius:0}
+.tile.folder .thumb{border-radius:12px 12px 0 0}
+.tile.card-tile .thumb{border-radius:12px 12px 10px 10px}
+.thumb{position:relative;background:#f6f2fb;border:none;font-size:11px;text-align:center;overflow:hidden}
+.thumb::before{content:'';display:block;padding-top:100%}
+.tile.card-tile .thumb::before{padding-top:150%}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0}
 .tile-title{padding:0 8px}
 .tile-title-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:6px;padding:0 8px}
 .tile-title-row .tile-title{margin-top:0;padding:0}
@@ -215,8 +217,9 @@ nav>div:active{background:#f8f3fa}
 .modal .sub{font-size:13px;color:#a493a0;text-align:center}
 .preview-modal{max-width:420px;padding:0;text-align:center;overflow:hidden;position:relative}
 .preview-modal .close-x{position:absolute;top:10px;right:10px;float:none;z-index:2;background:rgba(255,255,255,.85);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(122,107,118,.25)}
-.preview-image-wrap{display:flex;align-items:center;justify-content:center;margin:0}
-.preview-image-wrap img{width:100%;aspect-ratio:2/3;border-radius:0 0 16px 16px;object-fit:cover;box-shadow:none;display:block}
+.preview-image-wrap{position:relative;overflow:hidden;border-radius:0 0 16px 16px;margin:0}
+.preview-image-wrap::before{content:'';display:block;padding-top:150%}
+.preview-image-wrap img{position:absolute;inset:0;width:100%;height:100%;border-radius:0;object-fit:cover;box-shadow:none;display:block}
 .preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
 .preview-meta{font-size:12px;color:var(--text);padding:0 14px 14px}
 .field{margin-bottom:12px}
