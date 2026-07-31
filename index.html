@@ -320,6 +320,9 @@ nav>div:active{background:#f8f3fa}
 .card-picker-item::after{content:'';position:absolute;inset:0;pointer-events:none}
 .card-picker-item.st-wishlist::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
 .card-picker-item.st-stbo::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
+.card-upload-folder-list{max-height:150px;overflow:auto;margin-bottom:6px}
+.binder-slot.drag-over{box-shadow:inset 0 0 0 3px var(--blue, #5fa8d9);border-color:#5fa8d9}
+.binder-slot[draggable="true"]{cursor:grab}
 .crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
 .crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -580,7 +583,7 @@ nav>div:active{background:#f8f3fa}
 <!-- ADD/EDIT CARD MODAL -->
 <div id="card-modal" class="modal-bg hidden">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('card-modal')">✕</button>
+    <button class="close-x" onclick="closeCardEditor()">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
@@ -608,6 +611,13 @@ nav>div:active{background:#f8f3fa}
         <input id="card-tag-input" placeholder="Type to search or add tags..." autocomplete="off">
         <div class="combo-list hidden" id="card-tag-list"></div>
       </div>
+    </div>
+    <div class="field hidden" id="card-upload-folder-section">
+      <label>Save to folder (optional — tags this card so it appears there)</label>
+      <div id="card-upload-folder-breadcrumb"></div>
+      <div class="card-upload-folder-list" id="card-upload-folder-list"></div>
+      <button type="button" class="btn small ghost" onclick="promptNewCardUploadFolder()">+ New folder here</button>
+      <p class="field-hint" id="card-upload-folder-note"></p>
     </div>
     <div class="field">
       <label>Status</label>
@@ -722,6 +732,19 @@ nav>div:active{background:#f8f3fa}
   </div>
 </div>
 
+<!-- GRID/LAYOUT CHANGE MODAL (structural binder edits: keep placed cards or reset) -->
+<div id="grid-change-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeGridChangeModal()">✕</button>
+    <div class="section-title">Update binder layout?</div>
+    <p class="sub" id="grid-change-note" style="text-align:left;color:#8b7a88;font-size:12px;margin:6px 0 14px"></p>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="resolveGridChange(true)">Keep photocards</button>
+      <button class="btn danger" onclick="resolveGridChange(false)">Start Fresh</button>
+    </div>
+  </div>
+</div>
+
 <!-- BINDER VIEWER MODAL -->
 <div id="binder-viewer-modal" class="modal-bg hidden binder-viewer-modal">
   <div class="modal">
@@ -760,6 +783,7 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeModal('card-picker-modal')">✕</button>
     <div class="section-title">Choose a photocard</div>
+    <button type="button" class="btn small alt" style="width:100%;margin-bottom:8px" onclick="openCardModalForBinderUpload()">+ Upload new photocard</button>
     <input id="card-picker-search" class="mini-search-inline" placeholder="Search your photocards..." oninput="renderCardPickerList()" style="width:100%;box-sizing:border-box">
     <div class="card-picker-list" id="card-picker-list"></div>
   </div>
@@ -2214,7 +2238,21 @@ function openCardModal(card){
   document.querySelectorAll('#card-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
   document.getElementById('delete-card-btn').classList.toggle('hidden', !card);
   document.getElementById('move-card-btn-modal').classList.toggle('hidden', !card);
+  // the destination-folder picker only applies to the "upload while filling a binder
+  // slot" flow (see openCardModalForBinderUpload); a plain add/edit never shows it.
+  document.getElementById('card-upload-folder-section').classList.toggle('hidden', !cardUploadMode);
   document.getElementById('card-modal').classList.remove('hidden');
+}
+function closeCardEditor(){
+  closeModal('card-modal');
+  if(cardUploadMode){
+    // cancelled an upload-from-binder — hop back to the photocard picker instead of
+    // dumping the person out to the main explorer.
+    cardUploadMode = false;
+    cardUploadTarget = null;
+    document.getElementById('card-upload-folder-section').classList.add('hidden');
+    document.getElementById('card-picker-modal').classList.remove('hidden');
+  }
 }
 function currentPathLinkedTags(){
   const f = currentPath.length ? findFolder(currentPath) : null;
@@ -2234,6 +2272,105 @@ function deleteCurrentCard(){
   DATA.cards = DATA.cards.filter(c=>c.id!==editingCardId);
   save(); closeModal('card-modal'); renderExplorer();
 }
+
+/* ---- upload a brand-new photocard directly from the binder's "choose a photocard"
+   picker, optionally filing it into a folder (by tag) along the way ---- */
+let cardUploadMode = false;
+let cardUploadTarget = null; // {binderId, slotIndex}
+let cardUploadSection = 'albums';
+let cardUploadPath = [];
+function openCardModalForBinderUpload(){
+  cardUploadMode = true;
+  cardUploadTarget = cardPickerTarget;
+  cardUploadSection = 'albums';
+  cardUploadPath = [];
+  document.getElementById('card-picker-modal').classList.add('hidden');
+  openCardModal(null);
+  renderCardUploadFolderBrowser();
+}
+function cardUploadFolderList(){
+  let list = DATA.nodes[cardUploadSection];
+  for(const id of cardUploadPath){
+    const f = (list||[]).find(x=>x.id===id);
+    if(!f) break;
+    list = f.children;
+  }
+  return list || [];
+}
+function currentCardUploadFolder(){
+  if(!cardUploadPath.length) return null;
+  let list = DATA.nodes[cardUploadSection], folder=null;
+  for(const id of cardUploadPath){
+    folder = (list||[]).find(x=>x.id===id);
+    if(!folder) return null;
+    list = folder.children;
+  }
+  return folder;
+}
+function renderCardUploadFolderBrowser(){
+  const bc = document.getElementById('card-upload-folder-breadcrumb');
+  const listEl = document.getElementById('card-upload-folder-list');
+  const secTabs = ['albums','nonalbum','members'].map(sec=>{
+    const label = sec==='albums'?'Albums':sec==='nonalbum'?'Non-Album':'Members';
+    return `<span class="move-sec-tab ${sec===cardUploadSection?'current':''}" data-sec="${sec}">${label}</span>`;
+  }).join('');
+  let cursor = DATA.nodes[cardUploadSection];
+  let pathHtml = '<span class="move-crumb-home" data-idx="-1">Home</span>';
+  cardUploadPath.forEach((id,idx)=>{
+    const folder = (cursor||[]).find(x=>x.id===id);
+    cursor = folder ? folder.children : [];
+    pathHtml += ` › <span class="move-crumb" data-idx="${idx}">${folder?folder.title:'?'}</span>`;
+  });
+  bc.innerHTML = `<div class="move-sec-tabs">${secTabs}</div><div class="move-path">${pathHtml}</div>`;
+
+  const currentList = cardUploadFolderList();
+  listEl.innerHTML = '';
+  if(!currentList.length){
+    listEl.innerHTML = '<div class="empty-note">No subfolders here.</div>';
+  } else {
+    currentList.forEach(f=>{
+      const row = document.createElement('div');
+      row.className = 'tpl-row';
+      const tagNote = f.linkedTags && f.linkedTags.length ? '' : ' <span style="color:#c79bb0">(no tags linked)</span>';
+      row.innerHTML = `<span class="tn">${f.title}${tagNote}</span><button type="button">Open</button>`;
+      row.querySelector('button').onclick = ()=>{ cardUploadPath = [...cardUploadPath, f.id]; renderCardUploadFolderBrowser(); };
+      listEl.appendChild(row);
+    });
+  }
+
+  const here = currentCardUploadFolder();
+  const note = document.getElementById('card-upload-folder-note');
+  const secLabel = cardUploadSection==='albums'?'Albums':cardUploadSection==='nonalbum'?'Non-Album':'Members';
+  note.textContent = !here
+    ? `Not saved to a folder yet — browse into one, create a new one, or leave it here and just use tags below.`
+    : (here.linkedTags && here.linkedTags.length
+        ? `This photocard will be tagged to match "${here.title}", so it'll show up inside it.`
+        : `"${here.title}" isn't linked to any tags yet, so a card can't be filed there — create a folder here instead, or link a tag to it later.`);
+
+  bc.querySelectorAll('.move-sec-tab').forEach(tab=>{
+    tab.onclick = ()=>{ cardUploadSection = tab.dataset.sec; cardUploadPath = []; renderCardUploadFolderBrowser(); };
+  });
+  const homeCrumb = bc.querySelector('.move-crumb-home');
+  if(homeCrumb) homeCrumb.onclick = ()=>{ cardUploadPath = []; renderCardUploadFolderBrowser(); };
+  bc.querySelectorAll('.move-crumb').forEach(el=>{
+    el.onclick = ()=>{ const idx=parseInt(el.dataset.idx,10); cardUploadPath = cardUploadPath.slice(0, idx+1); renderCardUploadFolderBrowser(); };
+  });
+}
+function promptNewCardUploadFolder(){
+  const name = prompt('New folder name:');
+  if(!name || !name.trim()) return;
+  const title = name.trim();
+  // auto-create a matching tag so the new folder actually holds cards right away,
+  // the same way a manually-linked tag would.
+  const tag = {id:'tag_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), name:title};
+  DATA.tags.push(tag);
+  const folder = {id:'fold_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), title, thumb:'', linkedTags:[tag.id], fixed:false, children:[], createdAt:Date.now(), updatedAt:Date.now()};
+  cardUploadFolderList().push(folder);
+  save();
+  cardUploadPath = [...cardUploadPath, folder.id];
+  renderCardUploadFolderBrowser();
+}
+
 function saveCard(){
   const statusEl = document.querySelector('#card-status-picker .opt.sel');
   if(!statusEl){ alert('Pick a status: Have, Wishlist, or STBO.'); return; }
@@ -2246,16 +2383,41 @@ function saveCard(){
   const popular = document.getElementById('card-popular').checked;
   const rareFind = document.getElementById('card-rarefind').checked;
   const image = croppedDataUrl || sourceUrl;
-  const tags = Array.from(selectedCardTagIds);
-  if(tags.length===0){ alert('Add at least one tag so this card can appear in a folder.'); return; }
+  let tags = Array.from(selectedCardTagIds);
+  if(cardUploadMode){
+    const here = currentCardUploadFolder();
+    if(here && here.linkedTags && here.linkedTags.length){ tags = Array.from(new Set([...tags, ...here.linkedTags])); }
+  }
+  if(tags.length===0){ alert('Add at least one tag (or pick/create a destination folder above) so this card can appear in a folder.'); return; }
 
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
     Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, popular, rareFind, updatedAt: Date.now()});
-  } else {
-    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, popular, rareFind, createdAt: Date.now(), updatedAt: Date.now()});
+    save(); closeModal('card-modal'); renderExplorer();
+    return;
   }
-  save(); closeModal('card-modal'); renderExplorer();
+
+  const newCard = {id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), image, sourceUrl, name, status, price, tags, duplicate, dupCount, popular, rareFind, createdAt: Date.now(), updatedAt: Date.now()};
+  DATA.cards.push(newCard);
+  save();
+
+  if(cardUploadMode){
+    const target = cardUploadTarget;
+    closeModal('card-modal');
+    document.getElementById('card-upload-folder-section').classList.add('hidden');
+    cardUploadMode = false;
+    cardUploadTarget = null;
+    if(target){
+      const b = DATA.binders.find(x=>x.id===target.binderId);
+      if(b){ b.slots[target.slotIndex] = newCard.id; b.updatedAt = Date.now(); save(); }
+    }
+    closeModal('card-picker-modal');
+    renderBinderViewer();
+    return;
+  }
+
+  closeModal('card-modal');
+  renderExplorer();
 }
 
 let pendingDupCardId = null;
@@ -2603,15 +2765,18 @@ function saveBinderForm(){
   }
   const now = Date.now();
   if(!DATA.binders) DATA.binders = [];
+  const payload = {name, coverText, pageColor, showName, nameColor, backToBack, grids, cover, pages};
   if(editingBinderId){
     const b = DATA.binders.find(x=>x.id===editingBinderId);
     const structuralChange = b.pages!==pages || b.backToBack!==backToBack || b.grids!==grids;
-    if(structuralChange && !confirm('Changing pages, back-to-back, or grids will reset all cards placed in this binder. Continue?')) return;
-    b.name=name; b.coverText=coverText; b.pageColor=pageColor; b.cover=cover; b.showName=showName; b.nameColor=nameColor;
     if(structuralChange){
-      b.pages=pages; b.backToBack=backToBack; b.grids=grids;
-      b.slots = new Array((backToBack?pages*2:pages)*grids).fill(null);
+      // Don't wipe placed photocards outright — let the person choose to keep them
+      // (repacked into the new layout) or start fresh.
+      pendingBinderSave = {editingBinderId, payload};
+      openGridChangeModal(b, payload);
+      return;
     }
+    b.name=name; b.coverText=coverText; b.pageColor=pageColor; b.cover=cover; b.showName=showName; b.nameColor=nameColor;
     b.updatedAt = now;
   } else {
     if((DATA.binders.length) >= BINDER_MAX){ alert('You can have up to 13 binders. Delete one to add another.'); return; }
@@ -2626,6 +2791,48 @@ function saveBinderForm(){
   closeModal('binder-modal');
   renderBindersPanel();
   returnToBinderViewerIfNeeded(editingBinderId);
+}
+let pendingBinderSave = null; // {editingBinderId, payload}
+function openGridChangeModal(b, payload){
+  const placedCount = (b.slots||[]).filter(Boolean).length;
+  const newCapacity = (payload.backToBack ? payload.pages*2 : payload.pages) * payload.grids;
+  const note = document.getElementById('grid-change-note');
+  if(!placedCount){
+    note.textContent = "This binder doesn't have any photocards placed yet, so the layout is safe to change either way.";
+  } else if(newCapacity < placedCount){
+    note.textContent = `This binder has ${placedCount} photocard${placedCount===1?'':'s'} placed. The new layout only fits ${newCapacity}, so keeping them will repack as many as fit (the last ${placedCount-newCapacity} will be left unplaced) — or you can start fresh and clear all of them.`;
+  } else {
+    note.textContent = `This binder has ${placedCount} photocard${placedCount===1?'':'s'} placed. Keeping them will repack them into the new layout in the same order — or you can start fresh and clear all of them.`;
+  }
+  document.getElementById('grid-change-modal').classList.remove('hidden');
+}
+function closeGridChangeModal(){
+  document.getElementById('grid-change-modal').classList.add('hidden');
+  pendingBinderSave = null;
+}
+function resolveGridChange(keep){
+  if(!pendingBinderSave) return;
+  const {editingBinderId: id, payload} = pendingBinderSave;
+  const b = DATA.binders.find(x=>x.id===id);
+  document.getElementById('grid-change-modal').classList.add('hidden');
+  pendingBinderSave = null;
+  if(!b) return;
+  const newCapacity = (payload.backToBack ? payload.pages*2 : payload.pages) * payload.grids;
+  const newSlots = new Array(newCapacity).fill(null);
+  if(keep){
+    // repack the previously-placed cards, in their existing order, into the new layout
+    const placedCards = (b.slots||[]).filter(Boolean);
+    for(let i=0; i<placedCards.length && i<newCapacity; i++){ newSlots[i] = placedCards[i]; }
+  }
+  b.name=payload.name; b.coverText=payload.coverText; b.pageColor=payload.pageColor; b.cover=payload.cover;
+  b.showName=payload.showName; b.nameColor=payload.nameColor;
+  b.pages=payload.pages; b.backToBack=payload.backToBack; b.grids=payload.grids;
+  b.slots = newSlots;
+  b.updatedAt = Date.now();
+  save();
+  closeModal('binder-modal');
+  renderBindersPanel();
+  returnToBinderViewerIfNeeded(id);
 }
 function closeBinderEditor(){
   closeModal('binder-modal');
@@ -2742,6 +2949,7 @@ function renderBinderViewer(turnDirection){
     const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
     const slotDiv = document.createElement('div');
     slotDiv.className = 'binder-slot' + (card ? ' filled' : '') + (card && card.status==='wishlist' ? ' st-wishlist' : card && card.status==='stbo' ? ' st-stbo' : '');
+    slotDiv.dataset.slotIndex = slotIndex;
     if(card && card.image){
       slotDiv.innerHTML = `<img src="${card.image}">`;
       if(b.showName!==false){
@@ -2757,12 +2965,42 @@ function renderBinderViewer(turnDirection){
     else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
     else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
     slotDiv.onclick = ()=>{
+      if(binderSlotJustDragged){ binderSlotJustDragged = false; return; } // swallow the click that follows a drag release
       if(card){
         openBinderSlotOptions(b.id, slotIndex, card);
       } else {
         openCardPicker(b.id, slotIndex);
       }
     };
+    // desktop drag & drop — drag a filled slot onto any other slot to swap their photocards
+    if(card){
+      slotDiv.draggable = true;
+      slotDiv.addEventListener('dragstart', e=>{
+        binderDragSource = {binderId:b.id, slotIndex};
+        e.dataTransfer.effectAllowed = 'move';
+        try{ e.dataTransfer.setData('text/plain', String(slotIndex)); }catch(err){}
+      });
+      slotDiv.addEventListener('dragend', ()=>{
+        binderDragSource = null;
+        document.querySelectorAll('.binder-slot.drag-over').forEach(el=>el.classList.remove('drag-over'));
+      });
+    }
+    slotDiv.addEventListener('dragover', e=>{
+      if(!binderDragSource || binderDragSource.binderId!==b.id) return;
+      e.preventDefault();
+      slotDiv.classList.add('drag-over');
+    });
+    slotDiv.addEventListener('dragleave', ()=>slotDiv.classList.remove('drag-over'));
+    slotDiv.addEventListener('drop', e=>{
+      e.preventDefault();
+      slotDiv.classList.remove('drag-over');
+      if(!binderDragSource || binderDragSource.binderId!==b.id) return;
+      const from = binderDragSource.slotIndex;
+      binderDragSource = null;
+      swapBinderSlots(b, from, slotIndex);
+    });
+    // mobile long-press drag — mirrors the home page's touch reordering
+    if(card){ attachBinderSlotTouchDrag(slotDiv, b.id, slotIndex); }
     return slotDiv;
   }
   function buildFakeBackSlot(){
@@ -2858,6 +3096,92 @@ function renderBinderViewer(turnDirection){
       sidesWrap.appendChild(buildFakeBackSideEl());
       sidesWrap.appendChild(realSideEl);
     }
+  }
+}
+/* ---- binder slot reordering: drag a photocard onto another slot to swap them,
+   same gesture as the home page (native drag on desktop, long-press on touch) ---- */
+let binderDragSource = null; // {binderId, slotIndex}
+let binderSlotJustDragged = false;
+function swapBinderSlots(b, i, j){
+  if(!b || i===j || i==null || j==null) return;
+  const tmp = b.slots[i];
+  b.slots[i] = b.slots[j];
+  b.slots[j] = tmp;
+  b.updatedAt = Date.now();
+  save();
+  renderBinderViewer();
+}
+const BINDER_TOUCH_HOLD_MS = 350, BINDER_TOUCH_MOVE_CANCEL_PX = 10;
+function attachBinderSlotTouchDrag(el, binderId, slotIndex){
+  let timer=null, startX=0, startY=0, primed=false, active=false, ghost=null, hoverIndex=null;
+  const clearTimer = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+
+  el.addEventListener('touchstart', (e)=>{
+    if(e.touches.length!==1) return;
+    const t = e.touches[0];
+    startX=t.clientX; startY=t.clientY; primed=true;
+    clearTimer();
+    timer = setTimeout(()=>{ if(primed) beginDrag(t.clientX, t.clientY); }, BINDER_TOUCH_HOLD_MS);
+  }, {passive:true});
+
+  el.addEventListener('touchmove', (e)=>{
+    const t = e.touches[0];
+    if(!active){
+      if(Math.abs(t.clientX-startX)>BINDER_TOUCH_MOVE_CANCEL_PX || Math.abs(t.clientY-startY)>BINDER_TOUCH_MOVE_CANCEL_PX){
+        primed=false; clearTimer();
+      }
+      return;
+    }
+    e.preventDefault();
+    moveGhost(t.clientX, t.clientY);
+    document.querySelectorAll('.binder-slot.drag-over').forEach(s=>s.classList.remove('drag-over'));
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const slotEl = under && under.closest ? under.closest('.binder-slot[data-slot-index]') : null;
+    if(slotEl){
+      hoverIndex = parseInt(slotEl.dataset.slotIndex, 10);
+      if(hoverIndex !== slotIndex) slotEl.classList.add('drag-over');
+    } else {
+      hoverIndex = null;
+    }
+  }, {passive:false});
+
+  const finish = ()=>{
+    primed=false; clearTimer();
+    document.querySelectorAll('.binder-slot.drag-over').forEach(s=>s.classList.remove('drag-over'));
+    if(!active) return;
+    active=false;
+    document.body.classList.remove('no-scroll');
+    if(ghost){ ghost.remove(); ghost=null; }
+    const b = DATA.binders.find(x=>x.id===binderId);
+    if(b && hoverIndex!=null && hoverIndex!==slotIndex){
+      binderSlotJustDragged = true;
+      swapBinderSlots(b, slotIndex, hoverIndex);
+    } else {
+      renderBinderViewer();
+    }
+    hoverIndex = null;
+  };
+  el.addEventListener('touchend', finish);
+  el.addEventListener('touchcancel', finish);
+
+  function beginDrag(x, y){
+    active = true;
+    binderSlotJustDragged = false;
+    document.body.classList.add('no-scroll');
+    if(navigator.vibrate) navigator.vibrate(12);
+    const r = el.getBoundingClientRect();
+    ghost = el.cloneNode(true);
+    ghost.className = el.className + ' touch-drag-ghost';
+    ghost.style.width = r.width+'px';
+    ghost.style.height = r.height+'px';
+    ghost.style.left = (x - r.width/2)+'px';
+    ghost.style.top = (y - r.height/2)+'px';
+    document.body.appendChild(ghost);
+  }
+  function moveGhost(x, y){
+    if(!ghost) return;
+    ghost.style.left = (x - ghost.offsetWidth/2)+'px';
+    ghost.style.top = (y - ghost.offsetHeight/2)+'px';
   }
 }
 function openBinderSlotOptions(binderId, slotIndex, card){
