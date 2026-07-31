@@ -39,7 +39,6 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .toolbar-row .toolbar-center{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
 .toolbar-row .toolbar-right{display:flex;align-items:center}
 .toolbar-row .toolbar-right:empty{display:none}
-#alpha-sort-btn.active,#lists-alpha-sort-btn.active{background:var(--accent)}
 .panel{background:#fff;border-radius:16px;border:2px solid var(--line);padding:10px;margin:10px 0;box-shadow:0 4px 14px rgba(122,107,118,.08)}
 #home-lists-bar{margin-bottom:20px}
 .section-toggle{display:flex;gap:6px}
@@ -56,6 +55,12 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tags-search-full{width:100%;box-sizing:border-box;margin:8px 0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:767px){
+  header{position:static}
+  nav{padding:18px 6px calc(18px + env(safe-area-inset-bottom))}
+  nav>div{padding:10px 12px}
+  .wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+}
 .tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:6px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
 .tile.folder .thumb{aspect-ratio:1}
 .tile.card-tile .thumb{aspect-ratio:2/3}
@@ -70,7 +75,12 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
 .folder-pills{position:absolute;left:3px;right:3px;bottom:3px;display:flex;flex-wrap:wrap;gap:3px;z-index:5;pointer-events:none}
 .folder-pill{background:rgba(50,35,48,.78);color:#fff;font-size:8px;line-height:1.4;padding:2px 6px;border-radius:8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;padding:0}
+.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:none;align-items:center;justify-content:center;padding:0}
+body.bulk-edit .del-x{display:flex}
+.tile-title-edit{width:100%;font-size:13px;font-weight:600;padding:3px 5px;margin-top:4px;border:2px solid var(--accent);border-radius:6px;font-family:inherit;box-sizing:border-box;background:#fff;color:var(--text)}
+#bulk-edit-btn.active,#lists-bulk-edit-btn.active{background:var(--accent)}
+.sort-select{border:2px solid var(--line);border-radius:9px;background:#fff;color:#7a6b76;font-family:"Ticketing",cursive;font-size:10px;padding:5px 6px;cursor:pointer}
+.tm-delete{color:#c0596f}
 .status-badge{position:absolute;top:6px;left:6px;font-size:10px;padding:3px 8px;border-radius:8px;border:2px solid;font-family:'Ticketing',cursive;letter-spacing:.3px;z-index:3}
 .status-have{background:var(--green);border-color:#7fbf7a}
 .status-wishlist{background:var(--yellow);border-color:#e0b94a;color:#7a5f10}
@@ -243,6 +253,7 @@ nav>div:active{background:#f8f3fa}
     <button class="btn small ghost" onclick="showTagsPage()" title="Manage tags">Tags</button>
     <button class="btn small ghost data-btn" onclick="exportData()" title="Export data">Export</button>
     <button class="btn small ghost data-btn" onclick="document.getElementById('import-file-input').click()" title="Import data">Import</button>
+    <button class="btn small ghost danger data-btn" onclick="openClearDataModal()" title="Clear all data">Clear data</button>
     <button class="btn small ghost" onclick="openInstallModal()" title="Install as app">Install</button>
   </div>
   <input type="file" id="import-file-input" accept="application/json" class="hidden" onchange="importData(event)">
@@ -275,7 +286,7 @@ nav>div:active{background:#f8f3fa}
     <div class="pp-select">Show
       <select id="per-page-select" onchange="onPerPageChange()">
         <option value="4">4</option>
-        <option value="6" selected>6</option>
+        <option value="6">6</option>
         <option value="9">9</option>
         <option value="13">13</option>
         <option value="15">15</option>
@@ -293,7 +304,14 @@ nav>div:active{background:#f8f3fa}
   <div class="grid pp-6" id="explorer-grid"></div>
   <div class="toolbar-row">
     <div class="toolbar-left">
-      <button class="btn small ghost" id="alpha-sort-btn" onclick="toggleAlphaSort()" title="Sort items alphabetically">A–Z</button>
+      <select class="sort-select" id="sort-mode-select" onchange="onSortModeChange()" title="Sort items">
+        <option value="">Custom order</option>
+        <option value="az">A–Z</option>
+        <option value="za">Z–A</option>
+        <option value="date-uploaded">Date uploaded</option>
+        <option value="date-edited">Date edited</option>
+      </select>
+      <button class="btn small ghost" id="bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
     </div>
     <div class="toolbar-center">
       <button class="btn small ghost" onclick="saveOrderAsTemplate()">Save order as template</button>
@@ -331,7 +349,7 @@ nav>div:active{background:#f8f3fa}
     <div class="pp-select">Show
       <select id="lists-per-page-select" onchange="onListsPerPageChange()">
         <option value="4">4</option>
-        <option value="6" selected>6</option>
+        <option value="6">6</option>
         <option value="9">9</option>
         <option value="13">13</option>
         <option value="15">15</option>
@@ -343,7 +361,14 @@ nav>div:active{background:#f8f3fa}
   <div class="grid pp-6" id="lists-grid"></div>
   <div class="toolbar-row">
     <div class="toolbar-left">
-      <button class="btn small ghost" id="lists-alpha-sort-btn" onclick="toggleListsAlphaSort()" title="Sort items alphabetically">A–Z</button>
+      <select class="sort-select" id="lists-sort-mode-select" onchange="onListsSortModeChange()" title="Sort items">
+        <option value="">Default order</option>
+        <option value="az">A–Z</option>
+        <option value="za">Z–A</option>
+        <option value="date-uploaded">Date uploaded</option>
+        <option value="date-edited">Date edited</option>
+      </select>
+      <button class="btn small ghost" id="lists-bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
     </div>
     <div class="toolbar-center"></div>
     <div class="toolbar-right pg-nav" id="lists-pg-nav-bottom"></div>
@@ -583,6 +608,20 @@ nav>div:active{background:#f8f3fa}
   </div>
 </div>
 
+<!-- CLEAR DATA MODAL -->
+<div id="clear-data-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('clear-data-modal')">✕</button>
+    <div class="section-title">⚠️ Clear all data</div>
+    <p style="font-size:13px">This will permanently delete <b>everything</b> in your tracker — all folders, photocards, tags, wishlist/STBO/duplicate status, and templates.</p>
+    <p style="font-size:13px;color:#c0596f"><b>This can't be undone.</b> If you want to keep a copy, tap Export first.</p>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn small ghost" style="flex:1" onclick="closeModal('clear-data-modal')">Cancel</button>
+      <button class="btn small danger" style="flex:1" onclick="confirmClearData()">Clear everything</button>
+    </div>
+  </div>
+</div>
+
 <!-- EASTER EGG MODAL -->
 <div id="egg-modal" class="modal-bg hidden">
   <div class="modal">
@@ -636,11 +675,17 @@ function load(){
       (list||[]).forEach(f=>{
         if(!f.linkedTags){ f.linkedTags = f.linkedTag ? [f.linkedTag] : []; }
         delete f.linkedTag;
+        if(!f.createdAt) f.createdAt = parseInt((f.id||'').replace(/\D/g,''),10) || 0;
+        if(!f.updatedAt) f.updatedAt = f.createdAt;
         migrateFolderTags(f.children);
       });
     }
     ['albums','nonalbum','members'].forEach(sec=>migrateFolderTags(d.nodes[sec]));
-    d.cards.forEach(c=>{ if(c.duplicate && !c.dupCount) c.dupCount = 1; });
+    d.cards.forEach(c=>{
+      if(c.duplicate && !c.dupCount) c.dupCount = 1;
+      if(!c.createdAt) c.createdAt = parseInt((c.id||'').replace(/\D/g,''),10) || 0;
+      if(!c.updatedAt) c.updatedAt = c.createdAt;
+    });
     return d;
   }catch(e){ return defaultData(); }
 }
@@ -656,6 +701,18 @@ function exportData(){
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+function openClearDataModal(){ document.getElementById('clear-data-modal').classList.remove('hidden'); }
+function confirmClearData(){
+  DATA = defaultData();
+  save();
+  closeModal('clear-data-modal');
+  currentPath = [];
+  miniSearchQuery = '';
+  listsMiniSearchQuery = '';
+  currentPage = 1;
+  listsPage = 1;
+  switchSection('albums');
 }
 let pendingImportData = null;
 function importData(event){
@@ -803,17 +860,19 @@ let croppedDataUrl = null;
 let selectedFolderTagIds = new Set();
 let selectedCardTagIds = new Set();
 let sortMemberFilter = '';
-let perPage = 6;
+function defaultPerPage(){ return window.innerWidth >= 768 ? 9 : 6; }
+let perPage = defaultPerPage();
 let currentPage = 1;
 let listsTab = 'stbo';
-let listsPerPage = 6;
+let listsPerPage = defaultPerPage();
 let listsPage = 1;
 let listsMiniSearchQuery = '';
-let listsAlphaSort = false;
+let listsSortMode = '';
 let dragged = null; // {type:'folder'|'card', id}
 let dragHoverKey = null; // last hovered tile key during a drag, to avoid redundant reorders
 let miniSearchQuery = '';
-let alphaSort = false;
+let sortMode = '';
+let bulkEditMode = false;
 const FUZZY_THRESHOLD = 6; // fuzzy tolerance for "closest result" matching, case/punctuation-insensitive
 
 function tree(){ return DATA.nodes[currentSection]; }
@@ -843,9 +902,9 @@ function switchSection(sec){
   currentPath = [];
   miniSearchQuery = '';
   sortMemberFilter = '';
-  alphaSort = false;
-  const alphaBtn = document.getElementById('alpha-sort-btn');
-  if(alphaBtn) alphaBtn.classList.remove('active');
+  sortMode = '';
+  const sortSel = document.getElementById('sort-mode-select');
+  if(sortSel) sortSel.value = '';
   const miniInput = document.getElementById('mini-search-input');
   if(miniInput) miniInput.value = '';
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
@@ -951,16 +1010,16 @@ function clearMiniSearch(){
   const el = document.getElementById('mini-search-input');
   if(el) el.value = '';
 }
-function toggleAlphaSort(){
-  alphaSort = !alphaSort;
-  const btn = document.getElementById('alpha-sort-btn');
-  if(btn) btn.classList.toggle('active', alphaSort);
+function onSortModeChange(){
+  sortMode = document.getElementById('sort-mode-select').value;
   currentPage = 1;
   renderExplorer();
 }
 function alphaLabel(it){
   return (it.type==='folder' ? it.data.title : (it.data.name||'')).toLowerCase();
 }
+function itemCreatedAt(it){ return it.data.createdAt || 0; }
+function itemUpdatedAt(it){ return it.data.updatedAt || it.data.createdAt || 0; }
 function populateSortMemberSelect(cards){
   const sel = document.getElementById('sort-member-select');
   const row = document.getElementById('sort-member-row');
@@ -1077,8 +1136,14 @@ function renderExplorer(){
     });
   }
 
-  if(alphaSort){
+  if(sortMode==='az'){
     items = [...items].sort((a,b)=>alphaLabel(a).localeCompare(alphaLabel(b)));
+  } else if(sortMode==='za'){
+    items = [...items].sort((a,b)=>alphaLabel(b).localeCompare(alphaLabel(a)));
+  } else if(sortMode==='date-uploaded'){
+    items = [...items].sort((a,b)=>itemCreatedAt(b)-itemCreatedAt(a));
+  } else if(sortMode==='date-edited'){
+    items = [...items].sort((a,b)=>itemUpdatedAt(b)-itemUpdatedAt(a));
   }
 
   const totalPages = Math.max(1, Math.ceil(items.length / perPage));
@@ -1147,6 +1212,7 @@ function renderFolderTile(f, list, cardsInView){
           <button type="button" class="tm-edit">Edit</button>
           <button type="button" class="tm-duplicate">Duplicate</button>
           <button type="button" class="tm-move">Move</button>
+          ${f.fixed ? '' : '<button type="button" class="tm-delete">Delete</button>'}
         </div>
       </div>
     </div>
@@ -1156,12 +1222,23 @@ function renderFolderTile(f, list, cardsInView){
   div.querySelector('.thumb').addEventListener('click', (e)=>{
     currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
   });
-  div.querySelector('.tile-title').onclick = ()=>{ currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer(); };
+  div.querySelector('.tile-title').onclick = (e)=>{
+    if(bulkEditMode){
+      e.stopPropagation();
+      startInlineRename(div.querySelector('.tile-title'), f.title, (val)=>{
+        f.title = val; f.updatedAt = Date.now(); save(); renderExplorer();
+      });
+      return;
+    }
+    currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
+  };
   const menuEl = div.querySelector('.tile-menu');
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.toggle('hidden'); };
   menuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openEditFolder(f); };
   menuEl.querySelector('.tm-duplicate').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); duplicateFolder(f, list); };
   menuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openMoveModal('folder', f.id); };
+  const tmDelete = menuEl.querySelector('.tm-delete');
+  if(tmDelete) tmDelete.onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); deleteFolderNode(f); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
 
@@ -1228,19 +1305,33 @@ function renderCardTile(c, list, cardsInView, onOpen){
         <div class="tile-menu hidden">
           <button type="button" class="tm-edit">Edit</button>
           <button type="button" class="tm-move">Move</button>
+          <button type="button" class="tm-delete">Delete</button>
         </div>
       </div>
     </div>
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
+    <div class="del-x">✕</div>
   `;
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
   div.querySelector('.thumb').addEventListener('click', openFn);
-  div.querySelector('.tile-title').onclick = openFn;
+  div.querySelector('.tile-title').onclick = (e)=>{
+    if(bulkEditMode){
+      e.stopPropagation();
+      startInlineRename(div.querySelector('.tile-title'), c.name||'', (val)=>{
+        c.name = val; c.updatedAt = Date.now(); save(); refreshCurrentView();
+      });
+      return;
+    }
+    openFn();
+  };
   const cardMenuEl = div.querySelector('.tile-menu');
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.toggle('hidden'); };
   cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openCardModal(c); };
   cardMenuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openMoveModal('card', c.id); };
+  cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); deleteCardById(c.id); };
+  const delX = div.querySelector('.del-x');
+  if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteCardById(c.id); };
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
   div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
@@ -1257,11 +1348,57 @@ function renderCardTile(c, list, cardsInView, onOpen){
   return div;
 }
 
-/* ---- tile dropdown menus (Edit / Duplicate / Move) ---- */
+/* ---- tile dropdown menus (Edit / Duplicate / Move / Delete) ---- */
 function closeAllTileMenus(except){
   document.querySelectorAll('.tile-menu').forEach(m=>{ if(m!==except) m.classList.add('hidden'); });
 }
 document.addEventListener('click', ()=>closeAllTileMenus());
+
+function refreshCurrentView(){
+  const listsPanel = document.getElementById('lists-panel');
+  if(listsPanel && !listsPanel.classList.contains('hidden')) renderListsPanel();
+  else renderExplorer();
+}
+
+function toggleBulkEditMode(){
+  bulkEditMode = !bulkEditMode;
+  document.body.classList.toggle('bulk-edit', bulkEditMode);
+  const btn1 = document.getElementById('bulk-edit-btn');
+  const btn2 = document.getElementById('lists-bulk-edit-btn');
+  if(btn1) btn1.classList.toggle('active', bulkEditMode);
+  if(btn2) btn2.classList.toggle('active', bulkEditMode);
+  refreshCurrentView();
+}
+
+function startInlineRename(titleEl, currentValue, onSave){
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'tile-title-edit';
+  input.value = currentValue;
+  titleEl.replaceWith(input);
+  input.focus();
+  input.select();
+  let committed = false;
+  const commit = ()=>{
+    if(committed) return;
+    committed = true;
+    const val = input.value.trim();
+    if(val && val !== currentValue) onSave(val);
+    else refreshCurrentView();
+  };
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); input.blur(); }
+    else if(e.key==='Escape'){ committed = true; refreshCurrentView(); }
+  });
+  input.addEventListener('blur', commit);
+  input.addEventListener('click', e=>e.stopPropagation());
+}
+
+function deleteCardById(id){
+  if(!confirm('Delete this photocard from your library entirely?')) return;
+  DATA.cards = DATA.cards.filter(c=>c.id!==id);
+  save(); refreshCurrentView();
+}
 
 function cloneFolderDeep(f){
   return {
@@ -1675,10 +1812,10 @@ function confirmSaveFolder(){
   const list = findFolderList(currentPath);
   if(editingFolderId){
     const f = list.find(x=>x.id===editingFolderId);
-    f.title = title; f.thumb = thumb;
+    f.title = title; f.thumb = thumb; f.updatedAt = Date.now();
     if(!f.fixed) f.linkedTags = Array.from(selectedFolderTagIds);
   } else {
-    list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[], createdAt: Date.now()});
+    list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[], createdAt: Date.now(), updatedAt: Date.now()});
   }
   save(); closeModal('add-folder-modal'); renderExplorer();
 }
@@ -1770,9 +1907,9 @@ function saveCard(){
 
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
-    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, inDemand});
+    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, inDemand, updatedAt: Date.now()});
   } else {
-    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, inDemand});
+    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, inDemand, createdAt: Date.now(), updatedAt: Date.now()});
   }
   save(); closeModal('card-modal'); renderExplorer();
 }
@@ -2163,10 +2300,8 @@ function onListsMiniSearch(){
   listsPage = 1;
   renderListsPanel();
 }
-function toggleListsAlphaSort(){
-  listsAlphaSort = !listsAlphaSort;
-  const btn = document.getElementById('lists-alpha-sort-btn');
-  if(btn) btn.classList.toggle('active', listsAlphaSort);
+function onListsSortModeChange(){
+  listsSortMode = document.getElementById('lists-sort-mode-select').value;
   listsPage = 1;
   renderListsPanel();
 }
@@ -2183,8 +2318,14 @@ function renderListsPanel(){
     cards = cards.filter(c=>matchesSearchTerms(listsMiniSearchQuery, {type:'card', data:c}));
   }
 
-  if(listsAlphaSort){
+  if(listsSortMode==='az'){
     cards = [...cards].sort((a,b)=>(a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase()));
+  } else if(listsSortMode==='za'){
+    cards = [...cards].sort((a,b)=>(b.name||'').toLowerCase().localeCompare((a.name||'').toLowerCase()));
+  } else if(listsSortMode==='date-uploaded'){
+    cards = [...cards].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  } else if(listsSortMode==='date-edited'){
+    cards = [...cards].sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
   }
 
   const totalPages = Math.max(1, Math.ceil(cards.length/listsPerPage));
@@ -2569,6 +2710,8 @@ initDropzone('card-dropzone','card-file','card');
 initDropzone('folder-dropzone','folder-file','folder');
 
 /* ================= INIT ================= */
+document.getElementById('per-page-select').value = perPage;
+document.getElementById('lists-per-page-select').value = listsPerPage;
 switchSection('albums');
 renderRecentFiles();
 </script>
