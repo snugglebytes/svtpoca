@@ -21,7 +21,7 @@
 :root{--bg:#fdf9fb;--pink:#fbe4ec;--blue:#e5f4fc;--card:#fff;--line:#ecdff0;--text:#7a6b76;--green:#e3f3e1;--yellow:#fdf3d9;--red:#fbe2e2;--accent:#f0c3d6;--purple:#e9e0f8}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
-header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(122,107,118,.06)}
+header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(122,107,118,.06)}
 h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px}
@@ -206,7 +206,7 @@ body.no-scroll{overflow:hidden;touch-action:none}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px;color:#7a6b76}
 .stats-heading{font-size:11px;color:#8b7a88;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px}
 .stats-heading:first-child{margin-top:0}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Ticketing",cursive;color:#a493a0;box-sizing:border-box}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Ticketing",cursive;color:#a493a0;box-sizing:border-box;z-index:30}
 nav>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;line-height:1.3}
 nav>div:active{background:#f8f3fa}
 .fab-wrap{position:fixed;right:16px;bottom:78px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
@@ -259,6 +259,16 @@ nav>div:active{background:#f8f3fa}
 .binder-new-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:#a493a0;font-size:12px;min-height:150px}
 .binder-new-tile.disabled{opacity:.45;cursor:not-allowed}
 .binder-viewer-modal .modal{max-width:520px}
+@keyframes binderOpenAnim{
+  0%{opacity:0;transform:perspective(900px) rotateY(-35deg) scale(.92);}
+  100%{opacity:1;transform:perspective(900px) rotateY(0deg) scale(1);}
+}
+.binder-viewer-modal.opening .modal{transform-origin:left center;animation:binderOpenAnim .45s ease both}
+@keyframes pageTurnAnim{
+  0%{opacity:0;transform:perspective(900px) rotateY(-14deg);}
+  100%{opacity:1;transform:perspective(900px) rotateY(0deg);}
+}
+.binder-sides.turning{transform-origin:left center;animation:pageTurnAnim .32s ease both}
 .binder-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .binder-page-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
 .binder-page-label{font-size:12px;color:#a493a0;min-width:90px;text-align:center}
@@ -273,12 +283,18 @@ nav>div:active{background:#f8f3fa}
 .binder-slot::before{content:'';display:block;padding-top:150%}
 .binder-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5px}
 .binder-slot.filled{border-style:solid;border-color:var(--line)}
+.binder-slot::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:5px}
+.binder-slot.st-wishlist::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
+.binder-slot.st-stbo::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
 .binder-slot-empty-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(122,107,118,.35)}
 .card-picker-list{max-height:280px;overflow:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .card-picker-item{cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
 .card-picker-item::before{content:'';display:block;padding-top:150%}
 .card-picker-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card-picker-item .cpi-name{position:absolute;left:0;right:0;bottom:0;background:rgba(50,35,48,.72);color:#fff;font-size:9px;padding:2px 4px;line-height:1.2;max-height:2.4em;overflow:hidden}
+.card-picker-item::after{content:'';position:absolute;inset:0;pointer-events:none}
+.card-picker-item.st-wishlist::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
+.card-picker-item.st-stbo::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
 .crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
 .crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -2528,15 +2544,19 @@ function deleteCurrentBinder(){
 function openBinderViewer(id){
   viewingBinderId = id;
   viewingBinderPage = 0;
-  document.getElementById('binder-viewer-modal').classList.remove('hidden');
+  const modal = document.getElementById('binder-viewer-modal');
+  modal.classList.remove('hidden');
+  modal.classList.remove('opening');
+  void modal.offsetWidth; // restart animation
+  modal.classList.add('opening');
   renderBinderViewer();
 }
-function binderPagePrev(){ if(viewingBinderPage>0){ viewingBinderPage--; renderBinderViewer(); } }
+function binderPagePrev(){ if(viewingBinderPage>0){ viewingBinderPage--; renderBinderViewer(true); } }
 function binderPageNext(){
   const b = DATA.binders.find(x=>x.id===viewingBinderId); if(!b) return;
-  if(viewingBinderPage < b.pages-1){ viewingBinderPage++; renderBinderViewer(); }
+  if(viewingBinderPage < b.pages-1){ viewingBinderPage++; renderBinderViewer(true); }
 }
-function renderBinderViewer(){
+function renderBinderViewer(animatePageTurn){
   const b = DATA.binders.find(x=>x.id===viewingBinderId);
   if(!b) return;
   const viewerTitleEl = document.getElementById('binder-viewer-title');
@@ -2544,6 +2564,8 @@ function renderBinderViewer(){
   document.getElementById('binder-page-label').textContent = `Page ${viewingBinderPage+1} of ${b.pages}`;
   const sidesWrap = document.getElementById('binder-viewer-sides');
   sidesWrap.innerHTML = '';
+  sidesWrap.classList.remove('turning');
+  if(animatePageTurn){ void sidesWrap.offsetWidth; sidesWrap.classList.add('turning'); }
   const sideCount = b.backToBack ? 2 : 1;
   const cols = b.grids<=4 ? 2 : 3;
   for(let s=0; s<sideCount; s++){
@@ -2578,7 +2600,7 @@ function renderBinderViewer(){
       const cardId = b.slots[slotIndex];
       const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
       const slotDiv = document.createElement('div');
-      slotDiv.className = 'binder-slot' + (card ? ' filled' : '');
+      slotDiv.className = 'binder-slot' + (card ? ' filled' : '') + (card && card.status==='wishlist' ? ' st-wishlist' : card && card.status==='stbo' ? ' st-stbo' : '');
       if(card && card.image) slotDiv.innerHTML = `<img src="${card.image}">`;
       else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
       else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
@@ -2605,14 +2627,14 @@ function openCardPicker(binderId, slotIndex){
   renderCardPickerList();
 }
 function renderCardPickerList(){
-  const q = document.getElementById('card-picker-search').value.trim().toLowerCase();
+  const q = document.getElementById('card-picker-search').value.trim();
   const list = document.getElementById('card-picker-list');
   list.innerHTML = '';
-  const cards = DATA.cards.filter(c=>!q || (c.name||'').toLowerCase().includes(q));
+  const cards = DATA.cards.filter(c=>!q || matchesSearchTerms(q, {type:'card', data:c}));
   if(!cards.length){ list.innerHTML = '<div class="empty-note">No photocards match.</div>'; return; }
   cards.forEach(c=>{
     const item = document.createElement('div');
-    item.className = 'card-picker-item';
+    item.className = 'card-picker-item' + (c.status==='wishlist' ? ' st-wishlist' : c.status==='stbo' ? ' st-stbo' : '');
     item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name">${c.name||'Untitled'}</div>`;
     item.onclick = ()=>{
       const b = DATA.binders.find(x=>x.id===cardPickerTarget.binderId);
@@ -2827,6 +2849,7 @@ function showStats(){
   const sizeInfo = calcDataSize();
 
   document.getElementById('stats-body').innerHTML = `
+    <div class="stats-heading">Collection</div>
     <div class="stat-row"><span>Total cards logged</span><b>${cards.length}</b></div>
     <div class="stat-row"><span>Have</span><b>${have.length}</b></div>
     <div class="stat-row"><span>Wishlist</span><b>${wishlist.length}</b></div>
@@ -2837,7 +2860,7 @@ function showStats(){
     <div class="stat-row"><span>Most-owned member</span><b>${mostMember} (${mostVal<0?0:mostVal})</b></div>
     <div class="stat-row"><span>Least-owned member</span><b>${leastMember} (${leastVal===Infinity?0:leastVal})</b></div>
     <div class="stat-row"><span>Total spent (logged prices)</span><b>₱${totalValue.toLocaleString()}</b></div>
-    <div class="stats-heading">File size</div>
+    <div class="stats-heading" style="border-top:1px dashed var(--line);padding-top:14px">File size</div>
     <div class="stat-row"><span>Total saved data</span><b>${formatBytes(sizeInfo.totalBytes)}</b></div>
     <div class="stat-row"><span>— from images (photos, thumbnails, covers)</span><b>${formatBytes(sizeInfo.imageBytes)}</b></div>
     <div class="stat-row"><span>— from everything else (names, tags, etc.)</span><b>${formatBytes(sizeInfo.otherBytes)}</b></div>
