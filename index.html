@@ -64,23 +64,24 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
   nav>div{padding:10px 12px}
   .wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 }
-.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:6px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
+.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
 .tile.folder .thumb{aspect-ratio:1}
-.tile.card-tile .thumb{aspect-ratio:2/3}
-.thumb{position:relative;background:#f6f2fb;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
-.thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.tile-title-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px}
-.tile-title-row .tile-title{margin-top:0}
+.tile.card-tile .thumb{aspect-ratio:2/3;border-radius:12px 12px 10px 10px}
+.thumb{position:relative;background:#f6f2fb;border:none;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:0}
+.tile-title{padding:0 8px}
+.tile-title-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:6px;padding:0 8px}
+.tile-title-row .tile-title{margin-top:0;padding:0}
 .menu-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#f8f3fa;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;line-height:1;color:var(--text)}
 .menu-dot:active{transform:scale(.92)}
 .tile-title{font-size:13px;margin-top:4px;font-weight:600}
-.tile-sub{font-size:11px;color:#a493a0}
+.tile-sub{font-size:11px;color:#a493a0;padding:0 8px}
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
 .folder-pills{position:absolute;left:3px;right:3px;bottom:3px;display:flex;flex-wrap:wrap;gap:3px;z-index:5;pointer-events:none}
 .folder-pill{background:rgba(50,35,48,.78);color:#fff;font-size:8px;line-height:1.4;padding:2px 6px;border-radius:8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.del-x{position:absolute;top:2px;right:2px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:none;align-items:center;justify-content:center;padding:0}
+.del-x{position:absolute;top:5px;right:5px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:none;align-items:center;justify-content:center;padding:0}
 body.bulk-edit .del-x{display:flex}
-.tile-title-edit{width:100%;font-size:13px;font-weight:600;padding:3px 5px;margin-top:4px;border:2px solid var(--accent);border-radius:6px;font-family:inherit;box-sizing:border-box;background:#fff;color:var(--text)}
+.tile-title-edit{width:calc(100% - 12px);font-size:13px;font-weight:600;padding:3px 5px;margin:4px 6px 0;border:2px solid var(--accent);border-radius:6px;font-family:inherit;box-sizing:border-box;background:#fff;color:var(--text)}
 #bulk-edit-btn.active,#lists-bulk-edit-btn.active{background:var(--accent)}
 .sort-select{border:2px solid var(--line);border-radius:9px;background:#fff;color:#7a6b76;font-family:"Ticketing",cursive;font-size:10px;padding:5px 6px;cursor:pointer}
 .tm-delete{color:#c0596f}
@@ -89,7 +90,7 @@ body.bulk-edit .del-x{display:flex}
 .status-wishlist{background:var(--yellow);border-color:#e0b94a;color:#7a5f10}
 .status-stbo{background:var(--blue);border-color:#5fa8d9;color:#1d4f6e}
 .dup-badge{position:absolute;top:6px;right:6px;font-size:10px;padding:3px 7px;border-radius:8px;border:2px solid #bfe0f2;background:var(--blue);font-family:'Ticketing',cursive;cursor:pointer;z-index:3}
-.card-price{font-size:11px;color:#8b7a88}
+.card-price{font-size:11px;color:#8b7a88;padding:0 8px}
 /* status overlays on card thumbnail */
 .tile.card-tile .thumb{position:relative}
 .tile.card-tile .thumb::after{content:'';position:absolute;inset:0;pointer-events:none}
@@ -107,10 +108,20 @@ body.bulk-edit .del-x{display:flex}
 .pg-nav button:disabled{opacity:.35;cursor:default}
 .sort-member-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:8px}
 .sort-member-row select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:4px;background:#fff;border-radius:7px;flex:1}
-.indemand-badge{position:absolute;bottom:6px;left:6px;font-size:9px;padding:3px 9px;border-radius:20px;border:2px solid #f3cbe0;font-family:'Ticketing',cursive;text-transform:uppercase;letter-spacing:.5px;z-index:3;display:flex;align-items:center;gap:3px;background:linear-gradient(135deg,#ffe1f0,#eaf2ff);box-shadow:0 1px 4px rgba(219,158,196,.35);color:#e3a9c2}
-.indemand-badge .badge-text{color:#8a8390}
-.tile.card-tile.is-indemand{
+.badge-stack{position:absolute;bottom:6px;left:6px;right:6px;z-index:3;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
+.popular-badge,.rarefind-badge{font-size:9px;padding:3px 9px;border-radius:20px;border:2px solid;font-family:'Ticketing',cursive;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.popular-badge{border-color:#f3cbe0;background:linear-gradient(135deg,#ffe1f0,#eaf2ff);box-shadow:0 1px 4px rgba(219,158,196,.35);color:#e3a9c2}
+.popular-badge .badge-text{color:#8a8390}
+.rarefind-badge{border-color:#e6d29c;background:linear-gradient(135deg,#f8edc7,#fff8e6);box-shadow:0 1px 4px rgba(214,186,110,.35);color:#c7ab5c}
+.rarefind-badge .badge-text{color:#a8863c}
+.tile.card-tile.is-popular{
   background-image:linear-gradient(135deg,#ffd3ea,#d8f0ff);
+}
+.tile.card-tile.is-rarefind{
+  background-image:linear-gradient(135deg,#f8edc7,#fff8e6);
+}
+.tile.card-tile.is-popular.is-rarefind{
+  background-image:linear-gradient(135deg,#ffd3ea,#f8edc7);
 }
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
@@ -202,11 +213,12 @@ nav>div:active{background:#f8f3fa}
 .modal{background:#fff;border-radius:18px;border:2px solid var(--line);padding:20px;text-align:left;max-width:360px;width:100%;box-shadow:0 8px 26px rgba(122,107,118,.16);max-height:88vh;overflow:auto}
 .modal .big{font-family:'Ticketing',cursive;font-weight:normal;font-size:20px;letter-spacing:.3px;line-height:1.8;margin-bottom:10px;text-align:center;color:#8a6b7c}
 .modal .sub{font-size:13px;color:#a493a0;text-align:center}
-.preview-modal{max-width:420px;padding:14px;text-align:center}
-.preview-image-wrap{display:flex;align-items:center;justify-content:center;margin:8px 0 12px}
-.preview-image-wrap img{max-width:100%;max-height:60vh;border-radius:12px;object-fit:contain;box-shadow:0 4px 14px rgba(122,107,118,.15)}
-.preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin-bottom:4px}
-.preview-meta{font-size:12px;color:var(--text)}
+.preview-modal{max-width:420px;padding:0;text-align:center;overflow:hidden;position:relative}
+.preview-modal .close-x{position:absolute;top:10px;right:10px;float:none;z-index:2;background:rgba(255,255,255,.85);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(122,107,118,.25)}
+.preview-image-wrap{display:flex;align-items:center;justify-content:center;margin:0}
+.preview-image-wrap img{width:100%;aspect-ratio:2/3;max-height:60vh;border-radius:0 0 16px 16px;object-fit:cover;box-shadow:none;display:block}
+.preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
+.preview-meta{font-size:12px;color:var(--text);padding:0 14px 14px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
 .field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
@@ -330,7 +342,8 @@ nav>div:active{background:#f8f3fa}
     <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">Wishlist</div>
-    <div class="opt" data-list="indemand" onclick="showListsPanel('indemand')">In Demand</div>
+    <div class="opt" data-list="popular" onclick="showListsPanel('popular')">Popular</div>
+    <div class="opt" data-list="rarefind" onclick="showListsPanel('rarefind')">Rare Find</div>
   </div>
 </div>
 
@@ -340,12 +353,13 @@ nav>div:active{background:#f8f3fa}
 </div>
 
 <div class="panel hidden" id="lists-panel">
-  <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO / In Demand</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
+  <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO / Popular / Rare Find</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div class="list-tabs">
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">Wishlist</div>
-    <div class="opt" data-list="indemand" onclick="switchListsTab('indemand')">In Demand</div>
+    <div class="opt" data-list="popular" onclick="switchListsTab('popular')">Popular</div>
+    <div class="opt" data-list="rarefind" onclick="switchListsTab('rarefind')">Rare Find</div>
   </div>
   <div class="pagebar">
     <input id="lists-mini-search-input" class="mini-search-inline" placeholder="Find within this list..." oninput="onListsMiniSearch()">
@@ -502,7 +516,8 @@ nav>div:active{background:#f8f3fa}
     </div>
     <div class="field checkbox-row"><input type="checkbox" id="card-duplicate" onchange="onDuplicateCheckChange()"> <label style="margin:0" for="card-duplicate">Mark as duplicate (tradeable)</label></div>
     <div class="field hidden" id="dup-count-row"><label>How many extra copies?</label><input id="card-dup-count" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
-    <div class="field checkbox-row"><input type="checkbox" id="card-indemand"> <label style="margin:0" for="card-indemand">Mark as In Demand</label></div>
+    <div class="field checkbox-row"><input type="checkbox" id="card-popular"> <label style="margin:0" for="card-popular">Mark as Popular</label></div>
+    <div class="field checkbox-row"><input type="checkbox" id="card-rarefind"> <label style="margin:0" for="card-rarefind">Mark as Rare Find</label></div>
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
@@ -654,10 +669,25 @@ function defaultData(){
   const memberFolders = FIXED_MEMBERS.map((n,i)=>({
     id:'mfold_'+n.replace(/\W/g,''), title:n, thumb:'', linkedTags:[memberTags[i].id], fixed:true, children:[]
   }));
+  // sample folder + photocard so there's always something to see on the home page.
+  // not marked "fixed", so the user can delete them like any normal item.
+  const sampleTag = {id:'tag_sample', name:'Sample', createdAt: now - 1000};
+  const sampleFolder = {
+    id:'folder_sample', title:'Sample Folder (delete me)',
+    thumb:'https://pbs.twimg.com/media/FvicGENaEAI-Up4.jpg',
+    linkedTags:[sampleTag.id], fixed:false, children:[],
+    createdAt: now - 1000, updatedAt: now - 1000
+  };
+  const sampleCard = {
+    id:'card_sample', image:'https://pbs.twimg.com/media/FvicGENaEAI-Up4.jpg',
+    sourceUrl:'', name:'Sample Photocard (delete me)', status:'have', price:'',
+    tags:[sampleTag.id], duplicate:false, dupCount:0, popular:true, rareFind:true,
+    createdAt: now - 1000, updatedAt: now - 1000
+  };
   return {
-    tags: memberTags,
-    nodes: { albums:[], nonalbum:[], members:memberFolders },
-    cards: [],
+    tags: [sampleTag, ...memberTags],
+    nodes: { albums:[sampleFolder], nonalbum:[], members:memberFolders },
+    cards: [sampleCard],
     viewOrders: {},
     templates: []
   };
@@ -844,7 +874,7 @@ function mergeImportedData(existing, incoming){
       id: uid('c'),
       image: c.image, sourceUrl: c.sourceUrl || '', name: c.name || '',
       status: c.status || 'have', price: c.price || '', tags: newTags,
-      duplicate: !!c.duplicate, dupCount: c.dupCount || (c.duplicate ? 1 : 0), inDemand: !!c.inDemand
+      duplicate: !!c.duplicate, dupCount: c.dupCount || (c.duplicate ? 1 : 0), popular: !!(c.popular || c.inDemand), rareFind: !!c.rareFind
     });
     existingKeys.add(key);
     cardsAdded++;
@@ -1295,13 +1325,13 @@ function renderCardTile(c, list, cardsInView, onOpen){
   const openFn = onOpen || (()=>openCardPreview(c));
   const div = document.createElement('div');
   const isDraggedNow = dragged && dragged.type==='card' && dragged.id===c.id;
-  div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '') + (isDraggedNow ? ' touch-dragging' : '');
+  div.className = 'tile card-tile st-' + c.status + (c.popular ? ' is-popular' : '') + (c.rareFind ? ' is-rarefind' : '') + (isDraggedNow ? ' touch-dragging' : '');
   div.dataset.key = 'card:'+c.id;
   div.draggable = true;
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
-    <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${c.inDemand ? '<div class="indemand-badge"><span class="badge-text">In Demand</span></div>' : ''}</div>
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
     <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
@@ -1847,7 +1877,8 @@ function openCardPreview(c){
   const metaParts = [statusLabel];
   if(c.price) metaParts.push('₱'+c.price);
   if(c.duplicate) metaParts.push('Duplicate'+(c.dupCount>1?' ×'+c.dupCount:''));
-  if(c.inDemand) metaParts.push('In Demand');
+  if(c.popular) metaParts.push('Popular');
+  if(c.rareFind) metaParts.push('Rare Find');
   if(tagsLabel) metaParts.push(tagsLabel);
   document.getElementById('card-preview-meta').textContent = metaParts.join(' · ');
   document.getElementById('card-preview-modal').classList.remove('hidden');
@@ -1865,7 +1896,8 @@ function openCardModal(card){
   document.getElementById('card-duplicate').checked = card ? !!card.duplicate : false;
   document.getElementById('card-dup-count').value = card && card.dupCount ? card.dupCount : 1;
   document.getElementById('dup-count-row').classList.toggle('hidden', !(card && card.duplicate));
-  document.getElementById('card-indemand').checked = card ? !!card.inDemand : false;
+  document.getElementById('card-popular').checked = card ? !!card.popular : false;
+  document.getElementById('card-rarefind').checked = card ? !!card.rareFind : false;
   document.getElementById('crop-area').classList.add('hidden');
   document.getElementById('card-crop-check').classList.remove('show');
   selectedCardTagIds = new Set(card ? (card.tags||[]) : currentPathLinkedTags());
@@ -1903,16 +1935,17 @@ function saveCard(){
   const sourceUrl = document.getElementById('card-url').value.trim();
   const duplicate = document.getElementById('card-duplicate').checked;
   const dupCount = duplicate ? Math.max(1, parseInt(document.getElementById('card-dup-count').value, 10) || 1) : undefined;
-  const inDemand = document.getElementById('card-indemand').checked;
+  const popular = document.getElementById('card-popular').checked;
+  const rareFind = document.getElementById('card-rarefind').checked;
   const image = croppedDataUrl || sourceUrl;
   const tags = Array.from(selectedCardTagIds);
   if(tags.length===0){ alert('Add at least one tag so this card can appear in a folder.'); return; }
 
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
-    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, inDemand, updatedAt: Date.now()});
+    Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, popular, rareFind, updatedAt: Date.now()});
   } else {
-    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, inDemand, createdAt: Date.now(), updatedAt: Date.now()});
+    DATA.cards.push({id:'c_'+Date.now(), image, sourceUrl, name, status, price, tags, duplicate, dupCount, popular, rareFind, createdAt: Date.now(), updatedAt: Date.now()});
   }
   save(); closeModal('card-modal'); renderExplorer();
 }
@@ -2314,7 +2347,8 @@ function renderListsPanel(){
   grid.innerHTML = '';
   let cards;
   if(listsTab==='duplicate') cards = DATA.cards.filter(c=>c.duplicate);
-  else if(listsTab==='indemand') cards = DATA.cards.filter(c=>c.inDemand);
+  else if(listsTab==='popular') cards = DATA.cards.filter(c=>c.popular);
+  else if(listsTab==='rarefind') cards = DATA.cards.filter(c=>c.rareFind);
   else cards = DATA.cards.filter(c=>c.status===listsTab);
 
   if(listsMiniSearchQuery){
@@ -2339,7 +2373,7 @@ function renderListsPanel(){
   if(pageCards.length===0){
     const note = document.createElement('div');
     note.className='empty-note';
-    const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='indemand' ? 'In Demand' : listsTab;
+    const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='popular' ? 'Popular' : listsTab==='rarefind' ? 'Rare Find' : listsTab;
     note.textContent = listsMiniSearchQuery
       ? `No ${label} cards match "${listsMiniSearchQuery}".`
       : `No cards marked as ${label} yet.`;
