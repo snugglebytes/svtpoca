@@ -235,11 +235,9 @@ nav>div:active{background:#f8f3fa}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
 .beta-badge{font-family:'Ticketing',cursive;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
-.swatch-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.swatch{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;position:relative;flex-shrink:0}
-.swatch.selected{border-color:var(--text);box-shadow:0 0 0 2px #fff inset,0 0 0 3px var(--text)}
-.swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5a4a55;text-shadow:0 0 2px #fff}
-.color-picker-swatch{overflow:hidden;display:block}
+.swatch-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.color-picker-swatch{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px #fff inset}
+.color-picker-hex{font-size:13px;font-family:ui-monospace,monospace;letter-spacing:.02em;color:var(--text);text-transform:uppercase}
 .seg-row{display:flex;border:2px solid var(--line);border-radius:9px;overflow:hidden}
 .seg-row .opt{flex:1;text-align:center;padding:7px 6px;font-size:12px;cursor:pointer;background:#f8f3fa}
 .seg-row .opt.sel{background:var(--yellow);font-weight:700}
@@ -258,7 +256,7 @@ nav>div:active{background:#f8f3fa}
 .binder-cover-page::before{content:'';display:block;padding-top:140%}
 .binder-cover-page img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .binder-cover-page-text{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);text-align:center;font-family:"Ticketing",cursive;font-size:20px;line-height:1.4;color:#5f4a58;text-shadow:0 1px 3px rgba(255,255,255,.75);word-break:break-word;z-index:2}
-.binder-slot-name-pill{position:absolute;left:3px;right:3px;bottom:3px;font-size:9px;line-height:1.3;padding:2px 5px;border-radius:8px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.binder-slot-name-pill{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:94%;width:max-content;font-size:9px;line-height:1.25;padding:2px 6px;border-radius:8px;text-align:center;white-space:normal;overflow-wrap:break-word;word-break:break-word;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
 .binder-new-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:#a493a0;font-size:12px;min-height:150px}
@@ -673,7 +671,7 @@ nav>div:active{background:#f8f3fa}
     <div class="field">
       <label>Cover</label>
       <div class="seg-row" id="binder-cover-mode-row">
-        <div class="opt" data-val="pastel">Pastel color</div>
+        <div class="opt" data-val="pastel">Solid color</div>
         <div class="opt" data-val="image">Upload / URL</div>
       </div>
       <div class="field-hint">This color or image fills the entire cover — shown on the binder grid and as the front/back cover when you open it.</div>
@@ -2398,10 +2396,22 @@ function rotateCropImage(){
 /* ================= MY BINDER (BETA) ================= */
 const BINDER_MAX = 13;
 const BINDER_GRID_OPTIONS = [4,6,9,12,13];
-const PASTEL_PALETTE = [
-  '#F8D7DA','#FCE8C9','#FFF5BA','#D9F2D2','#CDEEE0',
-  '#CDEAF4','#D6E0F5','#E1D6F5','#F3D6EC','#EAD9C9'
-];
+const DEFAULT_PAGE_COLOR = '#FCE8C9';
+const DEFAULT_COVER_COLOR = '#FFF5BA';
+const DEFAULT_NAME_COLOR = '#CDEAF4';
+function hexToRgba(hex, alpha){
+  let h = String(hex).replace('#','');
+  if(h.length===3) h = h.split('').map(c=>c+c).join('');
+  const r = parseInt(h.substring(0,2),16)||0, g = parseInt(h.substring(2,4),16)||0, bl = parseInt(h.substring(4,6),16)||0;
+  return `rgba(${r},${g},${bl},${alpha})`;
+}
+function contrastTextColor(hex){
+  let h = String(hex).replace('#','');
+  if(h.length===3) h = h.split('').map(c=>c+c).join('');
+  const r = parseInt(h.substring(0,2),16)||0, g = parseInt(h.substring(2,4),16)||0, bl = parseInt(h.substring(4,6),16)||0;
+  const luminance = (0.299*r + 0.587*g + 0.114*bl)/255;
+  return luminance > 0.6 ? '#3a2a35' : '#ffffff';
+}
 let editingBinderId = null;
 let croppedBinderCoverDataUrl = null;
 let viewingBinderId = null;
@@ -2446,40 +2456,29 @@ function renderBindersPanel(){
 function buildSwatchRow(rowId, selectedColor, onPick){
   const row = document.getElementById(rowId);
   row.innerHTML = '';
-  const isPreset = PASTEL_PALETTE.some(c=>c.toLowerCase()===String(selectedColor).toLowerCase());
-  PASTEL_PALETTE.forEach(color=>{
-    const sw = document.createElement('div');
-    sw.className = 'swatch' + (color===selectedColor ? ' selected' : '');
-    sw.style.background = color;
-    sw.dataset.color = color;
-    sw.onclick = ()=>{
-      row.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
-      sw.classList.add('selected');
-      picker.value = color;
-      if(onPick) onPick(color);
-    };
-    row.appendChild(sw);
-  });
-  // custom color picker — lets the user pick any color, not just the presets
+  const color = /^#[0-9a-f]{6}$/i.test(String(selectedColor)) ? selectedColor : '#ffffff';
   const pickerWrap = document.createElement('label');
-  pickerWrap.className = 'swatch color-picker-swatch' + (!isPreset ? ' selected' : '');
-  pickerWrap.title = 'Custom color';
-  pickerWrap.style.background = !isPreset ? selectedColor : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)';
-  pickerWrap.dataset.color = !isPreset ? selectedColor : '';
+  pickerWrap.className = 'color-picker-swatch';
+  pickerWrap.title = 'Pick a color';
+  pickerWrap.style.background = color;
+  pickerWrap.dataset.color = color;
   const picker = document.createElement('input');
   picker.type = 'color';
-  picker.value = isPreset ? '#ffffff' : selectedColor;
+  picker.value = color;
   picker.style.cssText = 'opacity:0;width:100%;height:100%;cursor:pointer;position:absolute;inset:0;border:none;padding:0';
   picker.oninput = ()=>{
-    const color = picker.value;
-    row.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
-    pickerWrap.classList.add('selected');
-    pickerWrap.style.background = color;
-    pickerWrap.dataset.color = color;
-    if(onPick) onPick(color);
+    const c = picker.value;
+    pickerWrap.style.background = c;
+    pickerWrap.dataset.color = c;
+    hex.textContent = c;
+    if(onPick) onPick(c);
   };
   pickerWrap.appendChild(picker);
+  const hex = document.createElement('span');
+  hex.className = 'color-picker-hex';
+  hex.textContent = color;
   row.appendChild(pickerWrap);
+  row.appendChild(hex);
 }
 function setSegSelection(rowId, val){
   document.querySelectorAll('#'+rowId+' .opt').forEach(o=>o.classList.toggle('sel', String(o.dataset.val)===String(val)));
@@ -2512,10 +2511,10 @@ function openBinderModal(id){
   document.getElementById('binder-cover-url').value = '';
   document.getElementById('binder-cover-text').value = binder ? (binder.coverText||'') : '';
   document.getElementById('binder-crop-area').classList.add('hidden');
-  buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : PASTEL_PALETTE[1]);
-  buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : PASTEL_PALETTE[2]);
+  buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : DEFAULT_PAGE_COLOR);
+  buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : DEFAULT_COVER_COLOR);
   document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : true;
-  buildSwatchRow('binder-namecolor-row', binder && binder.nameColor ? binder.nameColor : PASTEL_PALETTE[5]);
+  buildSwatchRow('binder-namecolor-row', binder && binder.nameColor ? binder.nameColor : DEFAULT_NAME_COLOR);
   onBinderShowNameChange();
   setSegSelection('binder-b2b-row', binder ? (binder.backToBack ? 1 : 0) : 1);
   setSegSelection('binder-grids-row', binder ? binder.grids : 9);
@@ -2531,9 +2530,9 @@ function saveBinderForm(){
   const name = document.getElementById('binder-name').value.trim() || 'Untitled Binder';
   const pages = Math.max(1, Math.min(60, parseInt(document.getElementById('binder-pages').value,10) || 1));
   const coverText = document.getElementById('binder-cover-text').value.trim();
-  const pageColor = document.querySelector('#binder-pagecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[1];
+  const pageColor = document.querySelector('#binder-pagecolor-row .color-picker-swatch')?.dataset.color || DEFAULT_PAGE_COLOR;
   const showName = document.getElementById('binder-show-name').checked;
-  const nameColor = document.querySelector('#binder-namecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[5];
+  const nameColor = document.querySelector('#binder-namecolor-row .color-picker-swatch')?.dataset.color || DEFAULT_NAME_COLOR;
   const backToBack = document.querySelector('#binder-b2b-row .opt.sel')?.dataset.val === '1';
   const grids = parseInt(document.querySelector('#binder-grids-row .opt.sel')?.dataset.val,10) || 9;
   const coverMode = document.querySelector('#binder-cover-mode-row .opt.sel')?.dataset.val || 'pastel';
@@ -2544,7 +2543,7 @@ function saveBinderForm(){
     if(!imgVal){ alert('Upload an image or paste a URL and click "Load / Update Image", then Apply Crop.'); return; }
     cover = {type:'image', value:imgVal};
   } else {
-    const pastelColor = document.querySelector('#binder-cover-pastel-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[2];
+    const pastelColor = document.querySelector('#binder-cover-pastel-row .color-picker-swatch')?.dataset.color || DEFAULT_COVER_COLOR;
     cover = {type:'pastel', value:pastelColor};
   }
   const now = Date.now();
@@ -2637,21 +2636,6 @@ function renderBinderViewer(turnDirection){
     void sidesWrap.offsetWidth; // restart animation
     sidesWrap.classList.add(turnDirection==='prev' ? 'turning-prev' : 'turning-next');
   }
-  if(atFrontCover || atBackCover){
-    // the same cover color/image + optional text is used for both the front and back cover
-    const coverDiv = document.createElement('div');
-    coverDiv.className = 'binder-cover-page';
-    if(b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
-    else { coverDiv.style.background = (b.cover && b.cover.value) || PASTEL_PALETTE[2]; }
-    if(b.coverText){
-      const t = document.createElement('div');
-      t.className = 'binder-cover-page-text';
-      t.textContent = b.coverText;
-      coverDiv.appendChild(t);
-    }
-    sidesWrap.appendChild(coverDiv);
-    return;
-  }
   const cols = b.grids<=4 ? 2 : 3;
   const rowLayouts = {12:[4,4,4], 13:[4,4,5]};
   const rowSizes = rowLayouts[b.grids] || null;
@@ -2687,7 +2671,9 @@ function renderBinderViewer(turnDirection){
       if(b.showName!==false){
         const pill = document.createElement('div');
         pill.className = 'binder-slot-name-pill';
-        pill.style.background = b.nameColor || PASTEL_PALETTE[5];
+        const nameColor = b.nameColor || DEFAULT_NAME_COLOR;
+        pill.style.background = hexToRgba(nameColor, 0.75);
+        pill.style.color = contrastTextColor(nameColor);
         pill.textContent = card.name || 'Untitled';
         slotDiv.appendChild(pill);
       }
@@ -2708,7 +2694,7 @@ function renderBinderViewer(turnDirection){
     slotDiv.className = 'binder-slot fake-back';
     return slotDiv;
   }
-  function buildSideEl(label, contentEl){
+  function buildSideEl(contentEl){
     const sideDiv = document.createElement('div');
     sideDiv.className = 'binder-side';
     sideDiv.style.background = b.pageColor;
@@ -2721,13 +2707,44 @@ function renderBinderViewer(turnDirection){
     sideDiv.style.background = b.pageColor;
     return sideDiv;
   }
+  function buildFakeBackSideEl(){
+    return buildSideEl(buildSlotsShape(()=>buildFakeBackSlot()));
+  }
+  function buildCoverPageEl(){
+    // the same cover color/image + optional text is used for both the front and back cover
+    const coverDiv = document.createElement('div');
+    coverDiv.className = 'binder-cover-page';
+    if(b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
+    else { coverDiv.style.background = (b.cover && b.cover.value) || DEFAULT_COVER_COLOR; }
+    if(b.coverText){
+      const t = document.createElement('div');
+      t.className = 'binder-cover-page-text';
+      t.textContent = b.coverText;
+      coverDiv.appendChild(t);
+    }
+    return coverDiv;
+  }
+
+  if(atFrontCover){
+    // same 2-panel spread width as interior pages, so opening the binder feels seamless:
+    // left panel is blank (nothing precedes the front cover), right panel is the cover art.
+    sidesWrap.appendChild(buildBlankCoverEl());
+    sidesWrap.appendChild(buildCoverPageEl());
+    return;
+  }
+  if(atBackCover){
+    // left panel is the back cover art, right panel imitates the "back of the last page".
+    sidesWrap.appendChild(buildCoverPageEl());
+    sidesWrap.appendChild(buildFakeBackSideEl());
+    return;
+  }
 
   if(b.backToBack){
     // pages genuinely have real content on both sides — show front & back as-is
     for(let s=0; s<2; s++){
       const sideIndex = viewingBinderPage*2 + s;
       const slotsDiv = buildSlotsShape(g=>buildRealSlot(sideIndex, g));
-      sidesWrap.appendChild(buildSideEl(null, slotsDiv));
+      sidesWrap.appendChild(buildSideEl(slotsDiv));
     }
   } else {
     // single-sided binder: always render a 2-page spread. The "other" side has
@@ -2736,15 +2753,14 @@ function renderBinderViewer(turnDirection){
     // page" panel (every other page, including the last — nothing ever uploads there).
     const isFirst = viewingBinderPage === 0;
     const realSlotsDiv = buildSlotsShape(g=>buildRealSlot(viewingBinderPage, g));
-    const realSideEl = buildSideEl(null, realSlotsDiv);
+    const realSideEl = buildSideEl(realSlotsDiv);
     if(isFirst){
       // nothing precedes page 1 — that's the inside of the front cover, not a card back.
       // left cover panel is purely decorative: plain page color, no slots, not clickable.
       sidesWrap.appendChild(buildBlankCoverEl());
       sidesWrap.appendChild(realSideEl);
     } else {
-      const fakeSlotsDiv = buildSlotsShape(()=>buildFakeBackSlot());
-      sidesWrap.appendChild(buildSideEl(null, fakeSlotsDiv));
+      sidesWrap.appendChild(buildFakeBackSideEl());
       sidesWrap.appendChild(realSideEl);
     }
   }
