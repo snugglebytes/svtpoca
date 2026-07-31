@@ -239,6 +239,7 @@ nav>div:active{background:#f8f3fa}
 .swatch{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;position:relative;flex-shrink:0}
 .swatch.selected{border-color:var(--text);box-shadow:0 0 0 2px #fff inset,0 0 0 3px var(--text)}
 .swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5a4a55;text-shadow:0 0 2px #fff}
+.color-picker-swatch{overflow:hidden;display:block}
 .seg-row{display:flex;border:2px solid var(--line);border-radius:9px;overflow:hidden}
 .seg-row .opt{flex:1;text-align:center;padding:7px 6px;font-size:12px;cursor:pointer;background:#f8f3fa}
 .seg-row .opt.sel{background:var(--yellow);font-weight:700}
@@ -265,6 +266,9 @@ nav>div:active{background:#f8f3fa}
 .binder-side{flex:1;min-width:0;border-radius:10px;padding:8px;border:2px solid var(--line)}
 .binder-side-label{font-size:10px;text-align:center;color:#8a6b7c;margin-bottom:6px;font-weight:600}
 .binder-slots{display:grid;gap:6px}
+.binder-slots-13p{display:flex;flex-direction:column;gap:6px}
+.binder-slots-13p-row{display:flex;gap:6px}
+.binder-slots-13p-row .binder-slot{flex:1;min-width:0}
 .binder-slot{position:relative;border-radius:8px;border:2px dashed rgba(122,107,118,.3);background:rgba(255,255,255,.55);cursor:pointer;overflow:hidden}
 .binder-slot::before{content:'';display:block;padding-top:150%}
 .binder-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5px}
@@ -316,7 +320,6 @@ nav>div:active{background:#f8f3fa}
     <button class="btn small ghost data-btn" onclick="exportData()" title="Export data">Export</button>
     <button class="btn small ghost data-btn" onclick="document.getElementById('import-file-input').click()" title="Import data">Import</button>
     <button class="btn small ghost danger data-btn" onclick="openClearDataModal()" title="Clear all data">Clear data</button>
-    <button class="btn small ghost" onclick="openInstallModal()" title="Install as app">Install</button>
   </div>
   <input type="file" id="import-file-input" accept="application/json" class="hidden" onchange="importData(event)">
 </header>
@@ -486,10 +489,9 @@ nav>div:active{background:#f8f3fa}
 <nav>
   <div style="cursor:pointer" onclick="goHome()">Home</div>
   <div style="cursor:pointer" onclick="showStats()">Stats</div>
+  <div style="cursor:pointer;background:#CDEAF4;border-radius:12px" onclick="openBindersPanel()">My Binder<div class="beta-badge">BETA</div></div>
   <div style="cursor:pointer" onclick="showTagsPage()">Tags</div>
-  <div style="cursor:pointer" onclick="openBindersPanel()">My Binder<div class="beta-badge">BETA</div></div>
   <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">Search</div>
-  <div style="cursor:pointer" onclick="openInstallModal()">Install</div>
 </nav>
 
 <!-- ADD/EDIT FOLDER MODAL -->
@@ -603,6 +605,11 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
     <div class="section-title" id="binder-modal-title">New Binder</div>
     <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
+    <div class="field checkbox-row"><input type="checkbox" id="binder-show-name" checked onchange="onBinderShowNameChange()"> <label style="margin:0" for="binder-show-name">Show binder name</label></div>
+    <div class="field" id="binder-name-color-wrap">
+      <label>Name pill color</label>
+      <div class="swatch-row" id="binder-namecolor-row"></div>
+    </div>
     <div class="field">
       <label>Binder color</label>
       <div class="swatch-row" id="binder-accent-row"></div>
@@ -630,8 +637,9 @@ nav>div:active{background:#f8f3fa}
         <div class="opt" data-val="6">6</div>
         <div class="opt" data-val="9">9</div>
         <div class="opt" data-val="12">12</div>
+        <div class="opt" data-val="13">13p</div>
       </div>
-      <div class="field-hint">Every page in this binder will use this same grid count.</div>
+      <div class="field-hint">Every page in this binder will use this same grid count. 13p uses the classic 4 + 4 + 5 pocket-page layout.</div>
     </div>
     <div class="field">
       <label>Cover</label>
@@ -2334,7 +2342,7 @@ function rotateCropImage(){
 
 /* ================= MY BINDER (BETA) ================= */
 const BINDER_MAX = 13;
-const BINDER_GRID_OPTIONS = [4,6,9,12];
+const BINDER_GRID_OPTIONS = [4,6,9,12,13];
 const PASTEL_PALETTE = [
   '#F8D7DA','#FCE8C9','#FFF5BA','#D9F2D2','#CDEEE0',
   '#CDEAF4','#D6E0F5','#E1D6F5','#F3D6EC','#EAD9C9'
@@ -2364,7 +2372,7 @@ function renderBindersPanel(){
     const sides = b.backToBack ? b.pages*2 : b.pages;
     div.innerHTML = `
       <div class="binder-cover" style="${coverBg}">${coverImg}<div class="binder-spine" style="background:${b.accent}"></div></div>
-      <div class="binder-tile-title">${b.name||'Untitled Binder'}</div>
+      <div class="binder-tile-title">${b.showName!==false ? `<span class="tag-pill" style="background:${b.nameColor||PASTEL_PALETTE[5]}">${b.name||'Untitled Binder'}</span>` : ''}</div>
       <div class="binder-tile-meta">${b.pages} page${b.pages===1?'':'s'} · ${b.grids}/side · ${sides} side${sides===1?'':'s'}</div>
     `;
     div.onclick = ()=>openBinderViewer(b.id);
@@ -2381,6 +2389,7 @@ function renderBindersPanel(){
 function buildSwatchRow(rowId, selectedColor, onPick){
   const row = document.getElementById(rowId);
   row.innerHTML = '';
+  const isPreset = PASTEL_PALETTE.some(c=>c.toLowerCase()===String(selectedColor).toLowerCase());
   PASTEL_PALETTE.forEach(color=>{
     const sw = document.createElement('div');
     sw.className = 'swatch' + (color===selectedColor ? ' selected' : '');
@@ -2389,10 +2398,31 @@ function buildSwatchRow(rowId, selectedColor, onPick){
     sw.onclick = ()=>{
       row.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
       sw.classList.add('selected');
+      picker.value = color;
       if(onPick) onPick(color);
     };
     row.appendChild(sw);
   });
+  // custom color picker — lets the user pick any color, not just the presets
+  const pickerWrap = document.createElement('label');
+  pickerWrap.className = 'swatch color-picker-swatch' + (!isPreset ? ' selected' : '');
+  pickerWrap.title = 'Custom color';
+  pickerWrap.style.background = !isPreset ? selectedColor : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)';
+  pickerWrap.dataset.color = !isPreset ? selectedColor : '';
+  const picker = document.createElement('input');
+  picker.type = 'color';
+  picker.value = isPreset ? '#ffffff' : selectedColor;
+  picker.style.cssText = 'opacity:0;width:100%;height:100%;cursor:pointer;position:absolute;inset:0;border:none;padding:0';
+  picker.oninput = ()=>{
+    const color = picker.value;
+    row.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+    pickerWrap.classList.add('selected');
+    pickerWrap.style.background = color;
+    pickerWrap.dataset.color = color;
+    if(onPick) onPick(color);
+  };
+  pickerWrap.appendChild(picker);
+  row.appendChild(pickerWrap);
 }
 function setSegSelection(rowId, val){
   document.querySelectorAll('#'+rowId+' .opt').forEach(o=>o.classList.toggle('sel', String(o.dataset.val)===String(val)));
@@ -2405,6 +2435,9 @@ document.getElementById('binder-grids-row').addEventListener('click', e=>{
   const opt = e.target.closest('.opt'); if(!opt) return;
   setSegSelection('binder-grids-row', opt.dataset.val);
 });
+function onBinderShowNameChange(){
+  document.getElementById('binder-name-color-wrap').classList.toggle('hidden', !document.getElementById('binder-show-name').checked);
+}
 document.getElementById('binder-cover-mode-row').addEventListener('click', e=>{
   const opt = e.target.closest('.opt'); if(!opt) return;
   setSegSelection('binder-cover-mode-row', opt.dataset.val);
@@ -2424,6 +2457,9 @@ function openBinderModal(id){
   buildSwatchRow('binder-accent-row', binder ? binder.accent : PASTEL_PALETTE[0]);
   buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : PASTEL_PALETTE[1]);
   buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : PASTEL_PALETTE[2]);
+  document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : true;
+  buildSwatchRow('binder-namecolor-row', binder && binder.nameColor ? binder.nameColor : PASTEL_PALETTE[5]);
+  onBinderShowNameChange();
   setSegSelection('binder-b2b-row', binder ? (binder.backToBack ? 1 : 0) : 1);
   setSegSelection('binder-grids-row', binder ? binder.grids : 9);
   const coverMode = binder && binder.cover.type==='image' ? 'image' : 'pastel';
@@ -2439,6 +2475,8 @@ function saveBinderForm(){
   const pages = Math.max(1, Math.min(60, parseInt(document.getElementById('binder-pages').value,10) || 1));
   const accent = document.querySelector('#binder-accent-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[0];
   const pageColor = document.querySelector('#binder-pagecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[1];
+  const showName = document.getElementById('binder-show-name').checked;
+  const nameColor = document.querySelector('#binder-namecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[5];
   const backToBack = document.querySelector('#binder-b2b-row .opt.sel')?.dataset.val === '1';
   const grids = parseInt(document.querySelector('#binder-grids-row .opt.sel')?.dataset.val,10) || 9;
   const coverMode = document.querySelector('#binder-cover-mode-row .opt.sel')?.dataset.val || 'pastel';
@@ -2458,7 +2496,7 @@ function saveBinderForm(){
     const b = DATA.binders.find(x=>x.id===editingBinderId);
     const structuralChange = b.pages!==pages || b.backToBack!==backToBack || b.grids!==grids;
     if(structuralChange && !confirm('Changing pages, back-to-back, or grids will reset all cards placed in this binder. Continue?')) return;
-    b.name=name; b.accent=accent; b.pageColor=pageColor; b.cover=cover;
+    b.name=name; b.accent=accent; b.pageColor=pageColor; b.cover=cover; b.showName=showName; b.nameColor=nameColor;
     if(structuralChange){
       b.pages=pages; b.backToBack=backToBack; b.grids=grids;
       b.slots = new Array((backToBack?pages*2:pages)*grids).fill(null);
@@ -2468,7 +2506,7 @@ function saveBinderForm(){
     if((DATA.binders.length) >= BINDER_MAX){ alert('You can have up to 13 binders. Delete one to add another.'); return; }
     DATA.binders.push({
       id:'binder_'+now+'_'+Math.random().toString(36).slice(2,7),
-      name, accent, pageColor, backToBack, grids, cover,
+      name, accent, pageColor, showName, nameColor, backToBack, grids, cover,
       pages, slots:new Array((backToBack?pages*2:pages)*grids).fill(null),
       createdAt:now, updatedAt:now
     });
@@ -2501,7 +2539,8 @@ function binderPageNext(){
 function renderBinderViewer(){
   const b = DATA.binders.find(x=>x.id===viewingBinderId);
   if(!b) return;
-  document.getElementById('binder-viewer-title').textContent = b.name;
+  const viewerTitleEl = document.getElementById('binder-viewer-title');
+  viewerTitleEl.innerHTML = b.showName!==false ? `<span class="tag-pill" style="background:${b.nameColor||PASTEL_PALETTE[5]}">${b.name||'Untitled Binder'}</span>` : '';
   document.getElementById('binder-page-label').textContent = `Page ${viewingBinderPage+1} of ${b.pages}`;
   const sidesWrap = document.getElementById('binder-viewer-sides');
   sidesWrap.innerHTML = '';
@@ -2516,10 +2555,25 @@ function renderBinderViewer(){
     label.textContent = b.backToBack ? (s===0?'Front':'Back') : 'Page';
     sideDiv.appendChild(label);
     const slotsDiv = document.createElement('div');
-    slotsDiv.className = 'binder-slots';
-    slotsDiv.style.gridTemplateColumns = `repeat(${cols},1fr)`;
     const sideIndex = viewingBinderPage*sideCount + s;
+    const is13p = b.grids === 13;
+    if(is13p){
+      slotsDiv.className = 'binder-slots binder-slots-13p';
+    } else {
+      slotsDiv.className = 'binder-slots';
+      slotsDiv.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+    }
+    // 13p pages use the classic uneven pocket layout: rows of 4, 4, then 5
+    const rowSizes = is13p ? [4,4,5] : null;
+    let rowDiv = null, rowRemaining = 0, rowIdx = -1;
     for(let g=0; g<b.grids; g++){
+      if(is13p && rowRemaining===0){
+        rowIdx++;
+        rowRemaining = rowSizes[rowIdx];
+        rowDiv = document.createElement('div');
+        rowDiv.className = 'binder-slots-13p-row';
+        slotsDiv.appendChild(rowDiv);
+      }
       const slotIndex = sideIndex*b.grids + g;
       const cardId = b.slots[slotIndex];
       const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
@@ -2537,7 +2591,8 @@ function renderBinderViewer(){
           openCardPicker(b.id, slotIndex);
         }
       };
-      slotsDiv.appendChild(slotDiv);
+      if(is13p){ rowDiv.appendChild(slotDiv); rowRemaining--; }
+      else slotsDiv.appendChild(slotDiv);
     }
     sideDiv.appendChild(slotsDiv);
     sidesWrap.appendChild(sideDiv);
