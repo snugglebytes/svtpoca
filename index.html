@@ -204,6 +204,8 @@ body.no-scroll{overflow:hidden;touch-action:none}
 .empty-note{font-size:13px;color:#8b7a88;padding:10px 4px;grid-column:1/-1;text-align:center}
 .empty-note .btn{display:inline-block}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px;color:#7a6b76}
+.stats-heading{font-size:11px;color:#8b7a88;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+.stats-heading:first-child{margin-top:0}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Ticketing",cursive;color:#a493a0;box-sizing:border-box}
 nav>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;line-height:1.3}
 nav>div:active{background:#f8f3fa}
@@ -336,6 +338,7 @@ nav>div:active{background:#f8f3fa}
     <div class="opt active" data-section="albums" onclick="switchSection('albums')">Albums</div>
     <div class="opt" data-section="nonalbum" onclick="switchSection('nonalbum')">Non-Album</div>
     <div class="opt" data-section="members" onclick="switchSection('members')">Members</div>
+    <div class="opt" data-section="allcards" onclick="switchSection('allcards')">All Photocards</div>
   </div>
   <div class="breadcrumb" id="breadcrumb"></div>
 </div>
@@ -373,9 +376,9 @@ nav>div:active{background:#f8f3fa}
       </select>
       <button class="btn small ghost" id="bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
     </div>
-    <div class="toolbar-center">
-      <button class="btn small ghost" onclick="saveOrderAsTemplate()">Save order as template</button>
-      <button class="btn small ghost" onclick="openTemplatesModal()">Templates</button>
+    <div class="toolbar-center" id="explorer-toolbar-center">
+      <button class="btn small ghost" id="save-order-template-btn" onclick="saveOrderAsTemplate()">Save order as template</button>
+      <button class="btn small ghost" id="templates-btn" onclick="openTemplatesModal()">Templates</button>
     </div>
     <div class="toolbar-right pg-nav" id="pg-nav-bottom"></div>
   </div>
@@ -474,7 +477,7 @@ nav>div:active{background:#f8f3fa}
 
 <div class="fab-wrap">
   <div class="fab-menu hidden" id="fab-menu">
-    <button class="btn alt" onclick="openAddFolderModal()">＋ Folder</button>
+    <button class="btn alt" id="fab-add-folder-btn" onclick="openAddFolderModal()">＋ Folder</button>
     <button class="btn" onclick="openCardModal(null)">＋ Photocard</button>
   </div>
   <button class="fab" onclick="toggleFabMenu()">＋</button>
@@ -1095,12 +1098,17 @@ function switchSection(sec){
   currentPath = [];
   miniSearchQuery = '';
   sortMemberFilter = '';
-  sortMode = '';
+  sortMode = sec==='allcards' ? 'date-uploaded' : '';
   const sortSel = document.getElementById('sort-mode-select');
-  if(sortSel) sortSel.value = '';
+  if(sortSel) sortSel.value = sortMode;
   const miniInput = document.getElementById('mini-search-input');
   if(miniInput) miniInput.value = '';
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
+  const isAllCards = sec==='allcards';
+  const toolbarCenter = document.getElementById('explorer-toolbar-center');
+  if(toolbarCenter) toolbarCenter.classList.toggle('hidden', isAllCards);
+  const fabFolderBtn = document.getElementById('fab-add-folder-btn');
+  if(fabFolderBtn) fabFolderBtn.classList.toggle('hidden', isAllCards);
   goHome();
 }
 
@@ -1133,6 +1141,13 @@ function hideAllPanels(){
 function renderBreadcrumb(){
   const bc = document.getElementById('breadcrumb');
   bc.innerHTML = '';
+  if(currentSection==='allcards'){
+    const home = document.createElement('span');
+    home.textContent = 'All Photocards';
+    home.className = 'current';
+    bc.appendChild(home);
+    return;
+  }
   const home = document.createElement('span');
   home.textContent = (currentSection==='albums'?'Albums':currentSection==='nonalbum'?'Non-Album':'Members');
   home.className = currentPath.length===0 ? 'current' : '';
@@ -1190,6 +1205,14 @@ function foldersForCard(c){
     })(DATA.nodes[section], [sectionLabel(section)]);
   });
   return results;
+}
+/* Location path text for the "All Photocards" view — Albums/Non-Album only
+   (Members isn't a real filing location), formatted like the "X subfolders"
+   subtitle so it visually matches the rest of the app. */
+function locationPathForCard(c){
+  const folders = foldersForCard(c).filter(f=>f.section==='albums'||f.section==='nonalbum');
+  if(!folders.length) return 'Not filed in Albums or Non-Album';
+  return folders.map(f=>f.trail.join(' › ')).join(' &nbsp;•&nbsp; ');
 }
 
 function onPerPageChange(){
@@ -1305,6 +1328,7 @@ function handleDragHover(list, cardsInView, toType, toId){
   reorderWithinView(list, cardsInView, dragged, {type:toType, id:toId});
 }
 function renderExplorer(){
+  if(currentSection==='allcards'){ renderAllCardsExplorer(); return; }
   renderBreadcrumb();
   const grid = document.getElementById('explorer-grid');
   grid.className = 'grid pp-' + perPage;
@@ -1372,6 +1396,55 @@ function renderExplorer(){
       note.appendChild(msg);
       note.appendChild(addBtn);
     }
+    grid.appendChild(note);
+  }
+
+  renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
+  renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
+  centerOrphanRow(grid);
+}
+
+/* Flat view of every photocard in the collection, regardless of which
+   folder(s) it's filed under. Default sort = date added, latest first;
+   the user can still change it via the same sort dropdown used elsewhere. */
+function renderAllCardsExplorer(){
+  renderBreadcrumb();
+  const sortMemberRow = document.getElementById('sort-member-row');
+  if(sortMemberRow) sortMemberRow.classList.add('hidden');
+  const grid = document.getElementById('explorer-grid');
+  grid.className = 'grid pp-' + perPage;
+  grid.innerHTML = '';
+
+  let items = DATA.cards.map(c=>({type:'card', data:c}));
+
+  if(miniSearchQuery){
+    items = items.filter(it=>matchesSearchTerms(miniSearchQuery, it));
+  }
+
+  const effectiveSortMode = sortMode || 'date-uploaded'; // "Custom order" has no meaning here — fall back to date added
+  if(effectiveSortMode==='az'){
+    items = [...items].sort((a,b)=>alphaLabel(a).localeCompare(alphaLabel(b)));
+  } else if(effectiveSortMode==='za'){
+    items = [...items].sort((a,b)=>alphaLabel(b).localeCompare(alphaLabel(a)));
+  } else if(effectiveSortMode==='date-edited'){
+    items = [...items].sort((a,b)=>itemUpdatedAt(b)-itemUpdatedAt(a));
+  } else {
+    items = [...items].sort((a,b)=>itemCreatedAt(b)-itemCreatedAt(a));
+  }
+
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  if(currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage-1)*perPage;
+  const pageItems = items.slice(start, start+perPage);
+
+  pageItems.forEach(item=>{
+    grid.appendChild(renderCardTile(item.data, null, null, undefined, {locationPath: locationPathForCard(item.data)}));
+  });
+
+  if(items.length===0){
+    const note = document.createElement('div');
+    note.className = 'empty-note';
+    note.textContent = miniSearchQuery ? `No photocards match "${miniSearchQuery}".` : 'No photocards logged yet.';
     grid.appendChild(note);
   }
 
@@ -1485,7 +1558,7 @@ function renderFolderTile(f, list, cardsInView){
   return div;
 }
 
-function renderCardTile(c, list, cardsInView, onOpen){
+function renderCardTile(c, list, cardsInView, onOpen, opts){
   const openFn = onOpen || (()=>openCardPreview(c));
   const div = document.createElement('div');
   const isDraggedNow = dragged && dragged.type==='card' && dragged.id===c.id;
@@ -1506,6 +1579,7 @@ function renderCardTile(c, list, cardsInView, onOpen){
         </div>
       </div>
     </div>
+    ${opts && opts.locationPath ? `<div class="tile-sub">${opts.locationPath}</div>` : ''}
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
     <div class="del-x">✕</div>
   `;
@@ -2695,6 +2769,8 @@ function showStats(){
 
   const totalValue = cards.reduce((sum,c)=>sum+(parseFloat(c.price)||0),0);
 
+  const sizeInfo = calcDataSize();
+
   document.getElementById('stats-body').innerHTML = `
     <div class="stat-row"><span>Total cards logged</span><b>${cards.length}</b></div>
     <div class="stat-row"><span>Have</span><b>${have.length}</b></div>
@@ -2706,7 +2782,32 @@ function showStats(){
     <div class="stat-row"><span>Most-owned member</span><b>${mostMember} (${mostVal<0?0:mostVal})</b></div>
     <div class="stat-row"><span>Least-owned member</span><b>${leastMember} (${leastVal===Infinity?0:leastVal})</b></div>
     <div class="stat-row"><span>Total spent (logged prices)</span><b>₱${totalValue.toLocaleString()}</b></div>
+    <div class="stats-heading">File size</div>
+    <div class="stat-row"><span>Total saved data</span><b>${formatBytes(sizeInfo.totalBytes)}</b></div>
+    <div class="stat-row"><span>— from images (photos, thumbnails, covers)</span><b>${formatBytes(sizeInfo.imageBytes)}</b></div>
+    <div class="stat-row"><span>— from everything else (names, tags, etc.)</span><b>${formatBytes(sizeInfo.otherBytes)}</b></div>
   `;
+}
+
+/* Measures how much space the whole collection takes up (same JSON that
+   gets written to localStorage / exported as a backup), plus how much of
+   that is made up of embedded images (uploaded photos are stored as
+   base64 data URLs) vs everything else (names, tags, folder structure). */
+function calcDataSize(){
+  const json = JSON.stringify(DATA);
+  const totalBytes = new Blob([json]).size;
+  let imageBytes = 0;
+  function addIfDataUrl(str){ if(str && typeof str==='string' && str.startsWith('data:')) imageBytes += new Blob([str]).size; }
+  DATA.cards.forEach(c=>addIfDataUrl(c.image));
+  function walkFolders(list){ (list||[]).forEach(f=>{ addIfDataUrl(f.thumb); walkFolders(f.children); }); }
+  ['albums','nonalbum','members'].forEach(sec=>walkFolders(DATA.nodes[sec]));
+  (DATA.binders||[]).forEach(b=>{ if(b.cover && b.cover.type==='image') addIfDataUrl(b.cover.value); });
+  return {totalBytes, imageBytes, otherBytes: Math.max(0, totalBytes-imageBytes)};
+}
+function formatBytes(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(2) + ' MB';
 }
 
 /* ================= LISTS PANEL (Wishlist / Duplicates / STBO) ================= */
