@@ -232,6 +232,47 @@ nav>div:active{background:#f8f3fa}
 .status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e9d38f;font-weight:700}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
+.beta-badge{font-family:'Ticketing',cursive;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
+.swatch-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.swatch{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;position:relative;flex-shrink:0}
+.swatch.selected{border-color:var(--text);box-shadow:0 0 0 2px #fff inset,0 0 0 3px var(--text)}
+.swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5a4a55;text-shadow:0 0 2px #fff}
+.seg-row{display:flex;border:2px solid var(--line);border-radius:9px;overflow:hidden}
+.seg-row .opt{flex:1;text-align:center;padding:7px 6px;font-size:12px;cursor:pointer;background:#f8f3fa}
+.seg-row .opt.sel{background:var(--yellow);font-weight:700}
+.seg-row .opt+.opt{border-left:2px solid var(--line)}
+.field-hint{font-size:11px;color:#a493a0;margin-top:3px}
+.binders-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.binders-count{font-size:11px;color:#a493a0}
+.binder-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:480px){.binder-grid{grid-template-columns:repeat(3,1fr)}}
+.binder-tile{border-radius:10px 14px 14px 10px;border:2px solid var(--line);cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06);overflow:hidden;background:#fff}
+.binder-cover{position:relative;background:#f6f2fb;overflow:hidden}
+.binder-cover::before{content:'';display:block;padding-top:120%}
+.binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.binder-spine{position:absolute;left:0;top:0;bottom:0;width:9px}
+.binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
+.binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
+.binder-new-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:#a493a0;font-size:12px;min-height:150px}
+.binder-new-tile.disabled{opacity:.45;cursor:not-allowed}
+.binder-viewer-modal .modal{max-width:520px}
+.binder-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.binder-page-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+.binder-page-label{font-size:12px;color:#a493a0;min-width:90px;text-align:center}
+.binder-sides{display:flex;gap:10px}
+.binder-side{flex:1;min-width:0;border-radius:10px;padding:8px;border:2px solid var(--line)}
+.binder-side-label{font-size:10px;text-align:center;color:#8a6b7c;margin-bottom:6px;font-weight:600}
+.binder-slots{display:grid;gap:6px}
+.binder-slot{position:relative;border-radius:8px;border:2px dashed rgba(122,107,118,.3);background:rgba(255,255,255,.55);cursor:pointer;overflow:hidden}
+.binder-slot::before{content:'';display:block;padding-top:150%}
+.binder-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5px}
+.binder-slot.filled{border-style:solid;border-color:var(--line)}
+.binder-slot-empty-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(122,107,118,.35)}
+.card-picker-list{max-height:280px;overflow:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.card-picker-item{cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
+.card-picker-item::before{content:'';display:block;padding-top:150%}
+.card-picker-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.card-picker-item .cpi-name{position:absolute;left:0;right:0;bottom:0;background:rgba(50,35,48,.72);color:#fff;font-size:9px;padding:2px 4px;line-height:1.2;max-height:2.4em;overflow:hidden}
 .crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
 .crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -418,6 +459,17 @@ nav>div:active{background:#f8f3fa}
   <div id="tags-page-list"></div>
 </div>
 
+<div class="panel hidden" id="binders-panel">
+  <div class="title-row">
+    <b class="section-title">My Binder <span class="beta-badge" style="vertical-align:middle">BETA</span></b>
+    <button class="btn small ghost" onclick="goHome()">Close</button>
+  </div>
+  <div class="binders-toolbar">
+    <span class="binders-count" id="binders-count"></span>
+  </div>
+  <div class="binder-grid" id="binders-grid"></div>
+</div>
+
 </div>
 
 <div class="fab-wrap">
@@ -432,6 +484,7 @@ nav>div:active{background:#f8f3fa}
   <div style="cursor:pointer" onclick="goHome()">Home</div>
   <div style="cursor:pointer" onclick="showStats()">Stats</div>
   <div style="cursor:pointer" onclick="showTagsPage()">Tags</div>
+  <div style="cursor:pointer" onclick="openBindersPanel()">My Binder<div class="beta-badge">BETA</div></div>
   <div style="cursor:pointer" onclick="document.getElementById('search-input').focus()">Search</div>
   <div style="cursor:pointer" onclick="openInstallModal()">Install</div>
 </nav>
@@ -538,6 +591,106 @@ nav>div:active{background:#f8f3fa}
     <div class="preview-image-wrap"><img id="card-preview-img" src="" alt=""></div>
     <div class="preview-title" id="card-preview-title"></div>
     <div class="preview-meta" id="card-preview-meta"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT BINDER MODAL -->
+<div id="binder-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
+    <div class="section-title" id="binder-modal-title">New Binder</div>
+    <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
+    <div class="field">
+      <label>Binder color</label>
+      <div class="swatch-row" id="binder-accent-row"></div>
+    </div>
+    <div class="field">
+      <label>Number of pages</label>
+      <input id="binder-pages" type="number" min="1" max="60" step="1" value="10" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Pages color</label>
+      <div class="swatch-row" id="binder-pagecolor-row"></div>
+    </div>
+    <div class="field">
+      <label>Back-to-back pages?</label>
+      <div class="seg-row" id="binder-b2b-row">
+        <div class="opt" data-val="1">Back-to-back</div>
+        <div class="opt" data-val="0">Single-sided</div>
+      </div>
+      <div class="field-hint">Back-to-back pages have slots on both sides, like a real binder sleeve.</div>
+    </div>
+    <div class="field">
+      <label>Grids per page side</label>
+      <div class="seg-row" id="binder-grids-row">
+        <div class="opt" data-val="4">4</div>
+        <div class="opt" data-val="6">6</div>
+        <div class="opt" data-val="9">9</div>
+        <div class="opt" data-val="12">12</div>
+      </div>
+      <div class="field-hint">Every page in this binder will use this same grid count.</div>
+    </div>
+    <div class="field">
+      <label>Cover</label>
+      <div class="seg-row" id="binder-cover-mode-row">
+        <div class="opt" data-val="pastel">Pastel color</div>
+        <div class="opt" data-val="image">Upload / URL</div>
+      </div>
+    </div>
+    <div class="field" id="binder-cover-pastel-wrap">
+      <div class="swatch-row" id="binder-cover-pastel-row"></div>
+    </div>
+    <div class="field hidden" id="binder-cover-image-wrap">
+      <input id="binder-cover-url" placeholder="Paste image URL...">
+      <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('binder')">Load / Update Image</button></div>
+      <div class="field-or">— or —</div>
+      <div class="dropzone" id="binder-dropzone">
+        <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
+        <input type="file" id="binder-file" accept="image/*" class="hidden" onchange="loadCropFromFile('binder', event)">
+      </div>
+      <p class="import-choice-note">Covers are resized and compressed automatically to keep your backup file small.</p>
+      <div id="binder-crop-area" class="hidden">
+        <div class="crop-wrap square" id="binder-crop-wrap"><img id="binder-crop-img"></div>
+        <div class="field"><label>Zoom</label><input type="range" id="binder-crop-zoom" min="100" max="300" value="100"></div>
+        <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
+        <div class="crop-actions">
+          <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
+          <button class="btn small" onclick="applyCrop()">Apply Crop</button>
+          <span class="crop-check hidden" id="binder-crop-check">✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="saveBinderForm()">Save</button>
+      <button class="btn danger hidden" id="delete-binder-btn" onclick="deleteCurrentBinder()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- BINDER VIEWER MODAL -->
+<div id="binder-viewer-modal" class="modal-bg hidden binder-viewer-modal">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('binder-viewer-modal')">✕</button>
+    <div class="binder-viewer-head">
+      <b class="section-title" id="binder-viewer-title" style="margin:0"></b>
+      <button class="btn small ghost" onclick="openBinderModal(viewingBinderId)">Edit</button>
+    </div>
+    <div class="binder-sides" id="binder-viewer-sides"></div>
+    <div class="binder-page-nav">
+      <button class="btn small ghost" onclick="binderPagePrev()">‹ Prev</button>
+      <span class="binder-page-label" id="binder-page-label"></span>
+      <button class="btn small ghost" onclick="binderPageNext()">Next ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD PICKER MODAL (assign a photocard to a binder slot) -->
+<div id="card-picker-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('card-picker-modal')">✕</button>
+    <div class="section-title">Choose a photocard</div>
+    <input id="card-picker-search" class="mini-search-inline" placeholder="Search your photocards..." oninput="renderCardPickerList()" style="width:100%;box-sizing:border-box">
+    <div class="card-picker-list" id="card-picker-list"></div>
   </div>
 </div>
 
@@ -693,7 +846,8 @@ function defaultData(){
     nodes: { albums:[sampleFolder], nonalbum:[], members:memberFolders },
     cards: [sampleCard],
     viewOrders: {},
-    templates: []
+    templates: [],
+    binders: []
   };
 }
 let DATA = load();
@@ -706,6 +860,7 @@ function load(){
     // migrations for older saves
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.templates) d.templates = [];
+    if(!d.binders) d.binders = [];
     let base = Date.now() - d.tags.length*1000;
     d.tags.forEach((t,i)=>{ if(!t.createdAt) t.createdAt = base + i*1000; });
     function migrateFolderTags(list){
@@ -767,6 +922,7 @@ function importData(event){
     }
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.templates) d.templates = [];
+    if(!d.binders) d.binders = [];
     pendingImportData = d;
     function countFoldersDeep(list){ return (list||[]).reduce((n,f)=>n+1+countFoldersDeep(f.children||[]),0); }
     const folderCount = ['albums','nonalbum','members'].reduce((n,sec)=>n+countFoldersDeep(d.nodes[sec]),0);
@@ -953,6 +1109,8 @@ function goHome(){
   document.getElementById('lists-panel').classList.add('hidden');
   const tagsPanel = document.getElementById('tags-panel');
   if(tagsPanel) tagsPanel.classList.add('hidden');
+  const bindersPanel = document.getElementById('binders-panel');
+  if(bindersPanel) bindersPanel.classList.add('hidden');
   closeSearch();
   document.getElementById('explorer-panel').classList.remove('hidden');
   document.getElementById('home-lists-bar').classList.remove('hidden');
@@ -966,6 +1124,8 @@ function hideAllPanels(){
   document.getElementById('stats-panel').classList.add('hidden');
   document.getElementById('lists-panel').classList.add('hidden');
   document.getElementById('tags-panel').classList.add('hidden');
+  const bindersPanel = document.getElementById('binders-panel');
+  if(bindersPanel) bindersPanel.classList.add('hidden');
   document.querySelector('.fab-wrap').classList.add('hidden');
 }
 
@@ -1966,12 +2126,14 @@ let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
 function startCropFor(target){
   activeCrop = target==='folder'
     ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', tiltId:'folder-crop-tilt', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300}
+    : target==='binder'
+    ? {target:'binder', wrapId:'binder-crop-wrap', imgId:'binder-crop-img', zoomId:'binder-crop-zoom', tiltId:'binder-crop-tilt', areaId:'binder-crop-area', checkId:'binder-crop-check', outW:340, outH:340}
     : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', tiltId:'crop-tilt', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
 }
 function loadCropFromUrl(target){
   target = target || 'card';
   startCropFor(target);
-  const urlInputId = target==='folder' ? 'folder-thumb' : 'card-url';
+  const urlInputId = target==='folder' ? 'folder-thumb' : target==='binder' ? 'binder-cover-url' : 'card-url';
   const url = document.getElementById(urlInputId).value.trim();
   if(!url){ alert('Paste an image URL first.'); return; }
   const img = document.getElementById(activeCrop.imgId);
@@ -2067,6 +2229,7 @@ function applyCrop(){
   ctx.restore();
   const dataUrl = canvas.toDataURL('image/jpeg',0.85);
   if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; }
+  else if(activeCrop.target==='binder'){ croppedBinderCoverDataUrl = dataUrl; }
   else { croppedDataUrl = dataUrl; }
   showCropCheck();
 }
@@ -2093,6 +2256,243 @@ function rotateCropImage(){
   img.onload = ()=>{ fitCropImage(); };
   img.removeAttribute('crossorigin');
   img.src = rotatedUrl;
+}
+
+/* ================= MY BINDER (BETA) ================= */
+const BINDER_MAX = 13;
+const BINDER_GRID_OPTIONS = [4,6,9,12];
+const PASTEL_PALETTE = [
+  '#F8D7DA','#FCE8C9','#FFF5BA','#D9F2D2','#CDEEE0',
+  '#CDEAF4','#D6E0F5','#E1D6F5','#F3D6EC','#EAD9C9'
+];
+let editingBinderId = null;
+let croppedBinderCoverDataUrl = null;
+let viewingBinderId = null;
+let viewingBinderPage = 0; // 0-based page index
+let cardPickerTarget = null; // {binderId, pageIndex, side, slotIndex}
+
+function openBindersPanel(){
+  hideAllPanels();
+  document.getElementById('binders-panel').classList.remove('hidden');
+  renderBindersPanel();
+}
+function renderBindersPanel(){
+  const grid = document.getElementById('binders-grid');
+  const countEl = document.getElementById('binders-count');
+  const binders = DATA.binders || [];
+  countEl.textContent = `${binders.length} / ${BINDER_MAX} binders`;
+  grid.innerHTML = '';
+  binders.forEach(b=>{
+    const div = document.createElement('div');
+    div.className = 'binder-tile';
+    const coverImg = b.cover && b.cover.type==='image' ? `<img src="${b.cover.value}">` : '';
+    const coverBg = b.cover && b.cover.type==='pastel' ? `background:${b.cover.value}` : '';
+    const sides = b.backToBack ? b.pages*2 : b.pages;
+    div.innerHTML = `
+      <div class="binder-cover" style="${coverBg}">${coverImg}<div class="binder-spine" style="background:${b.accent}"></div></div>
+      <div class="binder-tile-title">${b.name||'Untitled Binder'}</div>
+      <div class="binder-tile-meta">${b.pages} page${b.pages===1?'':'s'} · ${b.grids}/side · ${sides} side${sides===1?'':'s'}</div>
+    `;
+    div.onclick = ()=>openBinderViewer(b.id);
+    grid.appendChild(div);
+  });
+  const newTile = document.createElement('div');
+  const atMax = binders.length >= BINDER_MAX;
+  newTile.className = 'binder-new-tile' + (atMax ? ' disabled' : '');
+  newTile.innerHTML = atMax ? `<div>13 / 13 binders</div><div class="field-hint">Delete one to add more</div>` : `<div style="font-size:22px">＋</div><div>New Binder</div>`;
+  newTile.onclick = ()=>{ if(!atMax) openBinderModal(null); };
+  grid.appendChild(newTile);
+}
+
+function buildSwatchRow(rowId, selectedColor, onPick){
+  const row = document.getElementById(rowId);
+  row.innerHTML = '';
+  PASTEL_PALETTE.forEach(color=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (color===selectedColor ? ' selected' : '');
+    sw.style.background = color;
+    sw.dataset.color = color;
+    sw.onclick = ()=>{
+      row.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+      sw.classList.add('selected');
+      if(onPick) onPick(color);
+    };
+    row.appendChild(sw);
+  });
+}
+function setSegSelection(rowId, val){
+  document.querySelectorAll('#'+rowId+' .opt').forEach(o=>o.classList.toggle('sel', String(o.dataset.val)===String(val)));
+}
+document.getElementById('binder-b2b-row').addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt) return;
+  setSegSelection('binder-b2b-row', opt.dataset.val);
+});
+document.getElementById('binder-grids-row').addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt) return;
+  setSegSelection('binder-grids-row', opt.dataset.val);
+});
+document.getElementById('binder-cover-mode-row').addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt) return;
+  setSegSelection('binder-cover-mode-row', opt.dataset.val);
+  document.getElementById('binder-cover-pastel-wrap').classList.toggle('hidden', opt.dataset.val!=='pastel');
+  document.getElementById('binder-cover-image-wrap').classList.toggle('hidden', opt.dataset.val!=='image');
+});
+
+function openBinderModal(id){
+  editingBinderId = id;
+  croppedBinderCoverDataUrl = null;
+  const binder = id ? DATA.binders.find(b=>b.id===id) : null;
+  document.getElementById('binder-modal-title').textContent = binder ? 'Edit Binder' : 'New Binder';
+  document.getElementById('binder-name').value = binder ? binder.name : '';
+  document.getElementById('binder-pages').value = binder ? binder.pages : 10;
+  document.getElementById('binder-cover-url').value = '';
+  document.getElementById('binder-crop-area').classList.add('hidden');
+  buildSwatchRow('binder-accent-row', binder ? binder.accent : PASTEL_PALETTE[0]);
+  buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : PASTEL_PALETTE[1]);
+  buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : PASTEL_PALETTE[2]);
+  setSegSelection('binder-b2b-row', binder ? (binder.backToBack ? 1 : 0) : 1);
+  setSegSelection('binder-grids-row', binder ? binder.grids : 9);
+  const coverMode = binder && binder.cover.type==='image' ? 'image' : 'pastel';
+  setSegSelection('binder-cover-mode-row', coverMode);
+  document.getElementById('binder-cover-pastel-wrap').classList.toggle('hidden', coverMode!=='pastel');
+  document.getElementById('binder-cover-image-wrap').classList.toggle('hidden', coverMode!=='image');
+  document.getElementById('delete-binder-btn').classList.toggle('hidden', !binder);
+  document.getElementById('binder-viewer-modal').classList.add('hidden');
+  document.getElementById('binder-modal').classList.remove('hidden');
+}
+function saveBinderForm(){
+  const name = document.getElementById('binder-name').value.trim() || 'Untitled Binder';
+  const pages = Math.max(1, Math.min(60, parseInt(document.getElementById('binder-pages').value,10) || 1));
+  const accent = document.querySelector('#binder-accent-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[0];
+  const pageColor = document.querySelector('#binder-pagecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[1];
+  const backToBack = document.querySelector('#binder-b2b-row .opt.sel')?.dataset.val === '1';
+  const grids = parseInt(document.querySelector('#binder-grids-row .opt.sel')?.dataset.val,10) || 9;
+  const coverMode = document.querySelector('#binder-cover-mode-row .opt.sel')?.dataset.val || 'pastel';
+  let cover;
+  if(coverMode==='image'){
+    const existing = editingBinderId ? DATA.binders.find(b=>b.id===editingBinderId) : null;
+    const imgVal = croppedBinderCoverDataUrl || (existing && existing.cover.type==='image' ? existing.cover.value : '');
+    if(!imgVal){ alert('Upload an image or paste a URL and click "Load / Update Image", then Apply Crop.'); return; }
+    cover = {type:'image', value:imgVal};
+  } else {
+    const pastelColor = document.querySelector('#binder-cover-pastel-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[2];
+    cover = {type:'pastel', value:pastelColor};
+  }
+  const now = Date.now();
+  if(!DATA.binders) DATA.binders = [];
+  if(editingBinderId){
+    const b = DATA.binders.find(x=>x.id===editingBinderId);
+    const structuralChange = b.pages!==pages || b.backToBack!==backToBack || b.grids!==grids;
+    if(structuralChange && !confirm('Changing pages, back-to-back, or grids will reset all cards placed in this binder. Continue?')) return;
+    b.name=name; b.accent=accent; b.pageColor=pageColor; b.cover=cover;
+    if(structuralChange){
+      b.pages=pages; b.backToBack=backToBack; b.grids=grids;
+      b.slots = new Array((backToBack?pages*2:pages)*grids).fill(null);
+    }
+    b.updatedAt = now;
+  } else {
+    if((DATA.binders.length) >= BINDER_MAX){ alert('You can have up to 13 binders. Delete one to add another.'); return; }
+    DATA.binders.push({
+      id:'binder_'+now+'_'+Math.random().toString(36).slice(2,7),
+      name, accent, pageColor, backToBack, grids, cover,
+      pages, slots:new Array((backToBack?pages*2:pages)*grids).fill(null),
+      createdAt:now, updatedAt:now
+    });
+  }
+  save();
+  closeModal('binder-modal');
+  renderBindersPanel();
+}
+function deleteCurrentBinder(){
+  if(!editingBinderId) return;
+  if(!confirm('Delete this binder? Cards placed inside will not be deleted from your collection.')) return;
+  DATA.binders = DATA.binders.filter(b=>b.id!==editingBinderId);
+  save();
+  closeModal('binder-modal');
+  closeModal('binder-viewer-modal');
+  renderBindersPanel();
+}
+
+function openBinderViewer(id){
+  viewingBinderId = id;
+  viewingBinderPage = 0;
+  document.getElementById('binder-viewer-modal').classList.remove('hidden');
+  renderBinderViewer();
+}
+function binderPagePrev(){ if(viewingBinderPage>0){ viewingBinderPage--; renderBinderViewer(); } }
+function binderPageNext(){
+  const b = DATA.binders.find(x=>x.id===viewingBinderId); if(!b) return;
+  if(viewingBinderPage < b.pages-1){ viewingBinderPage++; renderBinderViewer(); }
+}
+function renderBinderViewer(){
+  const b = DATA.binders.find(x=>x.id===viewingBinderId);
+  if(!b) return;
+  document.getElementById('binder-viewer-title').textContent = b.name;
+  document.getElementById('binder-page-label').textContent = `Page ${viewingBinderPage+1} of ${b.pages}`;
+  const sidesWrap = document.getElementById('binder-viewer-sides');
+  sidesWrap.innerHTML = '';
+  const sideCount = b.backToBack ? 2 : 1;
+  const cols = b.grids<=4 ? 2 : 3;
+  for(let s=0; s<sideCount; s++){
+    const sideDiv = document.createElement('div');
+    sideDiv.className = 'binder-side';
+    sideDiv.style.background = b.pageColor;
+    const label = document.createElement('div');
+    label.className = 'binder-side-label';
+    label.textContent = b.backToBack ? (s===0?'Front':'Back') : 'Page';
+    sideDiv.appendChild(label);
+    const slotsDiv = document.createElement('div');
+    slotsDiv.className = 'binder-slots';
+    slotsDiv.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+    const sideIndex = viewingBinderPage*sideCount + s;
+    for(let g=0; g<b.grids; g++){
+      const slotIndex = sideIndex*b.grids + g;
+      const cardId = b.slots[slotIndex];
+      const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
+      const slotDiv = document.createElement('div');
+      slotDiv.className = 'binder-slot' + (card ? ' filled' : '');
+      if(card && card.image) slotDiv.innerHTML = `<img src="${card.image}">`;
+      else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
+      else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
+      slotDiv.onclick = ()=>{
+        if(card){
+          if(confirm(`Remove "${card.name||'this photocard'}" from this slot?`)){
+            b.slots[slotIndex] = null; save(); renderBinderViewer();
+          }
+        } else {
+          openCardPicker(b.id, slotIndex);
+        }
+      };
+      slotsDiv.appendChild(slotDiv);
+    }
+    sideDiv.appendChild(slotsDiv);
+    sidesWrap.appendChild(sideDiv);
+  }
+}
+function openCardPicker(binderId, slotIndex){
+  cardPickerTarget = {binderId, slotIndex};
+  document.getElementById('card-picker-search').value = '';
+  document.getElementById('card-picker-modal').classList.remove('hidden');
+  renderCardPickerList();
+}
+function renderCardPickerList(){
+  const q = document.getElementById('card-picker-search').value.trim().toLowerCase();
+  const list = document.getElementById('card-picker-list');
+  list.innerHTML = '';
+  const cards = DATA.cards.filter(c=>!q || (c.name||'').toLowerCase().includes(q));
+  if(!cards.length){ list.innerHTML = '<div class="empty-note">No photocards match.</div>'; return; }
+  cards.forEach(c=>{
+    const item = document.createElement('div');
+    item.className = 'card-picker-item';
+    item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name">${c.name||'Untitled'}</div>`;
+    item.onclick = ()=>{
+      const b = DATA.binders.find(x=>x.id===cardPickerTarget.binderId);
+      if(b){ b.slots[cardPickerTarget.slotIndex] = c.id; b.updatedAt = Date.now(); save(); }
+      closeModal('card-picker-modal');
+      renderBinderViewer();
+    };
+    list.appendChild(item);
+  });
 }
 
 /* ================= TAGS PAGE (sortable + editable) ================= */
@@ -2749,6 +3149,7 @@ function initDropzone(zoneId, inputId, target){
 }
 initDropzone('card-dropzone','card-file','card');
 initDropzone('folder-dropzone','folder-file','folder');
+initDropzone('binder-dropzone','binder-file','binder');
 
 /* ================= INIT ================= */
 document.getElementById('per-page-select').value = perPage;
