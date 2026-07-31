@@ -253,7 +253,12 @@ nav>div:active{background:#f8f3fa}
 .binder-cover{position:relative;background:#f6f2fb;overflow:hidden}
 .binder-cover::before{content:'';display:block;padding-top:120%}
 .binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-spine{position:absolute;left:0;top:0;bottom:0;width:9px}
+.binder-cover-label{position:absolute;left:6%;right:6%;top:50%;transform:translateY(-50%);text-align:center;font-family:"Ticketing",cursive;font-size:13px;line-height:1.3;color:#5f4a58;text-shadow:0 1px 3px rgba(255,255,255,.75);word-break:break-word;z-index:2}
+.binder-cover-page{flex:1;position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb}
+.binder-cover-page::before{content:'';display:block;padding-top:140%}
+.binder-cover-page img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.binder-cover-page-text{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);text-align:center;font-family:"Ticketing",cursive;font-size:20px;line-height:1.4;color:#5f4a58;text-shadow:0 1px 3px rgba(255,255,255,.75);word-break:break-word;z-index:2}
+.binder-slot-name-pill{position:absolute;left:3px;right:3px;bottom:3px;font-size:9px;line-height:1.3;padding:2px 5px;border-radius:8px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
 .binder-new-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:#a493a0;font-size:12px;min-height:150px}
@@ -638,15 +643,6 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
     <div class="section-title" id="binder-modal-title">New Binder</div>
     <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
-    <div class="field checkbox-row"><input type="checkbox" id="binder-show-name" checked onchange="onBinderShowNameChange()"> <label style="margin:0" for="binder-show-name">Show binder name</label></div>
-    <div class="field" id="binder-name-color-wrap">
-      <label>Name pill color</label>
-      <div class="swatch-row" id="binder-namecolor-row"></div>
-    </div>
-    <div class="field">
-      <label>Binder color</label>
-      <div class="swatch-row" id="binder-accent-row"></div>
-    </div>
     <div class="field">
       <label>Number of pages</label>
       <input id="binder-pages" type="number" min="1" max="60" step="1" value="10" inputmode="numeric">
@@ -680,6 +676,7 @@ nav>div:active{background:#f8f3fa}
         <div class="opt" data-val="pastel">Pastel color</div>
         <div class="opt" data-val="image">Upload / URL</div>
       </div>
+      <div class="field-hint">This color or image fills the entire cover — shown on the binder grid and as the front/back cover when you open it.</div>
     </div>
     <div class="field" id="binder-cover-pastel-wrap">
       <div class="swatch-row" id="binder-cover-pastel-row"></div>
@@ -704,6 +701,13 @@ nav>div:active{background:#f8f3fa}
         </div>
       </div>
     </div>
+    <div class="field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
+    <div class="field checkbox-row"><input type="checkbox" id="binder-show-name" checked onchange="onBinderShowNameChange()"> <label style="margin:0" for="binder-show-name">Show photocard names?</label></div>
+    <div class="field" id="binder-name-color-wrap">
+      <label>Photocard name pill color</label>
+      <div class="swatch-row" id="binder-namecolor-row"></div>
+      <div class="field-hint">Shows each photocard's name as a small pill once it's placed in the binder.</div>
+    </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveBinderForm()">Save</button>
       <button class="btn danger hidden" id="delete-binder-btn" onclick="deleteCurrentBinder()">Delete</button>
@@ -727,6 +731,19 @@ nav>div:active{background:#f8f3fa}
       <button class="btn small ghost" onclick="binderPagePrev()">‹ Prev</button>
       <span class="binder-page-label" id="binder-page-label"></span>
       <button class="btn small ghost" onclick="binderPageNext()">Next ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- BINDER SLOT OPTIONS MODAL (tap a placed photocard) -->
+<div id="binder-slot-modal" class="modal-bg hidden">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('binder-slot-modal')">✕</button>
+    <div class="section-title">Photocard</div>
+    <p style="font-size:13px;color:#8b7a88" id="binder-slot-modal-name"></p>
+    <div class="modal-actions">
+      <button class="btn alt" onclick="binderSlotReplace()">Replace</button>
+      <button class="btn danger" onclick="binderSlotRemove()">Remove</button>
     </div>
   </div>
 </div>
@@ -895,7 +912,7 @@ function defaultData(){
     viewOrders: {},
     templates: [],
     binders: [],
-    pageFlipEnabled: true
+    pageFlipEnabled: false
   };
 }
 let DATA = load();
@@ -909,7 +926,7 @@ function load(){
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.templates) d.templates = [];
     if(!d.binders) d.binders = [];
-    if(typeof d.pageFlipEnabled !== 'boolean') d.pageFlipEnabled = true;
+    if(typeof d.pageFlipEnabled !== 'boolean') d.pageFlipEnabled = false;
     let base = Date.now() - d.tags.length*1000;
     d.tags.forEach((t,i)=>{ if(!t.createdAt) t.createdAt = base + i*1000; });
     function migrateFolderTags(list){
@@ -2390,6 +2407,7 @@ let croppedBinderCoverDataUrl = null;
 let viewingBinderId = null;
 let viewingBinderPage = 0; // 0-based page index
 let cardPickerTarget = null; // {binderId, pageIndex, side, slotIndex}
+let binderSlotTarget = null; // {binderId, slotIndex}
 
 function openBindersPanel(){
   hideAllPanels();
@@ -2407,10 +2425,11 @@ function renderBindersPanel(){
     div.className = 'binder-tile';
     const coverImg = b.cover && b.cover.type==='image' ? `<img src="${b.cover.value}">` : '';
     const coverBg = b.cover && b.cover.type==='pastel' ? `background:${b.cover.value}` : '';
+    const coverLabel = b.coverText ? `<div class="binder-cover-label">${b.coverText}</div>` : '';
     const sides = b.backToBack ? b.pages*2 : b.pages;
     div.innerHTML = `
-      <div class="binder-cover" style="${coverBg}">${coverImg}<div class="binder-spine" style="background:${b.accent}"></div></div>
-      <div class="binder-tile-title">${b.showName!==false ? `<span class="tag-pill" style="background:${b.nameColor||PASTEL_PALETTE[5]}">${b.name||'Untitled Binder'}</span>` : ''}</div>
+      <div class="binder-cover" style="${coverBg}">${coverImg}${coverLabel}</div>
+      <div class="binder-tile-title">${b.name||'Untitled Binder'}</div>
       <div class="binder-tile-meta">${b.pages} page${b.pages===1?'':'s'} · ${b.grids}/side · ${sides} side${sides===1?'':'s'}</div>
     `;
     div.onclick = ()=>openBinderViewer(b.id);
@@ -2491,8 +2510,8 @@ function openBinderModal(id){
   document.getElementById('binder-name').value = binder ? binder.name : '';
   document.getElementById('binder-pages').value = binder ? binder.pages : 10;
   document.getElementById('binder-cover-url').value = '';
+  document.getElementById('binder-cover-text').value = binder ? (binder.coverText||'') : '';
   document.getElementById('binder-crop-area').classList.add('hidden');
-  buildSwatchRow('binder-accent-row', binder ? binder.accent : PASTEL_PALETTE[0]);
   buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : PASTEL_PALETTE[1]);
   buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : PASTEL_PALETTE[2]);
   document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : true;
@@ -2511,7 +2530,7 @@ function openBinderModal(id){
 function saveBinderForm(){
   const name = document.getElementById('binder-name').value.trim() || 'Untitled Binder';
   const pages = Math.max(1, Math.min(60, parseInt(document.getElementById('binder-pages').value,10) || 1));
-  const accent = document.querySelector('#binder-accent-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[0];
+  const coverText = document.getElementById('binder-cover-text').value.trim();
   const pageColor = document.querySelector('#binder-pagecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[1];
   const showName = document.getElementById('binder-show-name').checked;
   const nameColor = document.querySelector('#binder-namecolor-row .swatch.selected')?.dataset.color || PASTEL_PALETTE[5];
@@ -2534,7 +2553,7 @@ function saveBinderForm(){
     const b = DATA.binders.find(x=>x.id===editingBinderId);
     const structuralChange = b.pages!==pages || b.backToBack!==backToBack || b.grids!==grids;
     if(structuralChange && !confirm('Changing pages, back-to-back, or grids will reset all cards placed in this binder. Continue?')) return;
-    b.name=name; b.accent=accent; b.pageColor=pageColor; b.cover=cover; b.showName=showName; b.nameColor=nameColor;
+    b.name=name; b.coverText=coverText; b.pageColor=pageColor; b.cover=cover; b.showName=showName; b.nameColor=nameColor;
     if(structuralChange){
       b.pages=pages; b.backToBack=backToBack; b.grids=grids;
       b.slots = new Array((backToBack?pages*2:pages)*grids).fill(null);
@@ -2544,7 +2563,7 @@ function saveBinderForm(){
     if((DATA.binders.length) >= BINDER_MAX){ alert('You can have up to 13 binders. Delete one to add another.'); return; }
     DATA.binders.push({
       id:'binder_'+now+'_'+Math.random().toString(36).slice(2,7),
-      name, accent, pageColor, showName, nameColor, backToBack, grids, cover,
+      name, coverText, pageColor, showName, nameColor, backToBack, grids, cover,
       pages, slots:new Array((backToBack?pages*2:pages)*grids).fill(null),
       createdAt:now, updatedAt:now
     });
@@ -2565,7 +2584,7 @@ function deleteCurrentBinder(){
 
 function openBinderViewer(id){
   viewingBinderId = id;
-  viewingBinderPage = 0;
+  viewingBinderPage = -1; // start on the front cover
   const modal = document.getElementById('binder-viewer-modal');
   modal.classList.remove('hidden');
   modal.classList.remove('opening');
@@ -2598,23 +2617,40 @@ function updatePageFlipToggleBtn(){
   btn.textContent = on ? '📖 Page curl: On' : '📖 Page curl: Off';
   btn.classList.toggle('active-toggle', on);
 }
-function binderPagePrev(){ if(viewingBinderPage>0){ viewingBinderPage--; renderBinderViewer('prev'); } }
+function binderPagePrev(){ if(viewingBinderPage>-1){ viewingBinderPage--; renderBinderViewer('prev'); } }
 function binderPageNext(){
   const b = DATA.binders.find(x=>x.id===viewingBinderId); if(!b) return;
-  if(viewingBinderPage < b.pages-1){ viewingBinderPage++; renderBinderViewer('next'); }
+  if(viewingBinderPage < b.pages){ viewingBinderPage++; renderBinderViewer('next'); }
 }
 function renderBinderViewer(turnDirection){
   const b = DATA.binders.find(x=>x.id===viewingBinderId);
   if(!b) return;
   const viewerTitleEl = document.getElementById('binder-viewer-title');
-  viewerTitleEl.innerHTML = b.showName!==false ? `<span class="tag-pill" style="background:${b.nameColor||PASTEL_PALETTE[5]}">${b.name||'Untitled Binder'}</span>` : '';
-  document.getElementById('binder-page-label').textContent = `Page ${viewingBinderPage+1} of ${b.pages}`;
+  viewerTitleEl.textContent = b.name || 'Untitled Binder';
+  const atFrontCover = viewingBinderPage === -1;
+  const atBackCover = viewingBinderPage === b.pages;
+  document.getElementById('binder-page-label').textContent = atFrontCover ? 'Front Cover' : atBackCover ? 'Back Cover' : `Page ${viewingBinderPage+1} of ${b.pages}`;
   const sidesWrap = document.getElementById('binder-viewer-sides');
   sidesWrap.innerHTML = '';
   sidesWrap.classList.remove('turning-next','turning-prev');
   if(turnDirection && DATA.pageFlipEnabled){
     void sidesWrap.offsetWidth; // restart animation
     sidesWrap.classList.add(turnDirection==='prev' ? 'turning-prev' : 'turning-next');
+  }
+  if(atFrontCover || atBackCover){
+    // the same cover color/image + optional text is used for both the front and back cover
+    const coverDiv = document.createElement('div');
+    coverDiv.className = 'binder-cover-page';
+    if(b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
+    else { coverDiv.style.background = (b.cover && b.cover.value) || PASTEL_PALETTE[2]; }
+    if(b.coverText){
+      const t = document.createElement('div');
+      t.className = 'binder-cover-page-text';
+      t.textContent = b.coverText;
+      coverDiv.appendChild(t);
+    }
+    sidesWrap.appendChild(coverDiv);
+    return;
   }
   const cols = b.grids<=4 ? 2 : 3;
   const rowLayouts = {12:[4,4,4], 13:[4,4,5]};
@@ -2646,14 +2682,21 @@ function renderBinderViewer(turnDirection){
     const card = cardId ? DATA.cards.find(c=>c.id===cardId) : null;
     const slotDiv = document.createElement('div');
     slotDiv.className = 'binder-slot' + (card ? ' filled' : '') + (card && card.status==='wishlist' ? ' st-wishlist' : card && card.status==='stbo' ? ' st-stbo' : '');
-    if(card && card.image) slotDiv.innerHTML = `<img src="${card.image}">`;
+    if(card && card.image){
+      slotDiv.innerHTML = `<img src="${card.image}">`;
+      if(b.showName!==false){
+        const pill = document.createElement('div');
+        pill.className = 'binder-slot-name-pill';
+        pill.style.background = b.nameColor || PASTEL_PALETTE[5];
+        pill.textContent = card.name || 'Untitled';
+        slotDiv.appendChild(pill);
+      }
+    }
     else if(cardId && !card) slotDiv.innerHTML = `<div class="binder-slot-empty-mark">?</div>`;
     else slotDiv.innerHTML = `<div class="binder-slot-empty-mark">＋</div>`;
     slotDiv.onclick = ()=>{
       if(card){
-        if(confirm(`Remove "${card.name||'this photocard'}" from this slot?`)){
-          b.slots[slotIndex] = null; save(); renderBinderViewer();
-        }
+        openBinderSlotOptions(b.id, slotIndex, card);
       } else {
         openCardPicker(b.id, slotIndex);
       }
@@ -2688,10 +2731,10 @@ function renderBinderViewer(turnDirection){
     }
   } else {
     // single-sided binder: always render a 2-page spread. The "other" side has
-    // no real data, so it's imitated as either a blank cover (start/end of the
-    // binder) or a darker "back of the previous page" panel (everywhere else).
+    // no real data, so it's imitated as either a blank cover (only page 1, which
+    // sits right behind the inside front cover) or a darker "back of the previous
+    // page" panel (every other page, including the last — nothing ever uploads there).
     const isFirst = viewingBinderPage === 0;
-    const isLast = viewingBinderPage === b.pages - 1;
     const realSlotsDiv = buildSlotsShape(g=>buildRealSlot(viewingBinderPage, g));
     const realSideEl = buildSideEl(null, realSlotsDiv);
     if(isFirst){
@@ -2699,18 +2742,30 @@ function renderBinderViewer(turnDirection){
       // left cover panel is purely decorative: plain page color, no slots, not clickable.
       sidesWrap.appendChild(buildBlankCoverEl());
       sidesWrap.appendChild(realSideEl);
-    } else if(isLast){
-      // nothing follows the last page — that's the inside of the back cover.
-      // sides are flipped from the "first page" case: content on the left, cover on the right.
-      // right cover panel is purely decorative: plain page color, no slots, not clickable.
-      sidesWrap.appendChild(realSideEl);
-      sidesWrap.appendChild(buildBlankCoverEl());
     } else {
       const fakeSlotsDiv = buildSlotsShape(()=>buildFakeBackSlot());
       sidesWrap.appendChild(buildSideEl(null, fakeSlotsDiv));
       sidesWrap.appendChild(realSideEl);
     }
   }
+}
+function openBinderSlotOptions(binderId, slotIndex, card){
+  binderSlotTarget = {binderId, slotIndex};
+  document.getElementById('binder-slot-modal-name').textContent = card ? (card.name || 'Untitled photocard') : '';
+  document.getElementById('binder-slot-modal').classList.remove('hidden');
+}
+function binderSlotReplace(){
+  if(!binderSlotTarget) return;
+  const {binderId, slotIndex} = binderSlotTarget;
+  closeModal('binder-slot-modal');
+  openCardPicker(binderId, slotIndex);
+}
+function binderSlotRemove(){
+  if(!binderSlotTarget) return;
+  const b = DATA.binders.find(x=>x.id===binderSlotTarget.binderId);
+  if(b){ b.slots[binderSlotTarget.slotIndex] = null; b.updatedAt = Date.now(); save(); renderBinderViewer(); }
+  closeModal('binder-slot-modal');
+  binderSlotTarget = null;
 }
 function openCardPicker(binderId, slotIndex){
   cardPickerTarget = {binderId, slotIndex};
