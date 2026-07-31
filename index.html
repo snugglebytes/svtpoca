@@ -226,6 +226,13 @@ nav>div:active{background:#f8f3fa}
 .preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
 .preview-meta{font-size:12px;color:var(--text);padding:0 14px 14px}
 .field{margin-bottom:12px}
+.field-row{display:flex;gap:12px;margin-bottom:12px}
+.field-row .field{flex:1;min-width:0;margin-bottom:0}
+.dropdown{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:14px;color:var(--text);font-family:inherit;cursor:pointer}
+.sticker-label-field{display:flex;flex-direction:column;align-items:center;margin:2px 0 16px}
+.sticker-label-field label{align-self:flex-start}
+.sticker-label-field input{font-family:"Ticketing",cursive;font-size:16px;text-align:center;background:#fffaf0;border:2px dashed #d9c7d1;border-radius:10px;padding:9px 16px;transform:rotate(-1.2deg);box-shadow:0 2px 6px rgba(0,0,0,.08);width:auto;min-width:60%;max-width:100%}
+.sticker-label-field input:focus{transform:rotate(0deg)}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
 .field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
 .checkbox-row input[type=checkbox]{width:auto;flex-shrink:0}
@@ -642,32 +649,37 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
     <div class="section-title" id="binder-modal-title">New Binder</div>
     <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
-    <div class="field">
-      <label>Number of pages</label>
-      <input id="binder-pages" type="number" min="1" max="60" step="1" value="10" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label>Pages color</label>
-      <div class="swatch-row" id="binder-pagecolor-row"></div>
-    </div>
-    <div class="field">
-      <label>Back-to-back pages?</label>
-      <div class="seg-row" id="binder-b2b-row">
-        <div class="opt" data-val="1">Back-to-back</div>
-        <div class="opt" data-val="0">Single-sided</div>
+    <div class="field sticker-label-field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
+    <div class="field-row">
+      <div class="field">
+        <label>Number of pages</label>
+        <input id="binder-pages" type="number" min="1" max="60" step="1" value="10" inputmode="numeric">
       </div>
-      <div class="field-hint">Back-to-back pages have slots on both sides, like a real binder sleeve.</div>
-    </div>
-    <div class="field">
-      <label>Grids per page side</label>
-      <div class="seg-row" id="binder-grids-row">
-        <div class="opt" data-val="4">4</div>
-        <div class="opt" data-val="6">6</div>
-        <div class="opt" data-val="9">9</div>
-        <div class="opt" data-val="12">12</div>
-        <div class="opt" data-val="13">13</div>
+      <div class="field">
+        <label>Pages color</label>
+        <div class="swatch-row" id="binder-pagecolor-row"></div>
       </div>
-      <div class="field-hint">Every page in this binder will use this same grid count. 12 uses a 4 + 4 + 4 layout and 13 uses the classic 4 + 4 + 5 pocket-page layout.</div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Page type</label>
+        <select id="binder-b2b-select" class="dropdown">
+          <option value="1">Back-to-back</option>
+          <option value="0">Single-sided</option>
+        </select>
+        <div class="field-hint">Back-to-back pages have slots on both sides, like a real binder sleeve.</div>
+      </div>
+      <div class="field">
+        <label>Grids per page</label>
+        <select id="binder-grids-select" class="dropdown">
+          <option value="4">4</option>
+          <option value="6">6</option>
+          <option value="9">9</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+        </select>
+        <div class="field-hint">12 uses a 4+4+4 layout, 13 uses the classic 4+4+5 pocket-page layout.</div>
+      </div>
     </div>
     <div class="field">
       <label>Cover</label>
@@ -700,12 +712,11 @@ nav>div:active{background:#f8f3fa}
         </div>
       </div>
     </div>
-    <div class="field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
-    <div class="field checkbox-row"><input type="checkbox" id="binder-show-name" checked onchange="onBinderShowNameChange()"> <label style="margin:0" for="binder-show-name">Show photocard names?</label></div>
-    <div class="field" id="binder-name-color-wrap">
+    <div class="field checkbox-row"><input type="checkbox" id="binder-show-name" onchange="onBinderShowNameChange()"> <label style="margin:0" for="binder-show-name">Show photocard names?</label></div>
+    <div class="field-hint" style="margin-top:-6px;margin-bottom:10px">Shows each photocard's name as a small pill once it's placed in the binder.</div>
+    <div class="field hidden" id="binder-name-color-wrap">
       <label>Photocard name pill color</label>
       <div class="swatch-row" id="binder-namecolor-row"></div>
-      <div class="field-hint">Shows each photocard's name as a small pill once it's placed in the binder.</div>
     </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveBinderForm()">Save</button>
@@ -2484,14 +2495,6 @@ function buildSwatchRow(rowId, selectedColor, onPick){
 function setSegSelection(rowId, val){
   document.querySelectorAll('#'+rowId+' .opt').forEach(o=>o.classList.toggle('sel', String(o.dataset.val)===String(val)));
 }
-document.getElementById('binder-b2b-row').addEventListener('click', e=>{
-  const opt = e.target.closest('.opt'); if(!opt) return;
-  setSegSelection('binder-b2b-row', opt.dataset.val);
-});
-document.getElementById('binder-grids-row').addEventListener('click', e=>{
-  const opt = e.target.closest('.opt'); if(!opt) return;
-  setSegSelection('binder-grids-row', opt.dataset.val);
-});
 function onBinderShowNameChange(){
   document.getElementById('binder-name-color-wrap').classList.toggle('hidden', !document.getElementById('binder-show-name').checked);
 }
@@ -2514,11 +2517,11 @@ function openBinderModal(id){
   document.getElementById('binder-crop-area').classList.add('hidden');
   buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : DEFAULT_PAGE_COLOR);
   buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : DEFAULT_COVER_COLOR);
-  document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : true;
+  document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : false;
   buildSwatchRow('binder-namecolor-row', binder && binder.nameColor ? binder.nameColor : DEFAULT_NAME_COLOR);
   onBinderShowNameChange();
-  setSegSelection('binder-b2b-row', binder ? (binder.backToBack ? 1 : 0) : 1);
-  setSegSelection('binder-grids-row', binder ? binder.grids : 9);
+  document.getElementById('binder-b2b-select').value = binder ? (binder.backToBack ? '1' : '0') : '1';
+  document.getElementById('binder-grids-select').value = binder ? binder.grids : 9;
   const coverMode = binder && binder.cover.type==='image' ? 'image' : 'pastel';
   setSegSelection('binder-cover-mode-row', coverMode);
   document.getElementById('binder-cover-pastel-wrap').classList.toggle('hidden', coverMode!=='pastel');
@@ -2534,8 +2537,8 @@ function saveBinderForm(){
   const pageColor = document.querySelector('#binder-pagecolor-row .color-picker-swatch')?.dataset.color || DEFAULT_PAGE_COLOR;
   const showName = document.getElementById('binder-show-name').checked;
   const nameColor = document.querySelector('#binder-namecolor-row .color-picker-swatch')?.dataset.color || DEFAULT_NAME_COLOR;
-  const backToBack = document.querySelector('#binder-b2b-row .opt.sel')?.dataset.val === '1';
-  const grids = parseInt(document.querySelector('#binder-grids-row .opt.sel')?.dataset.val,10) || 9;
+  const backToBack = document.getElementById('binder-b2b-select').value === '1';
+  const grids = parseInt(document.getElementById('binder-grids-select').value,10) || 9;
   const coverMode = document.querySelector('#binder-cover-mode-row .opt.sel')?.dataset.val || 'pastel';
   let cover;
   if(coverMode==='image'){
