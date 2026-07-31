@@ -896,20 +896,28 @@ function cardQualifiesForFolder(c, f){
   if(!tagIds.length) return false;
   return tagIds.every(tid=>(c.tags||[]).includes(tid));
 }
+function sectionLabel(section){
+  return section==='albums' ? 'Albums' : section==='nonalbum' ? 'Non-Album' : 'Members';
+}
 /* Walks every folder tree and returns every folder a card qualifies for,
-   each with its trail of ancestor titles so folders that share a name
-   (e.g. multiple "S.Coups" subfolders under different parents) can be
-   told apart. Used for the folder pills shown on search-result cards. */
+   each with its full trail of ancestor titles (starting from the section
+   itself, i.e. the very first parent) so folders that share a name — even
+   across different sections or top-level folders — can be told apart.
+   Used for the folder pills shown on search-result cards. */
 function foldersForCard(c){
   const results = [];
+  const seen = new Set();
   ['albums','nonalbum','members'].forEach(section=>{
     (function walk(list, trail){
       (list||[]).forEach(f=>{
         const newTrail = [...trail, f.title];
-        if(cardQualifiesForFolder(c, f)) results.push({section, folder:f, trail:newTrail});
+        if(cardQualifiesForFolder(c, f)){
+          const key = section+'|'+newTrail.join('/');
+          if(!seen.has(key)){ seen.add(key); results.push({section, folder:f, trail:newTrail}); }
+        }
         if(f.children) walk(f.children, newTrail);
       });
-    })(DATA.nodes[section], []);
+    })(DATA.nodes[section], [sectionLabel(section)]);
   });
   return results;
 }
@@ -2205,14 +2213,14 @@ function runSearch(){
 
   // folders (across all sections)
   let folderMatches = [];
-  function scanFolders(list, section, path){
+  function scanFolders(list, section, trail){
     list.forEach(f=>{
       const r = scoreText(raw, f.title);
-      if(r.match) folderMatches.push({f, section, s:r.score});
-      scanFolders(f.children||[], section, [...path, f.id]);
+      if(r.match) folderMatches.push({f, section, s:r.score, trail});
+      scanFolders(f.children||[], section, [...trail, f.title]);
     });
   }
-  ['albums','nonalbum','members'].forEach(sec=>scanFolders(DATA.nodes[sec], sec, []));
+  ['albums','nonalbum','members'].forEach(sec=>scanFolders(DATA.nodes[sec], sec, [sectionLabel(sec)]));
   folderMatches.sort((a,b)=>a.s-b.s);
 
   // cards — match by name, OR by any tag on the card. Query can contain
@@ -2284,10 +2292,19 @@ function renderSrFolders(){
   if(srFolderPage > totalPages) srFolderPage = totalPages;
   const start = (srFolderPage-1)*SR_PER_PAGE;
   grid.innerHTML = '';
-  srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section})=>{
+  srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section,trail})=>{
     const div = document.createElement('div');
     div.className='tile folder';
-    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:'📁'}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${section}</div>`;
+    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:'📁'}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
+    if(trail && trail.length){
+      const pillsWrap = document.createElement('div');
+      pillsWrap.className = 'folder-pills';
+      const pill = document.createElement('span');
+      pill.className = 'folder-pill';
+      pill.textContent = trail.join(' › ');
+      pillsWrap.appendChild(pill);
+      div.querySelector('.thumb').appendChild(pillsWrap);
+    }
     div.onclick = ()=>{ jumpToFolder(section, f.id); };
     grid.appendChild(div);
   });
@@ -2309,11 +2326,10 @@ function renderSrCards(){
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'folder-pills';
       folders.forEach(({trail})=>{
-        const label = trail.length>1 ? trail.slice(-2).join(' › ') : trail[0];
+        const label = trail.join(' › ');
         const pill = document.createElement('span');
         pill.className = 'folder-pill';
         pill.textContent = label;
-        pill.title = trail.join(' › ');
         pillsWrap.appendChild(pill);
       });
       thumb.appendChild(pillsWrap);
