@@ -256,8 +256,9 @@ nav>div:active{background:#f8f3fa}
 .binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .binder-cover-label{position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%) rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:12px;line-height:1.3;word-break:break-word;z-index:2;padding:5px 8px;border-radius:5px;border:2px solid #3a2a35;box-shadow:2px 2px 0 #3a2a35;image-rendering:pixelated}
 .binder-cover-page{flex:1;position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb}
-.binder-cover-page::before{content:'';display:block;padding-top:140%}
-.binder-cover-page img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.binder-cover-spacer{visibility:hidden}
+.binder-cover-overlay{position:absolute;inset:0}
+.binder-cover-overlay img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .binder-cover-page-text{position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%) rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:18px;line-height:1.4;word-break:break-word;z-index:2;padding:9px 16px;border-radius:6px;border:3px solid #3a2a35;box-shadow:3px 3px 0 #3a2a35}
 .binder-slot-name-pill{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:94%;width:max-content;font-size:9px;line-height:1.25;padding:2px 6px;border-radius:8px;text-align:center;white-space:normal;overflow-wrap:break-word;word-break:break-word;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
@@ -642,7 +643,7 @@ nav>div:active{background:#f8f3fa}
 <!-- ADD/EDIT BINDER MODAL -->
 <div id="binder-modal" class="modal-bg hidden">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
+    <button class="close-x" onclick="closeBinderEditor()">✕</button>
     <div class="section-title" id="binder-modal-title">New Binder</div>
     <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
     <div class="field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
@@ -698,7 +699,7 @@ nav>div:active{background:#f8f3fa}
       </div>
       <p class="import-choice-note">Covers are resized and compressed automatically to keep your backup file small.</p>
       <div id="binder-crop-area" class="hidden">
-        <div class="crop-wrap square" id="binder-crop-wrap"><img id="binder-crop-img"></div>
+        <div class="crop-wrap" id="binder-crop-wrap"><img id="binder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="binder-crop-zoom" min="100" max="300" value="100"></div>
         <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
         <div class="crop-actions">
@@ -2267,12 +2268,33 @@ function markSold(){
 let croppedFolderThumbDataUrl = null;
 let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
 function startCropFor(target){
-  activeCrop = target==='folder'
-    ? {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', tiltId:'folder-crop-tilt', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300}
-    : target==='binder'
-    ? {target:'binder', wrapId:'binder-crop-wrap', imgId:'binder-crop-img', zoomId:'binder-crop-zoom', tiltId:'binder-crop-tilt', areaId:'binder-crop-area', checkId:'binder-crop-check', outW:340, outH:340}
-    : {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', tiltId:'crop-tilt', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
+  if(target==='folder'){
+    activeCrop = {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', tiltId:'folder-crop-tilt', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300};
+  } else if(target==='binder'){
+    // 12 and 13-grid binders use a square cover crop; all other grid counts use a
+    // photocard-style 2:3 portrait crop, matching how the cover is actually displayed.
+    const isSquare = isSquareBinderCover();
+    activeCrop = {target:'binder', wrapId:'binder-crop-wrap', imgId:'binder-crop-img', zoomId:'binder-crop-zoom', tiltId:'binder-crop-tilt', areaId:'binder-crop-area', checkId:'binder-crop-check', outW: isSquare?340:300, outH: isSquare?340:450};
+    document.getElementById('binder-crop-wrap').classList.toggle('square', isSquare);
+  } else {
+    activeCrop = {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', tiltId:'crop-tilt', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
+  }
 }
+function isSquareBinderCover(){
+  const grids = parseInt(document.getElementById('binder-grids-select')?.value, 10) || 9;
+  return grids===12 || grids===13;
+}
+// If the grids-per-page choice changes while a binder cover image is already loaded in
+// the crop tool, keep the crop wrap's aspect ratio (and any future Apply Crop output) in sync.
+document.getElementById('binder-grids-select').addEventListener('change', ()=>{
+  if(!activeCrop || activeCrop.target!=='binder') return;
+  if(document.getElementById('binder-crop-area').classList.contains('hidden')) return;
+  const isSquare = isSquareBinderCover();
+  activeCrop.outW = isSquare ? 340 : 300;
+  activeCrop.outH = isSquare ? 340 : 450;
+  document.getElementById('binder-crop-wrap').classList.toggle('square', isSquare);
+  fitCropImage();
+});
 function loadCropFromUrl(target){
   target = target || 'card';
   startCropFor(target);
@@ -2526,9 +2548,16 @@ document.getElementById('binder-cover-mode-row').addEventListener('click', e=>{
   document.getElementById('binder-cover-image-wrap').classList.toggle('hidden', opt.dataset.val!=='image');
 });
 
+let binderEditorReturnToViewer = false;
+let binderEditorReturnPage = -1;
 function openBinderModal(id){
   editingBinderId = id;
   croppedBinderCoverDataUrl = null;
+  // Remember whether we're editing from inside the binder viewer, and which page it
+  // was on, so Save/Close can drop the user back into the opened binder view.
+  const viewerModal = document.getElementById('binder-viewer-modal');
+  binderEditorReturnToViewer = !viewerModal.classList.contains('hidden');
+  binderEditorReturnPage = viewingBinderPage;
   const binder = id ? DATA.binders.find(b=>b.id===id) : null;
   document.getElementById('binder-modal-title').textContent = binder ? 'Edit Binder' : 'New Binder';
   document.getElementById('binder-name').value = binder ? binder.name : '';
@@ -2536,6 +2565,7 @@ function openBinderModal(id){
   document.getElementById('binder-cover-url').value = '';
   document.getElementById('binder-cover-text').value = binder ? (binder.coverText||'') : '';
   document.getElementById('binder-crop-area').classList.add('hidden');
+  document.getElementById('binder-crop-wrap').classList.toggle('square', binder ? (binder.grids===12 || binder.grids===13) : false);
   buildSwatchRow('binder-pagecolor-row', binder ? binder.pageColor : DEFAULT_PAGE_COLOR);
   buildSwatchRow('binder-cover-pastel-row', binder && binder.cover.type==='pastel' ? binder.cover.value : DEFAULT_COVER_COLOR);
   document.getElementById('binder-show-name').checked = binder ? binder.showName !== false : false;
@@ -2595,12 +2625,33 @@ function saveBinderForm(){
   save();
   closeModal('binder-modal');
   renderBindersPanel();
+  returnToBinderViewerIfNeeded(editingBinderId);
+}
+function closeBinderEditor(){
+  closeModal('binder-modal');
+  returnToBinderViewerIfNeeded(editingBinderId);
+}
+function returnToBinderViewerIfNeeded(id){
+  const shouldReturn = binderEditorReturnToViewer;
+  const returnPage = binderEditorReturnPage;
+  binderEditorReturnToViewer = false;
+  binderEditorReturnPage = -1;
+  if(!shouldReturn) return;
+  const b = id ? DATA.binders.find(x=>x.id===id) : null;
+  if(!b) return; // binder no longer exists (e.g. deleted) — stay on the binders panel
+  viewingBinderId = id;
+  viewingBinderPage = Math.max(-1, Math.min(returnPage, b.pages));
+  document.getElementById('binder-viewer-modal').classList.remove('hidden');
+  updatePageFlipToggleBtn();
+  renderBinderViewer();
 }
 function deleteCurrentBinder(){
   if(!editingBinderId) return;
   if(!confirm('Delete this binder? Cards placed inside will not be deleted from your collection.')) return;
   DATA.binders = DATA.binders.filter(b=>b.id!==editingBinderId);
   save();
+  binderEditorReturnToViewer = false;
+  binderEditorReturnPage = -1;
   closeModal('binder-modal');
   closeModal('binder-viewer-modal');
   renderBindersPanel();
@@ -2746,9 +2797,17 @@ function renderBinderViewer(turnDirection){
     // and never shows the cover-text sticker (that's a front-cover-only decoration).
     const coverDiv = document.createElement('div');
     coverDiv.className = 'binder-cover-page';
+    // Invisible spacer built from the same slot grid as a real page, so the cover
+    // always ends up exactly the same height as the pages, regardless of grids-per-page.
+    const spacer = buildSlotsShape(()=>document.createElement('div'));
+    spacer.classList.add('binder-cover-spacer');
+    coverDiv.appendChild(spacer);
+    const overlay = document.createElement('div');
+    overlay.className = 'binder-cover-overlay';
     const plainColor = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR;
-    if(!isBackCover && b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
-    else { coverDiv.style.background = plainColor; }
+    if(!isBackCover && b.cover && b.cover.type==='image'){ overlay.innerHTML = `<img src="${b.cover.value}">`; }
+    else { overlay.style.background = plainColor; }
+    coverDiv.appendChild(overlay);
     if(b.coverText && !isBackCover){
       const t = document.createElement('div');
       t.className = 'binder-cover-page-text';
