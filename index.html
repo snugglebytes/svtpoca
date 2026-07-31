@@ -254,11 +254,11 @@ nav>div:active{background:#f8f3fa}
 .binder-cover{position:relative;background:#f6f2fb;overflow:hidden}
 .binder-cover::before{content:'';display:block;padding-top:120%}
 .binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-label{position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%) rotate(-3deg);text-align:center;font-family:"Ticketing",cursive;font-size:12px;line-height:1.25;word-break:break-word;z-index:2;padding:4px 8px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.6)}
+.binder-cover-label{position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%) rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:12px;line-height:1.3;word-break:break-word;z-index:2;padding:5px 8px;border-radius:5px;border:2px solid #3a2a35;box-shadow:2px 2px 0 #3a2a35;image-rendering:pixelated}
 .binder-cover-page{flex:1;position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb}
 .binder-cover-page::before{content:'';display:block;padding-top:140%}
 .binder-cover-page img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-page-text{position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%) rotate(-3deg);text-align:center;font-family:"Ticketing",cursive;font-size:19px;line-height:1.35;word-break:break-word;z-index:2;padding:8px 14px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.6)}
+.binder-cover-page-text{position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%) rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:18px;line-height:1.4;word-break:break-word;z-index:2;padding:9px 16px;border-radius:6px;border:3px solid #3a2a35;box-shadow:3px 3px 0 #3a2a35}
 .binder-slot-name-pill{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:94%;width:max-content;font-size:9px;line-height:1.25;padding:2px 6px;border-radius:8px;text-align:center;white-space:normal;overflow-wrap:break-word;word-break:break-word;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
@@ -2740,15 +2740,16 @@ function renderBinderViewer(turnDirection){
   function buildFakeBackSideEl(){
     return buildSideEl(buildSlotsShape(()=>buildFakeBackSlot()));
   }
-  function buildCoverPageEl(forcePlainColor){
+  function buildCoverPageEl(isBackCover){
     // the front cover mirrors whatever the cover is set to (color or image); the back
-    // cover is always a plain color, even when the cover itself is an uploaded image.
+    // cover is always a plain color, even when the cover itself is an uploaded image,
+    // and never shows the cover-text sticker (that's a front-cover-only decoration).
     const coverDiv = document.createElement('div');
     coverDiv.className = 'binder-cover-page';
     const plainColor = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR;
-    if(!forcePlainColor && b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
+    if(!isBackCover && b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
     else { coverDiv.style.background = plainColor; }
-    if(b.coverText){
+    if(b.coverText && !isBackCover){
       const t = document.createElement('div');
       t.className = 'binder-cover-page-text';
       t.textContent = b.coverText;
