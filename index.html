@@ -1186,7 +1186,8 @@ function renderFolderTile(f, list, cardsInView){
   return div;
 }
 
-function renderCardTile(c, list, cardsInView){
+function renderCardTile(c, list, cardsInView, onOpen){
+  const openFn = onOpen || (()=>openCardModal(c));
   const div = document.createElement('div');
   const isDraggedNow = dragged && dragged.type==='card' && dragged.id===c.id;
   div.className = 'tile card-tile st-' + c.status + (c.inDemand ? ' is-indemand' : '') + (isDraggedNow ? ' touch-dragging' : '');
@@ -1209,8 +1210,8 @@ function renderCardTile(c, list, cardsInView){
   `;
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
-  div.querySelector('.thumb').addEventListener('click', ()=>openCardModal(c));
-  div.querySelector('.tile-title').onclick = ()=>openCardModal(c);
+  div.querySelector('.thumb').addEventListener('click', openFn);
+  div.querySelector('.tile-title').onclick = openFn;
   const cardMenuEl = div.querySelector('.tile-menu');
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.toggle('hidden'); };
   cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openCardModal(c); };
@@ -2319,7 +2320,7 @@ function renderSrCards(){
   const start = (srCardPage-1)*SR_PER_PAGE;
   grid.innerHTML = '';
   srCardMatches.slice(start, start+SR_PER_PAGE).forEach(({c})=>{
-    const tile = renderCardTile(c);
+    const tile = renderCardTile(c, null, null, ()=>jumpToCardLocation(c));
     const folders = foldersForCard(c);
     if(folders.length){
       const thumb = tile.querySelector('.thumb');
@@ -2427,6 +2428,22 @@ function jumpToFolder(section, folderId){
   if(!p) return;
   currentSection = section;
   currentPath = p.slice(0,-1); // land one level up so the folder itself shows as a tile
+  document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===section));
+  document.getElementById('search-input').value='';
+  goHome();
+}
+/* Navigates into the (first) folder a card belongs to, landing inside it so
+   the card itself is visible in the grid — used when tapping a card from
+   the big search bar's results, instead of opening the edit modal. Falls
+   back to the edit modal if the card isn't linked to any folder. */
+function jumpToCardLocation(c){
+  const folders = foldersForCard(c);
+  if(!folders.length){ openCardModal(c); return; }
+  const {section, folder} = folders[0];
+  const p = findFolderPath(DATA.nodes[section], folder.id, []);
+  if(!p){ openCardModal(c); return; }
+  currentSection = section;
+  currentPath = p; // land inside the folder so the card itself shows
   document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===section));
   document.getElementById('search-input').value='';
   goHome();
