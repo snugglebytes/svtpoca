@@ -2799,7 +2799,7 @@ function renderBinderViewer(turnDirection){
     coverDiv.className = 'binder-cover-page';
     // Invisible spacer built from the same slot grid as a real page, so the cover
     // always ends up exactly the same height as the pages, regardless of grids-per-page.
-    const spacer = buildSlotsShape(()=>document.createElement('div'));
+    const spacer = buildSlotsShape(()=>{ const d=document.createElement('div'); d.className='binder-slot'; return d; });
     spacer.classList.add('binder-cover-spacer');
     coverDiv.appendChild(spacer);
     const overlay = document.createElement('div');
