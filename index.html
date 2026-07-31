@@ -264,6 +264,11 @@ nav>div:active{background:#f8f3fa}
   100%{opacity:1;transform:perspective(900px) rotateY(0deg) scale(1);}
 }
 .binder-viewer-modal.opening .modal{transform-origin:left center;animation:binderOpenAnim .45s ease both}
+@keyframes binderCloseAnim{
+  0%{opacity:1;transform:perspective(900px) rotateY(0deg) scale(1);}
+  100%{opacity:0;transform:perspective(900px) rotateY(-35deg) scale(.92);}
+}
+.binder-viewer-modal.closing .modal{transform-origin:left center;animation:binderCloseAnim .32s ease both}
 @keyframes pageCurlNext{
   0%{opacity:.4;transform:perspective(1200px) rotateY(-95deg) translateX(-6%) scale(.97);filter:brightness(.75);box-shadow:-18px 0 30px -10px rgba(122,107,118,.35) inset;}
   60%{opacity:1;filter:brightness(.92)}
@@ -275,8 +280,8 @@ nav>div:active{background:#f8f3fa}
   100%{opacity:1;transform:perspective(1200px) rotateY(0deg) translateX(0) scale(1);filter:brightness(1);box-shadow:none;}
 }
 .binder-sides{transform-style:preserve-3d}
-.binder-sides.turning-next{transform-origin:left center;animation:pageCurlNext .42s cubic-bezier(.4,.1,.3,1) both}
-.binder-sides.turning-prev{transform-origin:right center;animation:pageCurlPrev .42s cubic-bezier(.4,.1,.3,1) both}
+.binder-sides.turning-next{transform-origin:right center;animation:pageCurlPrev .42s cubic-bezier(.4,.1,.3,1) both}
+.binder-sides.turning-prev{transform-origin:left center;animation:pageCurlNext .42s cubic-bezier(.4,.1,.3,1) both}
 #page-flip-toggle-btn.active-toggle{background:var(--blue);border-color:#5fa8d9}
 .binder-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .binder-page-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
@@ -706,7 +711,7 @@ nav>div:active{background:#f8f3fa}
 <!-- BINDER VIEWER MODAL -->
 <div id="binder-viewer-modal" class="modal-bg hidden binder-viewer-modal">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('binder-viewer-modal')">✕</button>
+    <button class="close-x" onclick="closeBinderViewer()">✕</button>
     <div class="binder-viewer-head">
       <b class="section-title" id="binder-viewer-title" style="margin:0"></b>
       <div style="display:flex;align-items:center;gap:6px">
@@ -2567,6 +2572,16 @@ function openBinderViewer(id){
     modal.classList.add('opening');
   }
   renderBinderViewer();
+}
+function closeBinderViewer(){
+  const modal = document.getElementById('binder-viewer-modal');
+  if(!DATA.pageFlipEnabled){ modal.classList.add('hidden'); modal.classList.remove('opening','closing'); return; }
+  modal.classList.remove('opening');
+  modal.classList.add('closing');
+  setTimeout(()=>{
+    modal.classList.add('hidden');
+    modal.classList.remove('closing');
+  }, 300);
 }
 function togglePageFlipSetting(){
   DATA.pageFlipEnabled = !DATA.pageFlipEnabled;
