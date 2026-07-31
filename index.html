@@ -229,10 +229,6 @@ nav>div:active{background:#f8f3fa}
 .field-row{display:flex;gap:12px;margin-bottom:12px}
 .field-row .field{flex:1;min-width:0;margin-bottom:0}
 .dropdown{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:14px;color:var(--text);font-family:inherit;cursor:pointer}
-.sticker-label-field{display:flex;flex-direction:column;align-items:center;margin:2px 0 16px}
-.sticker-label-field label{align-self:flex-start}
-.sticker-label-field input{font-family:"Ticketing",cursive;font-size:16px;text-align:center;background:#fffaf0;border:2px dashed #d9c7d1;border-radius:10px;padding:9px 16px;transform:rotate(-1.2deg);box-shadow:0 2px 6px rgba(0,0,0,.08);width:auto;min-width:60%;max-width:100%}
-.sticker-label-field input:focus{transform:rotate(0deg)}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
 .field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
 .checkbox-row input[type=checkbox]{width:auto;flex-shrink:0}
@@ -258,11 +254,11 @@ nav>div:active{background:#f8f3fa}
 .binder-cover{position:relative;background:#f6f2fb;overflow:hidden}
 .binder-cover::before{content:'';display:block;padding-top:120%}
 .binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-label{position:absolute;left:6%;right:6%;top:50%;transform:translateY(-50%);text-align:center;font-family:"Ticketing",cursive;font-size:13px;line-height:1.3;color:#5f4a58;text-shadow:0 1px 3px rgba(255,255,255,.75);word-break:break-word;z-index:2}
+.binder-cover-label{position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%) rotate(-3deg);text-align:center;font-family:"Ticketing",cursive;font-size:12px;line-height:1.25;word-break:break-word;z-index:2;padding:4px 8px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.6)}
 .binder-cover-page{flex:1;position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb}
 .binder-cover-page::before{content:'';display:block;padding-top:140%}
 .binder-cover-page img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-page-text{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);text-align:center;font-family:"Ticketing",cursive;font-size:20px;line-height:1.4;color:#5f4a58;text-shadow:0 1px 3px rgba(255,255,255,.75);word-break:break-word;z-index:2}
+.binder-cover-page-text{position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%) rotate(-3deg);text-align:center;font-family:"Ticketing",cursive;font-size:19px;line-height:1.35;word-break:break-word;z-index:2;padding:8px 14px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.6)}
 .binder-slot-name-pill{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:94%;width:max-content;font-size:9px;line-height:1.25;padding:2px 6px;border-radius:8px;text-align:center;white-space:normal;overflow-wrap:break-word;word-break:break-word;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
@@ -649,7 +645,7 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('binder-modal')">✕</button>
     <div class="section-title" id="binder-modal-title">New Binder</div>
     <div class="field"><label>Binder name</label><input id="binder-name" placeholder="e.g. Hoshi Binder #1"></div>
-    <div class="field sticker-label-field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
+    <div class="field"><label>Cover text (optional)</label><input id="binder-cover-text" placeholder="e.g. Seventeen — Hoshi" maxlength="40"></div>
     <div class="field-row">
       <div class="field">
         <label>Number of pages</label>
@@ -2424,6 +2420,29 @@ function contrastTextColor(hex){
   const luminance = (0.299*r + 0.587*g + 0.114*bl)/255;
   return luminance > 0.6 ? '#3a2a35' : '#ffffff';
 }
+function hexToHueDeg(hex){
+  let h = String(hex).replace('#','');
+  if(h.length===3) h = h.split('').map(c=>c+c).join('');
+  const r = (parseInt(h.substring(0,2),16)||0)/255, g = (parseInt(h.substring(2,4),16)||0)/255, bl = (parseInt(h.substring(4,6),16)||0)/255;
+  const max = Math.max(r,g,bl), min = Math.min(r,g,bl);
+  let hue = 0;
+  const d = max-min;
+  if(d!==0){
+    switch(max){
+      case r: hue = ((g-bl)/d) % 6; break;
+      case g: hue = (bl-r)/d + 2; break;
+      default: hue = (r-g)/d + 4; break;
+    }
+    hue *= 60;
+    if(hue<0) hue += 360;
+  }
+  return hue;
+}
+function stickerColorsFor(hex){
+  // a cute sticker theme derived from the cover color's hue: pastel background, deep saturated text of the same hue
+  const hue = hexToHueDeg(hex);
+  return { bg: `hsl(${hue.toFixed(0)},75%,93%)`, text: `hsl(${hue.toFixed(0)},55%,30%)` };
+}
 let editingBinderId = null;
 let croppedBinderCoverDataUrl = null;
 let viewingBinderId = null;
@@ -2447,7 +2466,9 @@ function renderBindersPanel(){
     div.className = 'binder-tile';
     const coverImg = b.cover && b.cover.type==='image' ? `<img src="${b.cover.value}">` : '';
     const coverBg = b.cover && b.cover.type==='pastel' ? `background:${b.cover.value}` : '';
-    const coverLabel = b.coverText ? `<div class="binder-cover-label">${b.coverText}</div>` : '';
+    const coverColorForSticker = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR;
+    const stickerColors = stickerColorsFor(coverColorForSticker);
+    const coverLabel = b.coverText ? `<div class="binder-cover-label" style="background:${stickerColors.bg};color:${stickerColors.text}">${b.coverText}</div>` : '';
     const sides = b.backToBack ? b.pages*2 : b.pages;
     div.innerHTML = `
       <div class="binder-cover" style="${coverBg}">${coverImg}${coverLabel}</div>
@@ -2724,12 +2745,16 @@ function renderBinderViewer(turnDirection){
     // cover is always a plain color, even when the cover itself is an uploaded image.
     const coverDiv = document.createElement('div');
     coverDiv.className = 'binder-cover-page';
+    const plainColor = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR;
     if(!forcePlainColor && b.cover && b.cover.type==='image'){ coverDiv.innerHTML = `<img src="${b.cover.value}">`; }
-    else { coverDiv.style.background = (b.cover && b.cover.type==='pastel' && b.cover.value) || DEFAULT_COVER_COLOR; }
+    else { coverDiv.style.background = plainColor; }
     if(b.coverText){
       const t = document.createElement('div');
       t.className = 'binder-cover-page-text';
       t.textContent = b.coverText;
+      const stickerColors = stickerColorsFor(plainColor);
+      t.style.background = stickerColors.bg;
+      t.style.color = stickerColors.text;
       coverDiv.appendChild(t);
     }
     return coverDiv;
