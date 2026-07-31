@@ -64,7 +64,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
   nav>div{padding:10px 12px}
   .wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 }
-.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06)}
+.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06);min-width:0}
 .tile.folder .thumb{border-radius:12px 12px 0 0}
 .tile.card-tile .thumb{border-radius:12px 12px 10px 10px}
 .thumb{position:relative;background:#f6f2fb;border:none;font-size:11px;text-align:center;overflow:hidden}
@@ -73,10 +73,11 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0}
 .tile-title{padding:0 8px}
 .tile-title-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:6px;padding:0 8px}
+.tile-title-row .tile-title{min-width:0}
 .tile-title-row .tile-title{margin-top:0;padding:0}
 .menu-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#f8f3fa;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;line-height:1;color:var(--text)}
 .menu-dot:active{transform:scale(.92)}
-.tile-title{font-size:13px;margin-top:4px;font-weight:600}
+.tile-title{font-size:13px;margin-top:4px;font-weight:600;overflow-wrap:break-word;word-break:break-word;min-width:0}
 .tile-sub{font-size:11px;color:#a493a0;padding:0 8px}
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
 .folder-pills{position:absolute;left:3px;right:3px;bottom:3px;display:flex;flex-wrap:wrap;gap:3px;z-index:5;pointer-events:none}
