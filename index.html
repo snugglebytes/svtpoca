@@ -20,7 +20,8 @@
 }
 :root{--bg:#fdf9fb;--pink:#fbe4ec;--blue:#e5f4fc;--card:#fff;--line:#ecdff0;--text:#7a6b76;--green:#e3f3e1;--yellow:#fdf3d9;--red:#fbe2e2;--accent:#f0c3d6;--purple:#e9e0f8}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(122,107,118,.06)}
 h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
@@ -207,6 +208,8 @@ body.bulk-edit .del-x{display:flex}
 /* drag & drop */
 .tile[draggable="true"]{cursor:grab}
 .tile.dragging{opacity:.35}
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-fade{animation:pageFadeIn .28s ease both}
 .tile{transition:transform .22s cubic-bezier(.4,0,.2,1)}
 .tile.touch-dragging{opacity:0;transition:none}
 .touch-drag-ghost{position:fixed;pointer-events:none;z-index:9999;margin:0;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 30px rgba(122,107,118,.4);border-radius:14px;opacity:.96;transition:transform .12s ease}
@@ -1291,6 +1294,16 @@ function hideAllPanels(){
   document.querySelector('.fab-wrap').classList.add('hidden');
 }
 
+/* Retriggers the page-fade animation on an element (used whenever the grid
+   swaps to a different folder/section, or search results are re-rendered),
+   so it's clear to the user that they've landed on new content. */
+function playPageFade(el){
+  if(!el) return;
+  el.classList.remove('page-fade');
+  void el.offsetWidth; // force reflow so the animation restarts
+  el.classList.add('page-fade');
+}
+
 /* ================= EXPLORER RENDER ================= */
 function renderBreadcrumb(){
   const bc = document.getElementById('breadcrumb');
@@ -1567,6 +1580,7 @@ function renderExplorer(){
   renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   centerOrphanRow(grid);
+  playPageFade(grid);
 }
 
 /* Flat view of every photocard in the collection, regardless of which
@@ -1616,6 +1630,7 @@ function renderAllCardsExplorer(){
   renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   centerOrphanRow(grid);
+  playPageFade(grid);
 }
 
 function renderPageNav(navId, totalPages, page, onGo){
@@ -2709,6 +2724,7 @@ let binderSlotTarget = null; // {binderId, slotIndex}
 function openBindersPanel(){
   hideAllPanels();
   document.getElementById('binders-panel').classList.remove('hidden');
+  playPageFade(document.getElementById('binders-panel'));
   renderBindersPanel();
 }
 function renderBindersPanel(){
@@ -3349,6 +3365,7 @@ function showTagsPage(){
   hideAllPanels();
   closeSearch();
   document.getElementById('tags-panel').classList.remove('hidden');
+  playPageFade(document.getElementById('tags-panel'));
   tagsSearchQuery = '';
   document.getElementById('tags-search-input').value = '';
   renderTagsPage();
@@ -3516,6 +3533,7 @@ function showStats(){
   hideAllPanels();
   closeSearch();
   document.getElementById('stats-panel').classList.remove('hidden');
+  playPageFade(document.getElementById('stats-panel'));
 
   const cards = DATA.cards;
   const have = cards.filter(c=>c.status==='have');
@@ -3591,6 +3609,7 @@ function showListsPanel(tab){
   hideAllPanels();
   closeSearch();
   document.getElementById('lists-panel').classList.remove('hidden');
+  playPageFade(document.getElementById('lists-panel'));
   if(tab){ listsTab = tab; document.querySelectorAll('.list-tabs .opt').forEach(o=>o.classList.toggle('active', o.dataset.list===tab)); }
   listsPage = 1;
   listsMiniSearchQuery = '';
@@ -3711,6 +3730,7 @@ function runSearch(){
 
   hideAllPanels();
   resultsPanel.classList.remove('hidden');
+  playPageFade(resultsPanel);
 
   // folders (across all sections)
   let folderMatches = [];
@@ -3753,6 +3773,7 @@ function runSearch(){
 
   if(folderMatches.length===0 && cardMatches.length===0 && tagMatches.length===0){
     out.innerHTML = `<div class="empty-note">No close matches for "${raw}".</div>`;
+    playPageFade(out);
     return;
   }
 
@@ -3785,6 +3806,7 @@ function runSearch(){
       wrap.appendChild(pill);
     });
   }
+  playPageFade(out);
 }
 function renderSrFolders(){
   const grid = document.getElementById('sr-folders');
@@ -3908,7 +3930,7 @@ function renderRecentFiles(){
   const recentFolders = collectRecentFolders();
   if(!recentCards.length && !recentFolders.length){ wrap.innerHTML=''; return; }
   wrap.innerHTML = `
-    <div class="rf-label">Recently Updated</div>
+    <div class="rf-label">Recently Uploaded</div>
     <div class="rf-row"><div class="rf-scroll" id="rf-scroll"></div>
       <div class="rf-arrow left" id="rf-scroll-arrow-l"><span>‹</span></div>
       <div class="rf-arrow right" id="rf-scroll-arrow-r"><span>›</span></div>
