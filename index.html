@@ -308,11 +308,29 @@ nav>div:active{background:#f8f3fa}
   92%{box-shadow:-10px 0 24px -8px rgba(40,30,45,.28) inset; filter:brightness(.97);}
   100%{transform:rotateY(0deg) scaleX(1); box-shadow:none; filter:brightness(1);}
 }
+@keyframes pageCurlAwayNext{
+  0%{transform:rotateY(0deg) scaleX(1); box-shadow:none; filter:brightness(1); opacity:1;}
+  10%{box-shadow:-10px 0 24px -8px rgba(40,30,45,.28) inset; filter:brightness(.97);}
+  70%{transform:rotateY(-85deg) scaleX(.82); box-shadow:-34px 0 46px -10px rgba(40,30,45,.4) inset; filter:brightness(.75); opacity:1;}
+  100%{transform:rotateY(-92deg) scaleX(.78); box-shadow:-34px 0 46px -10px rgba(40,30,45,.4) inset; filter:brightness(.7); opacity:0;}
+}
+@keyframes pageCurlAwayPrev{
+  0%{transform:rotateY(0deg) scaleX(1); box-shadow:none; filter:brightness(1); opacity:1;}
+  10%{box-shadow:10px 0 24px -8px rgba(40,30,45,.28) inset; filter:brightness(.97);}
+  70%{transform:rotateY(85deg) scaleX(.82); box-shadow:34px 0 46px -10px rgba(40,30,45,.4) inset; filter:brightness(.75); opacity:1;}
+  100%{transform:rotateY(92deg) scaleX(.78); box-shadow:34px 0 46px -10px rgba(40,30,45,.4) inset; filter:brightness(.7); opacity:0;}
+}
 .binder-sides{transform-style:preserve-3d}
 .binder-viewer-sides{perspective:1800px}
 .binder-side,.binder-cover-page{position:relative}
 .binder-side.page-turning-next,.binder-cover-page.page-turning-next{transform-origin:left center;animation:pageTurnNext .5s cubic-bezier(.45,.05,.35,1) both;position:relative;z-index:5}
 .binder-side.page-turning-prev,.binder-cover-page.page-turning-prev{transform-origin:right center;animation:pageTurnPrev .5s cubic-bezier(.45,.05,.35,1) both;position:relative;z-index:5}
+/* the outgoing page, laid on top of the already-rendered new page and rotated
+   away — since the new page underneath never moves, it becomes visible as this
+   clone curls off, instead of the old flip which only ever showed new content. */
+.page-curl-clone{position:absolute;inset:0;z-index:6;pointer-events:none;backface-visibility:hidden;border-radius:inherit}
+.page-curl-clone.page-curling-next{transform-origin:left center;animation:pageCurlAwayNext .5s cubic-bezier(.45,.05,.35,1) both}
+.page-curl-clone.page-curling-prev{transform-origin:right center;animation:pageCurlAwayPrev .5s cubic-bezier(.45,.05,.35,1) both}
 #page-flip-toggle-btn.active-toggle{background:var(--blue);border-color:#5fa8d9}
 .binder-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .binder-page-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
@@ -2967,16 +2985,34 @@ function renderBinderViewer(turnDirection){
   const atBackCover = viewingBinderPage === b.pages;
   document.getElementById('binder-page-label').textContent = atFrontCover ? 'Front Cover' : atBackCover ? 'Back Cover' : `Page ${viewingBinderPage+1} of ${b.pages}`;
   const sidesWrap = document.getElementById('binder-viewer-sides');
-  sidesWrap.innerHTML = '';
   const doTurn = turnDirection && DATA.pageFlipEnabled;
+  // "next" turns the right-hand page (spine on its left); "prev" turns the
+  // left-hand page (spine on its right) — only that one leaf turns, the facing
+  // page stays put, like a real binder. Snapshot that leaf's current look
+  // *before* we wipe it, so we can lay the snapshot back on top of the new
+  // page once it's built and animate only the snapshot curling away — the new
+  // page underneath is static from the start, so it shows through as it turns.
+  let outgoingClone = null;
+  if(doTurn){
+    const idx = turnDirection==='prev' ? 0 : 1;
+    const outgoingEl = sidesWrap.children[idx];
+    if(outgoingEl) outgoingClone = outgoingEl.cloneNode(true);
+  }
+  sidesWrap.innerHTML = '';
   function applyPageTurn(){
     if(!doTurn) return;
-    // "next" turns the right-hand page (spine on its left); "prev" turns the
-    // left-hand page (spine on its right) — only that one leaf animates,
-    // the facing page stays put, like a real binder.
     const idx = turnDirection==='prev' ? 0 : 1;
     const pageEl = sidesWrap.children[idx];
-    if(pageEl) pageEl.classList.add(turnDirection==='prev' ? 'page-turning-prev' : 'page-turning-next');
+    if(!pageEl) return;
+    if(outgoingClone){
+      outgoingClone.classList.add('page-curl-clone');
+      outgoingClone.classList.add(turnDirection==='prev' ? 'page-curling-prev' : 'page-curling-next');
+      pageEl.appendChild(outgoingClone);
+      outgoingClone.addEventListener('animationend', ()=>{ outgoingClone.remove(); }, {once:true});
+    } else {
+      // fallback (e.g. nothing to snapshot) — old in-place flip, better than no animation at all
+      pageEl.classList.add(turnDirection==='prev' ? 'page-turning-prev' : 'page-turning-next');
+    }
   }
   const cols = b.grids<=4 ? 2 : 3;
   const rowLayouts = {12:[4,4,4], 13:[4,4,5]};
