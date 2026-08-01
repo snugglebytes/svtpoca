@@ -1607,7 +1607,7 @@ function renderFolderTile(f, list, cardsInView){
     if(bulkEditMode){
       e.stopPropagation();
       startInlineRename(div.querySelector('.tile-title'), f.title, (val)=>{
-        f.title = val; f.updatedAt = Date.now(); save(); renderExplorer();
+        f.title = val; f.updatedAt = Date.now(); save(); refreshCurrentView();
       });
       return;
     }
@@ -1737,9 +1737,12 @@ function closeAllTileMenus(except){
 document.addEventListener('click', ()=>closeAllTileMenus());
 
 function refreshCurrentView(){
+  renderExplorer();
   const listsPanel = document.getElementById('lists-panel');
   if(listsPanel && !listsPanel.classList.contains('hidden')) renderListsPanel();
-  else renderExplorer();
+  const binderViewerModal = document.getElementById('binder-viewer-modal');
+  if(binderViewerModal && !binderViewerModal.classList.contains('hidden')) renderBinderViewer();
+  renderRecentFiles();
 }
 
 function toggleBulkEditMode(){
@@ -1798,7 +1801,7 @@ function duplicateFolder(f, list){
   const idx = list.indexOf(f);
   list.splice(idx>-1 ? idx+1 : list.length, 0, copy);
   save();
-  renderExplorer();
+  refreshCurrentView();
 }
 
 /* ---- MOVE MODAL (Gdrive-style: browse into a folder, then "Move here") ---- */
@@ -1910,9 +1913,7 @@ function confirmMove(){
     c.tags = Array.from(new Set([...(c.tags||[]), ...here.linkedTags]));
     save();
     closeModal('move-modal');
-    renderExplorer();
-    const listsPanel = document.getElementById('lists-panel');
-    if(listsPanel && !listsPanel.classList.contains('hidden')) renderListsPanel();
+    refreshCurrentView();
     alert(`Moved — this card now shows in "${here.title}".`);
   } else {
     function removeFromTree(list){
@@ -2199,7 +2200,7 @@ function confirmSaveFolder(){
   } else {
     list.push({id:'fold_'+Date.now(), title, thumb, linkedTags:Array.from(selectedFolderTagIds), fixed:false, children:[], createdAt: Date.now(), updatedAt: Date.now()});
   }
-  save(); closeModal('add-folder-modal'); renderExplorer();
+  save(); closeModal('add-folder-modal'); refreshCurrentView();
 }
 function deleteCurrentFolder(){
   const list = findFolderList(currentPath);
@@ -2213,7 +2214,7 @@ function deleteFolderNode(f){
   const list = findFolderList(currentPath);
   const idx = list.findIndex(x=>x.id===f.id);
   if(idx>-1) list.splice(idx,1);
-  save(); renderExplorer();
+  save(); refreshCurrentView();
 }
 
 /* ================= CARD PREVIEW (tap thumbnail = view, not edit) ================= */
@@ -2287,7 +2288,7 @@ function deleteCurrentCard(){
   if(!editingCardId) return;
   if(!confirm('Delete this photocard from your library entirely?')) return;
   DATA.cards = DATA.cards.filter(c=>c.id!==editingCardId);
-  save(); closeModal('card-modal'); renderExplorer();
+  save(); closeModal('card-modal'); refreshCurrentView();
 }
 
 /* ---- upload a brand-new photocard directly from the binder's "choose a photocard"
@@ -2410,7 +2411,7 @@ function saveCard(){
   if(editingCardId){
     const c = DATA.cards.find(x=>x.id===editingCardId);
     Object.assign(c, {name, status, price, sourceUrl, image, tags, duplicate, dupCount, popular, rareFind, updatedAt: Date.now()});
-    save(); closeModal('card-modal'); renderExplorer();
+    save(); closeModal('card-modal'); refreshCurrentView();
     return;
   }
 
@@ -2434,13 +2435,13 @@ function saveCard(){
   }
 
   closeModal('card-modal');
-  renderExplorer();
+  refreshCurrentView();
 }
 
 let pendingDupCardId = null;
 function markSold(){
   DATA.cards = DATA.cards.filter(c=>c.id!==pendingDupCardId);
-  save(); closeModal('dup-modal'); renderExplorer();
+  save(); closeModal('dup-modal'); refreshCurrentView();
 }
 
 /* ================= IMAGE CROP (card = portrait 3:4, folder = square 1:1) ================= */
@@ -3317,7 +3318,7 @@ function startRenameTag(row, t){
   const commit = ()=>{
     const val = input.value.trim();
     if(val) t.name = val;
-    save(); renderTagsPage(); renderExplorer();
+    save(); renderTagsPage(); refreshCurrentView();
   };
   input.onblur = commit;
   input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); if(e.key==='Escape'){ input.value=t.name; input.blur(); } };
@@ -3332,7 +3333,7 @@ function deleteTag(tagId){
   DATA.tags = DATA.tags.filter(t=>t.id!==tagId);
   DATA.cards.forEach(c=>{ c.tags = (c.tags||[]).filter(t=>t!==tagId); });
   ['albums','nonalbum','members'].forEach(sec=>clearTagFromFolders(DATA.nodes[sec], tagId));
-  save(); renderTagsPage(); renderExplorer();
+  save(); renderTagsPage(); refreshCurrentView();
 }
 function folderUsesTag(list, tagId, onlyFixed){
   for(const f of list){
@@ -3413,7 +3414,7 @@ function applyTemplate(id){
   const t = DATA.templates.find(x=>x.id===id);
   if(!t) return;
   DATA.viewOrders[t.contextKey] = t.order;
-  save(); closeModal('templates-modal'); renderExplorer();
+  save(); closeModal('templates-modal'); refreshCurrentView();
 }
 function updateTemplate(id){
   const t = DATA.templates.find(x=>x.id===id);
