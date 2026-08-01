@@ -775,7 +775,19 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeModal('binder-slot-modal')">✕</button>
     <div class="section-title">Photocard</div>
-    <p style="font-size:13px;color:#8b7a88" id="binder-slot-modal-name"></p>
+    <div style="display:flex;justify-content:center;margin:6px 0 8px">
+      <div style="width:100px;height:150px;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb" id="binder-slot-modal-thumb"></div>
+    </div>
+    <p style="font-size:14px;font-weight:700;text-align:center;margin:0 0 10px" id="binder-slot-modal-name"></p>
+    <div class="status-picker" id="binder-slot-status-picker">
+      <div class="opt" data-val="have">Have</div>
+      <div class="opt" data-val="wishlist">Wishlist</div>
+      <div class="opt" data-val="stbo">STBO</div>
+    </div>
+    <div class="status-picker" id="binder-slot-marks-picker" style="margin-top:6px">
+      <div class="opt" data-val="popular">Popular</div>
+      <div class="opt" data-val="rareFind">Rare Find</div>
+    </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="binderSlotReplace()">Replace</button>
       <button class="btn danger" onclick="binderSlotRemove()">Remove</button>
@@ -3190,10 +3202,28 @@ function attachBinderSlotTouchDrag(el, binderId, slotIndex){
   }
 }
 function openBinderSlotOptions(binderId, slotIndex, card){
-  binderSlotTarget = {binderId, slotIndex};
+  binderSlotTarget = {binderId, slotIndex, cardId: card ? card.id : null};
+  document.getElementById('binder-slot-modal-thumb').innerHTML = card && card.image ? `<img src="${card.image}" style="width:100%;height:100%;object-fit:cover">` : '';
   document.getElementById('binder-slot-modal-name').textContent = card ? (card.name || 'Untitled photocard') : '';
+  document.querySelectorAll('#binder-slot-status-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && o.dataset.val===card.status)));
+  document.querySelectorAll('#binder-slot-marks-picker .opt').forEach(o=>o.classList.toggle('sel', !!(card && card[o.dataset.val])));
   document.getElementById('binder-slot-modal').classList.remove('hidden');
 }
+document.getElementById('binder-slot-status-picker').addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt || !binderSlotTarget || !binderSlotTarget.cardId) return;
+  const c = DATA.cards.find(x=>x.id===binderSlotTarget.cardId); if(!c) return;
+  c.status = opt.dataset.val; c.updatedAt = Date.now(); save();
+  document.querySelectorAll('#binder-slot-status-picker .opt').forEach(o=>o.classList.toggle('sel', o===opt));
+  refreshCurrentView(); renderBinderViewer();
+});
+document.getElementById('binder-slot-marks-picker').addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt || !binderSlotTarget || !binderSlotTarget.cardId) return;
+  const c = DATA.cards.find(x=>x.id===binderSlotTarget.cardId); if(!c) return;
+  const key = opt.dataset.val;
+  c[key] = !c[key]; c.updatedAt = Date.now(); save();
+  opt.classList.toggle('sel', !!c[key]);
+  refreshCurrentView(); renderBinderViewer();
+});
 function binderSlotReplace(){
   if(!binderSlotTarget) return;
   const {binderId, slotIndex} = binderSlotTarget;
