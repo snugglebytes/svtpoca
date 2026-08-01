@@ -3820,6 +3820,8 @@ function collectRecentCards(){
     .slice()
     .sort((a,b)=>(itemUpdatedAt({data:b})||0)-(itemUpdatedAt({data:a})||0))
     .slice(0,20);
+}
+function renderRecentFiles(){
   const wrap = document.getElementById('recent-files');
   if(!wrap) return;
   const recentCards = collectRecentCards();
