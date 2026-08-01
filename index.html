@@ -210,6 +210,7 @@ body.bulk-edit .del-x{display:flex}
 .tile.dragging{opacity:.35}
 @keyframes pageFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .page-fade{animation:pageFadeIn .28s ease both}
+.tile-enter{animation:pageFadeIn .3s ease both}
 .tile{transition:transform .22s cubic-bezier(.4,0,.2,1)}
 .tile.touch-dragging{opacity:0;transition:none}
 .touch-drag-ghost{position:fixed;pointer-events:none;z-index:9999;margin:0;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 30px rgba(122,107,118,.4);border-radius:14px;opacity:.96;transition:transform .12s ease}
@@ -1304,6 +1305,19 @@ function playPageFade(el){
   el.classList.add('page-fade');
 }
 
+/* Animates each tile (photocard/folder) inside a grid individually, with a
+   tiny stagger, instead of fading the grid container as one flat block. */
+function playTileFade(gridEl){
+  if(!gridEl) return;
+  const tiles = gridEl.querySelectorAll(':scope > .tile, :scope > .binder-tile, :scope > .binder-new-tile');
+  tiles.forEach((el, i)=>{
+    el.classList.remove('tile-enter');
+    void el.offsetWidth;
+    el.style.animationDelay = Math.min(i*25, 200)+'ms';
+    el.classList.add('tile-enter');
+  });
+}
+
 /* ================= EXPLORER RENDER ================= */
 function renderBreadcrumb(){
   const bc = document.getElementById('breadcrumb');
@@ -1580,7 +1594,7 @@ function renderExplorer(){
   renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   centerOrphanRow(grid);
-  playPageFade(grid);
+  playTileFade(grid);
 }
 
 /* Flat view of every photocard in the collection, regardless of which
@@ -1630,7 +1644,7 @@ function renderAllCardsExplorer(){
   renderPageNav('pg-nav', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   renderPageNav('pg-nav-bottom', totalPages, currentPage, (p)=>{ currentPage=p; renderExplorer(); });
   centerOrphanRow(grid);
-  playPageFade(grid);
+  playTileFade(grid);
 }
 
 function renderPageNav(navId, totalPages, page, onGo){
@@ -2724,7 +2738,6 @@ let binderSlotTarget = null; // {binderId, slotIndex}
 function openBindersPanel(){
   hideAllPanels();
   document.getElementById('binders-panel').classList.remove('hidden');
-  playPageFade(document.getElementById('binders-panel'));
   renderBindersPanel();
 }
 function renderBindersPanel(){
@@ -2756,6 +2769,7 @@ function renderBindersPanel(){
   newTile.innerHTML = atMax ? `<div>13 / 13 binders</div><div class="field-hint">Delete one to add more</div>` : `<div style="font-size:22px">＋</div><div>New Binder</div>`;
   newTile.onclick = ()=>{ if(!atMax) openBinderModal(null); };
   grid.appendChild(newTile);
+  playTileFade(grid);
 }
 
 function buildSwatchRow(rowId, selectedColor, onPick){
@@ -3609,7 +3623,6 @@ function showListsPanel(tab){
   hideAllPanels();
   closeSearch();
   document.getElementById('lists-panel').classList.remove('hidden');
-  playPageFade(document.getElementById('lists-panel'));
   if(tab){ listsTab = tab; document.querySelectorAll('.list-tabs .opt').forEach(o=>o.classList.toggle('active', o.dataset.list===tab)); }
   listsPage = 1;
   listsMiniSearchQuery = '';
@@ -3684,6 +3697,7 @@ function renderListsPanel(){
   renderPageNav('lists-pg-nav', totalPages, listsPage, (p)=>{ listsPage=p; renderListsPanel(); });
   renderPageNav('lists-pg-nav-bottom', totalPages, listsPage, (p)=>{ listsPage=p; renderListsPanel(); });
   centerOrphanRow(grid);
+  playTileFade(grid);
 }
 
 /* ================= SEARCH ================= */
@@ -3806,7 +3820,6 @@ function runSearch(){
       wrap.appendChild(pill);
     });
   }
-  playPageFade(out);
 }
 function renderSrFolders(){
   const grid = document.getElementById('sr-folders');
@@ -3833,6 +3846,7 @@ function renderSrFolders(){
   });
   renderPageNav('sr-folders-pg-nav', totalPages, srFolderPage, (p)=>{ srFolderPage=p; renderSrFolders(); });
   centerOrphanRow(grid);
+  playTileFade(grid);
 }
 function renderSrCards(){
   const grid = document.getElementById('sr-cards');
@@ -3861,6 +3875,7 @@ function renderSrCards(){
   });
   renderPageNav('sr-cards-pg-nav', totalPages, srCardPage, (p)=>{ srCardPage=p; renderSrCards(); });
   centerOrphanRow(grid);
+  playTileFade(grid);
 }
 /* Centers the last row of a grid whenever it has fewer tiles than the grid's
    column count (works for any per-page total and any breakpoint, since it
