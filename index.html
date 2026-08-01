@@ -505,7 +505,7 @@ nav>div:active{background:#f8f3fa}
         <option value="">Default order</option>
         <option value="az">A–Z</option>
         <option value="za">Z–A</option>
-        <option value="date-uploaded">Date uploaded</option>
+        <option value="date-uploaded" selected>Date uploaded</option>
         <option value="date-edited">Date edited</option>
       </select>
       <button class="btn small ghost" id="lists-bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
@@ -1197,7 +1197,7 @@ let listsTab = 'stbo';
 let listsPerPage = defaultPerPage();
 let listsPage = 1;
 let listsMiniSearchQuery = '';
-let listsSortMode = '';
+let listsSortMode = 'date-uploaded';
 let dragged = null; // {type:'folder'|'card', id}
 let dragHoverKey = null; // last hovered tile key during a drag, to avoid redundant reorders
 let miniSearchQuery = '';
@@ -4042,6 +4042,7 @@ initDropzone('binder-dropzone','binder-file','binder');
 /* ================= INIT ================= */
 document.getElementById('per-page-select').value = perPage;
 document.getElementById('lists-per-page-select').value = listsPerPage;
+document.getElementById('lists-sort-mode-select').value = listsSortMode;
 switchSection('albums');
 renderRecentFiles();
 </script>
