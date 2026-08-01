@@ -2555,7 +2555,7 @@ function applyCrop(){
   }
   ctx.drawImage(img, cropState.x*sx, cropState.y*sy, iw, ih);
   ctx.restore();
-  const dataUrl = canvas.toDataURL('image/jpeg',0.85);
+  const dataUrl = canvas.toDataURL('image/jpeg',0.7);
   if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; }
   else if(activeCrop.target==='binder'){ croppedBinderCoverDataUrl = dataUrl; }
   else { croppedDataUrl = dataUrl; }
@@ -2580,7 +2580,7 @@ function rotateCropImage(){
   ctx.translate(h/2, w/2);
   ctx.rotate(Math.PI/2);
   ctx.drawImage(img, -w/2, -h/2);
-  const rotatedUrl = canvas.toDataURL('image/png');
+  const rotatedUrl = canvas.toDataURL('image/jpeg',0.9);
   img.onload = ()=>{ fitCropImage(); };
   img.removeAttribute('crossorigin');
   img.src = rotatedUrl;
