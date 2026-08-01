@@ -105,6 +105,9 @@ body.bulk-edit .del-x{display:flex}
 .pagebar select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:3px 2px;background:#fff}
 .pagebar .pg-nav{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
 .pagebar .pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:10px;padding:2px 7px;cursor:pointer}
+.pagebar-add{display:flex;gap:4px;flex:0 0 auto}
+.pagebar-add-btn{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:12px;padding:4px 7px;cursor:pointer;line-height:1;white-space:nowrap}
+.pagebar-add-btn:active{background:#eee3f5}
 .pagebar .pg-nav button:disabled{opacity:.35;cursor:default}
 .pg-nav{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;margin:8px 0 4px}
 .pg-nav button{border:2px solid var(--line);border-radius:7px;background:#f8f3fa;font-size:11px;padding:3px 9px;cursor:pointer}
@@ -406,6 +409,10 @@ nav>div:active{background:#f8f3fa}
 <div class="panel" id="explorer-panel">
   <div class="pagebar">
     <input id="mini-search-input" class="mini-search-inline" placeholder="Find within this folder..." oninput="onMiniSearch()">
+    <div class="pagebar-add">
+      <button type="button" class="pagebar-add-btn" title="Add folder" onclick="openAddFolderModal()">＋📁</button>
+      <button type="button" class="pagebar-add-btn" title="Add photocard" onclick="openCardModal(null)">＋🂠</button>
+    </div>
     <div class="pp-select">Show
       <select id="per-page-select" onchange="onPerPageChange()">
         <option value="4">4</option>
@@ -1228,6 +1235,8 @@ function switchSection(sec){
   if(toolbarCenter) toolbarCenter.classList.toggle('hidden', isAllCards);
   const fabFolderBtn = document.getElementById('fab-add-folder-btn');
   if(fabFolderBtn) fabFolderBtn.classList.toggle('hidden', isAllCards);
+  const pagebarFolderBtn = document.querySelector('#explorer-panel .pagebar-add-btn[title="Add folder"]');
+  if(pagebarFolderBtn) pagebarFolderBtn.classList.toggle('hidden', isAllCards);
   goHome();
 }
 
@@ -1495,6 +1504,9 @@ function renderExplorer(){
     if(item.type==='folder') grid.appendChild(renderFolderTile(item.data, list, cards));
     else grid.appendChild(renderCardTile(item.data, list, cards));
   });
+
+  const pagebarAdd = document.querySelector('#explorer-panel .pagebar-add');
+  if(pagebarAdd) pagebarAdd.classList.toggle('hidden', items.length===0);
 
   if(items.length===0){
     const note = document.createElement('div');
