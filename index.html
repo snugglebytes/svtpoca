@@ -1040,7 +1040,23 @@ function load(){
     return d;
   }catch(e){ return defaultData(); }
 }
-function save(){ localStorage.setItem('carat_data_v2', JSON.stringify(DATA)); renderRecentFiles(); }
+function save(){
+  try{
+    localStorage.setItem('carat_data_v2', JSON.stringify(DATA));
+    renderRecentFiles();
+    return true;
+  }catch(e){
+    console.error('Save to localStorage failed:', e);
+    const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+    alert(
+      (isQuota
+        ? 'Could not save — your browser storage is full. This can happen with large photo collections (lots of embedded images).\n\nExport a backup now if you can, then try removing some full-size images to free up space.'
+        : 'Could not save your data to this device\'s storage. (' + (e && e.message ? e.message : e) + ')')
+      + '\n\nYour changes are only in memory right now and will be LOST if you refresh or close this page.'
+    );
+    return false;
+  }
+}
 function exportData(){
   const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1101,14 +1117,24 @@ function cancelImportChoice(){
 function confirmImportReplace(){
   if(!pendingImportData) return;
   if(!confirm('Replacing will overwrite your current collection with this file\'s data. This can\'t be undone. Continue?')) return;
+  const previousData = DATA;
   DATA = pendingImportData;
-  save();
+  if(!save()){
+    DATA = previousData; // roll back in-memory state so the UI matches what's actually on disk
+    renderRecentFiles();
+    return; // save() already alerted the user with the reason
+  }
   finishImport('Import complete — your collection was replaced.');
 }
 function confirmImportMerge(){
   if(!pendingImportData) return;
+  const previousData = JSON.parse(JSON.stringify(DATA)); // snapshot in case the merged save fails
   const result = mergeImportedData(DATA, pendingImportData);
-  save();
+  if(!save()){
+    DATA = previousData; // roll back in-memory state so the UI matches what's actually on disk
+    renderRecentFiles();
+    return; // save() already alerted the user with the reason
+  }
   finishImport(`Merge complete — added ${result.tagsAdded} new tag${result.tagsAdded===1?'':'s'}, ${result.foldersAdded} new folder${result.foldersAdded===1?'':'s'}, and ${result.cardsAdded} new card${result.cardsAdded===1?'':'s'}. ${result.cardsSkipped?`(${result.cardsSkipped} exact-duplicate card${result.cardsSkipped===1?'':'s'} skipped.)`:''}`);
 }
 function finishImport(message){
