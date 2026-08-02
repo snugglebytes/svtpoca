@@ -60,6 +60,9 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:767px){
+  .grid,.search-results{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:767px){
   header{position:static}
   nav{padding:18px 6px calc(18px + env(safe-area-inset-bottom))}
   nav>div{padding:10px 12px}
@@ -3384,7 +3387,9 @@ function renderCardPickerList(){
   const q = document.getElementById('card-picker-search').value.trim();
   const list = document.getElementById('card-picker-list');
   list.innerHTML = '';
-  const cards = DATA.cards.filter(c=>!q || matchesSearchTerms(q, {type:'card', data:c}));
+  const cards = DATA.cards
+    .filter(c=>!q || matchesSearchTerms(q, {type:'card', data:c}))
+    .sort((a,b)=>(itemCreatedAt({data:b})||0)-(itemCreatedAt({data:a})||0));
   if(!cards.length){ list.innerHTML = '<div class="empty-note">No photocards match.</div>'; return; }
   cards.forEach(c=>{
     const item = document.createElement('div');
@@ -3961,7 +3966,7 @@ function collectRecentFolders(){
 function collectRecentCards(){
   return DATA.cards
     .slice()
-    .sort((a,b)=>(itemUpdatedAt({data:b})||0)-(itemUpdatedAt({data:a})||0))
+    .sort((a,b)=>(itemCreatedAt({data:b})||0)-(itemCreatedAt({data:a})||0))
     .slice(0,20);
 }
 function renderRecentFiles(){
