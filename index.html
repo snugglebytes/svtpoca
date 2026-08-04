@@ -1012,14 +1012,45 @@ function defaultData(){
     pageFlipEnabled: false
   };
 }
-let DATA = load();
-function load(){
-  try{
-    const raw = localStorage.getItem('carat_data_v2');
-    if(!raw) return defaultData();
-    const d = JSON.parse(raw);
-    if(!d.tags || !d.nodes || !d.cards) return defaultData();
-    // migrations for older saves
+/* ================= STORAGE (IndexedDB) =================
+   Photocard images are embedded as base64, which can easily add up to
+   many megabytes. localStorage caps out around 5-10MB per origin in most
+   browsers, so large collections would hit "storage full" errors on
+   save/import. IndexedDB has a much larger quota (generally hundreds of
+   MB, scaling with free disk space), so all data now lives there instead.
+   The old localStorage key is migrated in automatically on first load,
+   then cleared. */
+const IDB_NAME = 'carat_tracker_db';
+const IDB_STORE = 'kv';
+const IDB_DATA_KEY = 'carat_data_v2';
+const LEGACY_LS_KEY = 'carat_data_v2';
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB){ reject(new Error('IndexedDB not supported')); return; }
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = ()=>{ req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+function idbGet(key){
+  return idbOpen().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  }));
+}
+function idbSet(key,value){
+  return idbOpen().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(value, key);
+    tx.oncomplete = ()=> resolve(true);
+    tx.onerror = ()=> reject(tx.error);
+  }));
+}
+let DATA = defaultData(); // synchronous placeholder; replaced once loadData() resolves, see initApp() below
+function applyMigrations(d){
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.templates) d.templates = [];
     if(!d.binders) d.binders = [];
@@ -1042,24 +1073,57 @@ function load(){
       if(!c.updatedAt) c.updatedAt = c.createdAt;
     });
     return d;
-  }catch(e){ return defaultData(); }
+}
+async function loadData(){
+  try{
+    const raw = await idbGet(IDB_DATA_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(!d.tags || !d.nodes || !d.cards) return defaultData();
+      return applyMigrations(d);
+    }
+  }catch(e){
+    console.error('IndexedDB load failed, falling back to defaults:', e);
+  }
+  // Nothing in IndexedDB yet — check for pre-existing localStorage data and migrate it in.
+  try{
+    const legacy = localStorage.getItem(LEGACY_LS_KEY);
+    if(legacy){
+      const d = JSON.parse(legacy);
+      if(d && d.tags && d.nodes && d.cards){
+        const migrated = applyMigrations(d);
+        try{
+          await idbSet(IDB_DATA_KEY, JSON.stringify(migrated));
+          localStorage.removeItem(LEGACY_LS_KEY);
+        }catch(e){ console.error('Could not migrate legacy localStorage data into IndexedDB:', e); }
+        return migrated;
+      }
+    }
+  }catch(e){ console.error('Legacy localStorage migration failed:', e); }
+  return defaultData();
 }
 function save(){
+  let json;
   try{
-    localStorage.setItem('carat_data_v2', JSON.stringify(DATA));
-    renderRecentFiles();
-    return true;
+    json = JSON.stringify(DATA);
   }catch(e){
-    console.error('Save to localStorage failed:', e);
+    console.error('Save failed (could not serialize data):', e);
+    alert('Could not save your data. (' + (e && e.message ? e.message : e) + ')\n\nYour changes are only in memory right now and will be LOST if you refresh or close this page.');
+    return false;
+  }
+  idbSet(IDB_DATA_KEY, json).then(()=>{
+    renderRecentFiles();
+  }).catch(e=>{
+    console.error('Save to IndexedDB failed:', e);
     const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
     alert(
       (isQuota
-        ? 'Could not save — your browser storage is full. This can happen with large photo collections (lots of embedded images).\n\nExport a backup now if you can, then try removing some full-size images to free up space.'
+        ? 'Could not save — your browser storage is full. This can happen with very large photo collections (lots of embedded images).\n\nExport a backup now if you can, then try removing some full-size images to free up space.'
         : 'Could not save your data to this device\'s storage. (' + (e && e.message ? e.message : e) + ')')
       + '\n\nYour changes are only in memory right now and will be LOST if you refresh or close this page.'
     );
-    return false;
-  }
+  });
+  return true;
 }
 function exportData(){
   const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
@@ -4145,10 +4209,18 @@ initDropzone('folder-dropzone','folder-file','folder');
 initDropzone('binder-dropzone','binder-file','binder');
 
 /* ================= INIT ================= */
-document.getElementById('per-page-select').value = perPage;
-document.getElementById('lists-per-page-select').value = listsPerPage;
-document.getElementById('lists-sort-mode-select').value = listsSortMode;
-switchSection('albums');
-renderRecentFiles();
+(async function initApp(){
+  try{
+    DATA = await loadData();
+  }catch(e){
+    console.error('Data load failed, starting with defaults:', e);
+    DATA = defaultData();
+  }
+  document.getElementById('per-page-select').value = perPage;
+  document.getElementById('lists-per-page-select').value = listsPerPage;
+  document.getElementById('lists-sort-mode-select').value = listsSortMode;
+  switchSection('albums');
+  renderRecentFiles();
+})();
 </script>
 </body></html>
