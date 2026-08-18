@@ -2410,6 +2410,17 @@ function setupTagCombo({chipsId, inputId, listId, multi, getSelected, onAdd, onR
   const chipsEl = document.getElementById(chipsId);
   const inputEl = document.getElementById(inputId);
   const listEl = document.getElementById(listId);
+  let highlightIndex = -1;
+
+  function getItems(){ return Array.from(listEl.querySelectorAll('.ci')); }
+  function setHighlight(idx){
+    const items = getItems();
+    items.forEach(el=>el.classList.remove('hi'));
+    if(!items.length){ highlightIndex=-1; return; }
+    highlightIndex = ((idx % items.length)+items.length)%items.length;
+    items[highlightIndex].classList.add('hi');
+    items[highlightIndex].scrollIntoView({block:'nearest'});
+  }
 
   function renderChips(){
     chipsEl.innerHTML='';
@@ -2424,6 +2435,7 @@ function setupTagCombo({chipsId, inputId, listId, multi, getSelected, onAdd, onR
     });
   }
   function renderList(){
+    highlightIndex = -1;
     const q = inputEl.value.trim();
     const sel = getSelected();
     const selIds = multi ? sel : new Set(sel?[sel]:[]);
@@ -2462,6 +2474,26 @@ function setupTagCombo({chipsId, inputId, listId, multi, getSelected, onAdd, onR
   inputEl.oninput = renderList;
   inputEl.onfocus = renderList;
   inputEl.onblur = ()=>setTimeout(()=>listEl.classList.add('hidden'), 150);
+  // arrow-key / enter navigation through the dropdown results, like a native select
+  inputEl.onkeydown = (e)=>{
+    if(e.key==='ArrowDown'){
+      e.preventDefault();
+      if(listEl.classList.contains('hidden')) renderList();
+      setHighlight(highlightIndex+1);
+    } else if(e.key==='ArrowUp'){
+      e.preventDefault();
+      if(listEl.classList.contains('hidden')) renderList();
+      setHighlight(highlightIndex-1);
+    } else if(e.key==='Enter'){
+      const items = getItems();
+      if(!items.length) return;
+      e.preventDefault();
+      const pick = highlightIndex>=0 ? items[highlightIndex] : items[0];
+      if(pick) pick.click();
+    } else if(e.key==='Escape'){
+      listEl.classList.add('hidden');
+    }
+  };
   renderChips();
 }
 
