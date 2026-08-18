@@ -619,7 +619,6 @@ nav>div:active{background:#f8f3fa}
         <div class="field"><label>Tilt</label><input type="range" id="folder-crop-tilt" min="-45" max="45" value="0"></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
-          <button class="btn small" onclick="applyCrop()">Apply Crop</button>
           <span class="crop-check hidden" id="folder-crop-check">✓</span>
         </div>
       </div>
@@ -659,7 +658,6 @@ nav>div:active{background:#f8f3fa}
       <div class="field"><label>Tilt</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
       <div class="crop-actions">
         <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
-        <button class="btn small" onclick="applyCrop()">Apply Crop</button>
         <span class="crop-check hidden" id="card-crop-check">✓</span>
       </div>
     </div>
@@ -774,7 +772,6 @@ nav>div:active{background:#f8f3fa}
         <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
-          <button class="btn small" onclick="applyCrop()">Apply Crop</button>
           <span class="crop-check hidden" id="binder-crop-check">✓</span>
         </div>
       </div>
@@ -2800,6 +2797,16 @@ function loadCropFromFile(target, event){
   event.target.value = '';
 }
 let cropState = {x:0,y:0,scale:1,tilt:0,dragging:false,startX:0,startY:0};
+
+/* Crop now saves itself as you adjust it — no "Apply Crop" button to
+   remember to click. Debounced so a mid-drag/mid-slide doesn't spam the
+   canvas re-render on every pixel; it settles ~120ms after you stop. */
+let autoApplyCropTimer = null;
+function scheduleAutoApplyCrop(){
+  clearTimeout(autoApplyCropTimer);
+  autoApplyCropTimer = setTimeout(()=>{ if(activeCrop) applyCrop(); }, 120);
+}
+
 function fitCropImage(){
   const wrap = document.getElementById(activeCrop.wrapId);
   const img = document.getElementById(activeCrop.imgId);
@@ -2815,6 +2822,7 @@ function fitCropImage(){
   document.getElementById(activeCrop.zoomId).value = 100;
   const tiltEl = document.getElementById(activeCrop.tiltId);
   if(tiltEl) tiltEl.value = 0;
+  scheduleAutoApplyCrop(); // capture the default centered crop right away, even if the user never touches zoom/tilt
 }
 function updateCropPos(){
   const img = document.getElementById(activeCrop.imgId);
@@ -2826,7 +2834,7 @@ function setupCropDrag(){
   const img = document.getElementById(activeCrop.imgId);
   const start=(x,y)=>{cropState.dragging=true;cropState.startX=x-cropState.x;cropState.startY=y-cropState.y;};
   const move=(x,y)=>{ if(!cropState.dragging)return; cropState.x=x-cropState.startX; cropState.y=y-cropState.startY; updateCropPos(); };
-  const end=()=>cropState.dragging=false;
+  const end=()=>{ if(!cropState.dragging) return; cropState.dragging=false; scheduleAutoApplyCrop(); };
   wrap.onmousedown=e=>start(e.clientX,e.clientY);
   window.onmousemove=e=>move(e.clientX,e.clientY);
   window.onmouseup=end;
@@ -2842,9 +2850,10 @@ function setupCropDrag(){
     img.style.width=(img.naturalWidth*newScale)+'px'; img.style.height=(img.naturalHeight*newScale)+'px';
     cropState.x=cx-(img.naturalWidth*newScale)/2; cropState.y=cy-(img.naturalHeight*newScale)/2;
     updateCropPos();
+    scheduleAutoApplyCrop();
   };
   const tiltEl = document.getElementById(activeCrop.tiltId);
-  if(tiltEl) tiltEl.oninput=(e)=>{ cropState.tilt = parseFloat(e.target.value)||0; updateCropPos(); };
+  if(tiltEl) tiltEl.oninput=(e)=>{ cropState.tilt = parseFloat(e.target.value)||0; updateCropPos(); scheduleAutoApplyCrop(); };
 }
 function applyCrop(){
   const wrap = document.getElementById(activeCrop.wrapId);
@@ -3070,7 +3079,7 @@ function saveBinderForm(){
   if(coverMode==='image'){
     const existing = editingBinderId ? DATA.binders.find(b=>b.id===editingBinderId) : null;
     const imgVal = croppedBinderCoverDataUrl || (existing && existing.cover.type==='image' ? existing.cover.value : '');
-    if(!imgVal){ alert('Upload an image or paste a URL and click "Load / Update Image", then Apply Crop.'); return; }
+    if(!imgVal){ alert('Upload an image or paste a URL, then click "Load / Update Image".'); return; }
     cover = {type:'image', value:imgVal};
   } else {
     const pastelColor = document.querySelector('#binder-cover-pastel-row .color-picker-swatch')?.dataset.color || DEFAULT_COVER_COLOR;
