@@ -84,6 +84,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .menu-dot:active{transform:scale(.92)}
 .tile-title{font-size:13px;margin-top:4px;font-weight:600;overflow-wrap:break-word;word-break:break-word;min-width:0}
 .tile-sub{font-size:11px;color:#a493a0;padding:0 8px}
+.tile-location{overflow:hidden;white-space:nowrap;position:relative}
+.tile-location .loc-inner{display:inline-block;transform:translateX(0);transition:transform 1.1s linear}
 .tag-pill{display:inline-block;font-size:10px;background:var(--blue);border:1px solid #bfe0f2;border-radius:10px;padding:1px 7px;margin-top:3px;margin-right:3px}
 .folder-pills{position:absolute;left:3px;right:3px;bottom:3px;display:flex;flex-wrap:wrap;gap:3px;z-index:5;pointer-events:none}
 .folder-pill{background:rgba(50,35,48,.78);color:#fff;font-size:8px;line-height:1.4;padding:2px 6px;border-radius:8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 3px rgba(0,0,0,.2)}
@@ -1846,6 +1848,27 @@ function renderFolderTile(f, list, cardsInView){
   return div;
 }
 
+/* Folder-path caption on card tiles (All Photocards view) stays a single
+   line no matter how deep the path is; on hover it auto-scrolls to reveal
+   the rest, then eases back when the mouse leaves — instead of the tile
+   growing taller to fit a wrapped path. */
+function attachLocationScroll(el){
+  if(!el) return;
+  const inner = el.querySelector('.loc-inner');
+  if(!inner) return;
+  el.addEventListener('mouseenter', ()=>{
+    const overflow = inner.scrollWidth - el.clientWidth;
+    if(overflow <= 0) return;
+    const dur = Math.max(1.2, Math.min(6, overflow / 40));
+    inner.style.transitionDuration = dur + 's';
+    inner.style.transform = 'translateX(-' + overflow + 'px)';
+  });
+  el.addEventListener('mouseleave', ()=>{
+    inner.style.transitionDuration = '0.5s';
+    inner.style.transform = 'translateX(0)';
+  });
+}
+
 function renderCardTile(c, list, cardsInView, onOpen, opts){
   const openFn = onOpen || (()=>openCardPreview(c));
   const div = document.createElement('div');
@@ -1867,7 +1890,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
         </div>
       </div>
     </div>
-    ${opts && opts.locationPath ? `<div class="tile-sub">${opts.locationPath}</div>` : ''}
+    ${opts && opts.locationPath ? `<div class="tile-sub tile-location"><span class="loc-inner">${opts.locationPath}</span></div>` : ''}
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
     <div class="del-x">✕</div>
   `;
@@ -1891,6 +1914,8 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); deleteCardById(c.id); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteCardById(c.id); };
+
+  attachLocationScroll(div.querySelector('.tile-location'));
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
   div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
