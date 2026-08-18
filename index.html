@@ -221,7 +221,8 @@ body.bulk-edit .del-x{display:flex}
 .page-fade{animation:pageFadeIn .28s ease both}
 .tile-enter{animation:pageFadeIn .3s ease both}
 .tile{transition:transform .22s cubic-bezier(.4,0,.2,1)}
-.tile.touch-dragging{opacity:0;transition:none}
+.tile.touch-dragging{background:transparent;box-shadow:none;border:2px dashed #cbb4c6;transition:none}
+.tile.touch-dragging>*{visibility:hidden}
 .touch-drag-ghost{position:fixed;pointer-events:none;z-index:9999;margin:0;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 30px rgba(122,107,118,.4);border-radius:14px;opacity:.96;transition:transform .12s ease}
 body.no-scroll{overflow:hidden;touch-action:none}
 @keyframes jiggle{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
@@ -1567,31 +1568,7 @@ function saveCustomOrderFromDom(list, cards){
   save();
 }
 
-/* Re-renders the grid but animates tiles sliding from their old position to
-   their new one (FLIP technique) — mimics how mobile home-screen icons shift
-   out of the way while you drag one around. */
-function renderExplorerAnimated(){
-  const grid = document.getElementById('explorer-grid');
-  const prevRects = new Map();
-  grid.querySelectorAll('.tile[data-key]').forEach(el=>{
-    prevRects.set(el.dataset.key, el.getBoundingClientRect());
-  });
-  renderExplorer();
-  grid.querySelectorAll('.tile[data-key]').forEach(el=>{
-    const prev = prevRects.get(el.dataset.key);
-    if(!prev) return;
-    const next = el.getBoundingClientRect();
-    const dx = prev.left-next.left, dy = prev.top-next.top;
-    if(dx || dy){
-      el.style.transition = 'none';
-      el.style.transform = `translate(${dx}px,${dy}px)`;
-      requestAnimationFrame(()=>{
-        el.style.transition = '';
-        el.style.transform = '';
-      });
-    }
-  });
-}
+
 /* Called continuously while a drag is hovering over a new tile (mouse dragover
    or touch-drag hit-testing). Live-reorders the grid so tiles shuffle out of
    the way in real time, instead of showing a static drop-line indicator. */
@@ -1807,12 +1784,13 @@ function renderFolderTile(f, list, cardsInView){
 
   // drag & drop (mouse) — tiles live-shuffle as you hover, like a phone home screen
   div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
-  div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
+  div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
   div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'folder', f.id); });
   div.addEventListener('drop', (e)=>{
     e.preventDefault();
     if(!dragged) return;
     handleDragHover(list, cardsInView, 'folder', f.id);
+    commitLiveOrder();
     if(dragged.type==='card'){
       const isSameView = (cardsInView||[]).some(x=>x.id===dragged.id);
       if(!isSameView){
@@ -1921,13 +1899,14 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   attachLocationScroll(div.querySelector('.tile-location'));
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
-  div.addEventListener('dragend', ()=>{ dragged=null; dragHoverKey=null; renderExplorer(); });
+  div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
   if(list){
     div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'card', c.id); });
     div.addEventListener('drop', (e)=>{
       e.preventDefault();
       if(!dragged) return;
       handleDragHover(list, cardsInView, 'card', c.id);
+      commitLiveOrder();
       dragged=null; dragHoverKey=null;
     });
     attachTouchDrag(div, 'card', c.id, list, cardsInView);
@@ -2225,6 +2204,7 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
     document.body.classList.remove('no-scroll');
     if(ghost){ ghost.remove(); ghost=null; }
     if(onRelease) onRelease();
+    commitLiveOrder();
     dragged=null; dragHoverKey=null;
     renderExplorer();
   };
@@ -2280,29 +2260,77 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
 }
 
 /* Generic reorder used when dragging a folder or card tile onto another tile
-   within the SAME folder view (combined folders+cards custom order). */
-function reorderWithinView(list, cardsInView, fromItem, toItem){
-  cardsInView = cardsInView || [];
+   within the SAME folder view (combined folders+cards custom order).
+   Builds/mutates an in-memory order for the duration of the drag — nothing
+   is saved or fully re-rendered until the drag is released (see
+   commitLiveOrder), so hovering over tiles is cheap and just slides the
+   existing DOM nodes around instead of rebuilding the grid. */
+let liveOrder = null, liveOrderKey = null;
+function ensureLiveOrder(list, cardsInView){
+  const key = contextKey();
+  if(liveOrder && liveOrderKey===key) return liveOrder;
   let order = [
     ...list.map(f=>({type:'folder', id:f.id})),
-    ...cardsInView.map(c=>({type:'card', id:c.id}))
+    ...(cardsInView||[]).map(c=>({type:'card', id:c.id}))
   ];
-  const existing = DATA.viewOrders[contextKey()];
+  const existing = DATA.viewOrders[key];
   if(existing && existing.length){
-    // respect the currently-applied custom order as the starting point
     const known = new Set(order.map(o=>o.type+':'+o.id));
     const ordered = existing.filter(o=>known.has(o.type+':'+o.id));
     const missing = order.filter(o=>!existing.some(e=>e.type===o.type&&e.id===o.id));
     order = [...ordered, ...missing];
   }
+  liveOrder = order; liveOrderKey = key;
+  return liveOrder;
+}
+function commitLiveOrder(){
+  if(liveOrder && liveOrderKey){ DATA.viewOrders[liveOrderKey] = liveOrder; save(); }
+  liveOrder = null; liveOrderKey = null;
+}
+function discardLiveOrder(){ liveOrder = null; liveOrderKey = null; }
+
+function reorderWithinView(list, cardsInView, fromItem, toItem){
+  const order = ensureLiveOrder(list, cardsInView);
   const fromIdx = order.findIndex(o=>o.type===fromItem.type && o.id===fromItem.id);
   const toIdx = order.findIndex(o=>o.type===toItem.type && o.id===toItem.id);
   if(fromIdx<0 || toIdx<0) return;
   const [moved] = order.splice(fromIdx,1);
   order.splice(toIdx,0,moved);
-  DATA.viewOrders[contextKey()] = order;
-  save(); renderExplorerAnimated();
+  livePreviewReorderDOM(order);
 }
+
+/* Physically moves the already-rendered tile elements into their new order
+   (no rebuild, no image/listener recreation) and FLIPs them from their old
+   position to the new one — this is what makes tiles slide out of the way
+   live while you drag, like rearranging a phone home screen. */
+function livePreviewReorderDOM(order){
+  const grid = document.getElementById('explorer-grid');
+  if(!grid) return;
+  const prevRects = new Map(), elByKey = new Map();
+  grid.querySelectorAll(':scope > .tile[data-key]').forEach(el=>{
+    prevRects.set(el.dataset.key, el.getBoundingClientRect());
+    elByKey.set(el.dataset.key, el);
+  });
+  order.forEach(o=>{
+    const el = elByKey.get(o.type+':'+o.id);
+    if(el) grid.appendChild(el);
+  });
+  grid.querySelectorAll(':scope > .tile[data-key]').forEach(el=>{
+    const prev = prevRects.get(el.dataset.key);
+    if(!prev) return;
+    const next = el.getBoundingClientRect();
+    const dx = prev.left-next.left, dy = prev.top-next.top;
+    if(dx || dy){
+      el.style.transition = 'none';
+      el.style.transform = `translate(${dx}px,${dy}px)`;
+      requestAnimationFrame(()=>{
+        el.style.transition = '';
+        el.style.transform = '';
+      });
+    }
+  });
+}
+
 
 function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—'; }
 
