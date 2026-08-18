@@ -1780,7 +1780,7 @@ function renderFolderTile(f, list, cardsInView){
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
 
   // drag & drop (mouse) — tiles live-shuffle as you hover, like a phone home screen
-  div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
+  div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; div.classList.add('touch-dragging'); });
   div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
   div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'folder', f.id); });
   div.addEventListener('drop', (e)=>{
@@ -1895,7 +1895,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
 
   attachLocationScroll(div.querySelector('.tile-location'));
 
-  div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; });
+  div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; div.classList.add('touch-dragging'); });
   div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
   if(list){
     div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'card', c.id); });
