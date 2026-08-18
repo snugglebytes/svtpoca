@@ -83,7 +83,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .tile-title-row .tile-title{margin-top:0;padding:0}
 .menu-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#f8f3fa;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;line-height:1;color:var(--text)}
 .menu-dot:active{transform:scale(.92)}
-.tile-title{font-size:13px;margin-top:4px;font-weight:600;overflow-wrap:break-word;word-break:break-word;min-width:0;cursor:pointer;transition:opacity .12s ease}
+.tile-title{font-size:13px;margin-top:4px;font-weight:600;overflow-wrap:break-word;word-break:break-word;min-width:0;cursor:pointer;transition:opacity .12s ease;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tile-title:active{opacity:.6}
 .tile-sub{font-size:11px;color:#a493a0;padding:0 8px}
 .tile-location{overflow:hidden;white-space:nowrap;position:relative}
@@ -372,7 +372,7 @@ nav>div:active{background:#f8f3fa}
 .card-picker-item{cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
 .card-picker-item::before{content:'';display:block;padding-top:150%}
 .card-picker-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.card-picker-item .cpi-name{position:absolute;left:0;right:0;bottom:0;background:rgba(50,35,48,.72);color:#fff;font-size:9px;padding:2px 4px;line-height:1.2;max-height:2.4em;overflow:hidden}
+.card-picker-item .cpi-name{position:absolute;left:0;right:0;bottom:0;background:rgba(50,35,48,.72);color:#fff;font-size:9px;padding:2px 4px;line-height:1.2;max-height:2.4em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-picker-item::after{content:'';position:absolute;inset:0;pointer-events:none}
 .card-picker-item.st-wishlist::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
 .card-picker-item.st-stbo::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
@@ -1742,7 +1742,7 @@ function renderFolderTile(f, list, cardsInView){
   const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
   div.innerHTML = `
     <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : ''}</div>
-    <div class="tile-title-row"><div class="tile-title">${f.title}</div>
+    <div class="tile-title-row"><div class="tile-title" title="${escAttr(f.title)}">${f.title}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Folder options">⋯</div>
         <div class="tile-menu hidden">
@@ -1858,7 +1858,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
     <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
-    <div class="tile-title-row"><div class="tile-title">${c.name||'Untitled'}</div>
+    <div class="tile-title-row"><div class="tile-title" title="${escAttr(c.name||'Untitled')}">${c.name||'Untitled'}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
         <div class="tile-menu hidden">
@@ -2330,6 +2330,8 @@ function livePreviewReorderDOM(order){
 
 
 function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—'; }
+/* Safely embeds a name/title inside an HTML attribute (e.g. title="..." tooltips). */
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
 /* ================= FAB ================= */
 function toggleFabMenu(){ document.getElementById('fab-menu').classList.toggle('hidden'); }
@@ -3585,7 +3587,7 @@ function renderCardPickerList(){
   cards.forEach(c=>{
     const item = document.createElement('div');
     item.className = 'card-picker-item' + (c.status==='wishlist' ? ' st-wishlist' : c.status==='stbo' ? ' st-stbo' : '');
-    item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name">${c.name||'Untitled'}</div>`;
+    item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name" title="${escAttr(c.name||'Untitled')}">${c.name||'Untitled'}</div>`;
     item.onclick = ()=>{
       const b = DATA.binders.find(x=>x.id===cardPickerTarget.binderId);
       if(b){ b.slots[cardPickerTarget.slotIndex] = c.id; b.updatedAt = Date.now(); save(); }
@@ -4053,7 +4055,7 @@ function renderSrFolders(){
   srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section,trail})=>{
     const div = document.createElement('div');
     div.className='tile folder';
-    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:''}</div><div class="tile-title">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
+    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:''}</div><div class="tile-title" title="${escAttr(f.title)}">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
     if(trail && trail.length){
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'folder-pills';
