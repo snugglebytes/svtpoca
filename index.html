@@ -2125,9 +2125,41 @@ function confirmMove(){
    pick it up, then move a finger to shuffle it into place — same idea as
    rearranging apps on a phone's home screen. */
 const TOUCH_HOLD_MS = 350, TOUCH_MOVE_CANCEL_PX = 10;
+const EDGE_PAGE_MARGIN = 28, EDGE_PAGE_HOLD_MS = 550;
+
+/* Same edge-paging behavior for desktop mouse drag: drag a tile past the
+   left/right edge of the grid and, after a beat, the page flips — mirrors
+   the touch version below so mouse and touch drags feel the same. */
+let mouseEdgeZone = null, mouseEdgeTimer = null;
+function clearMouseEdgeTimer(){ if(mouseEdgeTimer){ clearInterval(mouseEdgeTimer); mouseEdgeTimer=null; } mouseEdgeZone=null; }
+document.addEventListener('dragover', (e)=>{
+  if(!dragged) return;
+  const grid = document.getElementById('explorer-grid');
+  if(!grid) return;
+  const r = grid.getBoundingClientRect();
+  let zone = null;
+  if(e.clientX < r.left - EDGE_PAGE_MARGIN || e.clientX <= 0) zone = 'prev';
+  else if(e.clientX > r.right + EDGE_PAGE_MARGIN || e.clientX >= window.innerWidth) zone = 'next';
+  if(zone === mouseEdgeZone) return;
+  clearMouseEdgeTimer();
+  mouseEdgeZone = zone;
+  if(!zone) return;
+  const fire = ()=>{
+    if(!dragged) { clearMouseEdgeTimer(); return; }
+    const btn = document.getElementById(zone==='prev' ? 'pg-nav-prev' : 'pg-nav-next');
+    if(btn && !btn.disabled) btn.onclick && btn.onclick();
+  };
+  fire();
+  mouseEdgeTimer = setInterval(fire, EDGE_PAGE_HOLD_MS);
+});
+document.addEventListener('dragend', clearMouseEdgeTimer);
+document.addEventListener('drop', clearMouseEdgeTimer);
+
 function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
   let timer=null, startX=0, startY=0, primed=false, active=false, ghost=null;
+  let edgeZone=null, edgeTimer=null;
   const clearTimer = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+  const clearEdgeTimer = ()=>{ if(edgeTimer){ clearInterval(edgeTimer); edgeTimer=null; } edgeZone=null; };
 
   el.addEventListener('touchstart', (e)=>{
     if(e.touches.length!==1) return;
@@ -2147,6 +2179,8 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
     }
     e.preventDefault();
     moveGhost(t.clientX, t.clientY);
+    checkEdgePaging(t.clientX, t.clientY);
+    if(edgeZone) return; // don't reorder tiles while hovering the page-turn edge
     const under = document.elementFromPoint(t.clientX, t.clientY);
     const tile = under && under.closest ? under.closest('.tile[data-key]') : null;
     if(tile && tile.dataset.key !== (type+':'+id)){
@@ -2157,6 +2191,7 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
 
   const finish = ()=>{
     primed=false; clearTimer();
+    clearEdgeTimer();
     if(!active) return;
     active=false;
     document.body.classList.remove('no-scroll');
@@ -2165,6 +2200,32 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
     dragged=null; dragHoverKey=null;
     renderExplorer();
   };
+
+  /* iOS-style edge paging: hold the dragged tile past the left/right edge of
+     the grid and, after a beat, the view flips to the previous/next page —
+     same idea as dragging an app icon to the edge of a Springboard page.
+     Keeps flipping on repeat while held there. */
+  function checkEdgePaging(x, y){
+    const grid = document.getElementById('explorer-grid');
+    if(!grid){ clearEdgeTimer(); return; }
+    const r = grid.getBoundingClientRect();
+    let zone = null;
+    if(x < r.left - EDGE_PAGE_MARGIN || x <= 0) zone = 'prev';
+    else if(x > r.right + EDGE_PAGE_MARGIN || x >= window.innerWidth) zone = 'next';
+    if(zone === edgeZone) return;
+    clearEdgeTimer();
+    edgeZone = zone;
+    if(!zone) return;
+    const fire = ()=>{
+      const btn = document.getElementById(zone==='prev' ? 'pg-nav-prev' : 'pg-nav-next');
+      if(btn && !btn.disabled){
+        if(navigator.vibrate) navigator.vibrate(8);
+        btn.onclick && btn.onclick();
+      }
+    };
+    fire();
+    edgeTimer = setInterval(fire, EDGE_PAGE_HOLD_MS);
+  }
   el.addEventListener('touchend', finish);
   el.addEventListener('touchcancel', finish);
 
