@@ -255,6 +255,12 @@ nav>div:active{background:#f8f3fa}
 .preview-image-wrap img{position:absolute;inset:0;width:100%;height:100%;border-radius:0;object-fit:cover;box-shadow:none;display:block}
 .preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
 .preview-meta{font-size:12px;color:var(--text);padding:0 14px 14px}
+/* folder photo template — shown large, uncropped, at native resolution */
+.template-modal{max-width:640px}
+.template-image-wrap{position:relative;border-radius:14px;overflow:hidden;background:#f5eef2;display:flex;align-items:center;justify-content:center;margin-top:4px}
+.template-image-wrap img{display:block;width:100%;max-height:75vh;object-fit:contain;border-radius:14px}
+.template-actions{display:flex;gap:8px;margin-top:12px}
+.template-actions .btn{flex:1}
 .field{margin-bottom:12px}
 .field-row{display:flex;gap:12px;margin-bottom:12px}
 .field-row .field{flex:1;min-width:0;margin-bottom:0}
@@ -484,7 +490,6 @@ nav>div:active{background:#f8f3fa}
       <button class="btn small ghost" id="bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
     </div>
     <div class="toolbar-center" id="explorer-toolbar-center">
-      <button class="btn small ghost" id="save-order-template-btn" onclick="saveOrderAsTemplate()">Save order as template</button>
       <button class="btn small ghost" id="templates-btn" onclick="openTemplatesModal()">Templates</button>
     </div>
     <div class="toolbar-right pg-nav" id="pg-nav-bottom"></div>
@@ -881,24 +886,29 @@ nav>div:active{background:#f8f3fa}
   </div>
 </div>
 
-<!-- SAVE TEMPLATE MODAL -->
-<div id="save-template-modal" class="modal-bg hidden">
-  <div class="modal">
-    <button class="close-x" onclick="closeModal('save-template-modal')">✕</button>
-    <div class="section-title">Save order as template</div>
-    <div class="field"><label>Template name</label><input id="template-name-input" placeholder="e.g. My display order"></div>
-    <div class="modal-actions">
-      <button class="btn alt" onclick="confirmSaveTemplate()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- TEMPLATES LIST MODAL -->
+<!-- FOLDER PHOTO TEMPLATE MODAL -->
 <div id="templates-modal" class="modal-bg hidden">
-  <div class="modal">
+  <div class="modal template-modal">
     <button class="close-x" onclick="closeModal('templates-modal')">✕</button>
-    <div class="section-title">Templates for this view</div>
-    <div id="templates-list"></div>
+    <div class="section-title" id="templates-modal-title">Photo Template</div>
+    <p class="import-choice-note" style="margin-top:-8px">A reference photo of the photocards for this folder, shown at its full uploaded resolution.</p>
+
+    <div id="folder-template-empty">
+      <div class="dropzone" id="folder-template-dropzone">
+        <div class="dropzone-icon">🖼️</div>
+        <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
+        <input type="file" id="folder-template-file" accept="image/*" class="hidden" onchange="onFolderTemplateFileChosen(event)">
+      </div>
+    </div>
+
+    <div id="folder-template-preview" class="hidden">
+      <div class="template-image-wrap"><img id="folder-template-img" alt="Folder photo template"></div>
+      <div class="template-actions">
+        <button class="btn small ghost" onclick="document.getElementById('folder-template-replace-file').click()">Replace</button>
+        <button class="btn small danger" onclick="removeFolderTemplate()">Remove</button>
+      </div>
+      <input type="file" id="folder-template-replace-file" accept="image/*" class="hidden" onchange="onFolderTemplateFileChosen(event)">
+    </div>
   </div>
 </div>
 
@@ -952,7 +962,7 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeModal('clear-data-modal')">✕</button>
     <div class="section-title">⚠️ Clear all data</div>
-    <p style="font-size:13px">This will permanently delete <b>everything</b> in your tracker — all folders, photocards, tags, wishlist/STBO/duplicate status, and templates.</p>
+    <p style="font-size:13px">This will permanently delete <b>everything</b> in your tracker — all folders, photocards, tags, wishlist/STBO/duplicate status, and photo templates.</p>
     <p style="font-size:13px;color:#c0596f"><b>This can't be undone.</b> If you want to keep a copy, tap Export first.</p>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn small ghost" style="flex:1" onclick="closeModal('clear-data-modal')">Cancel</button>
@@ -977,8 +987,10 @@ DATA = {
   tags: [{id,name,createdAt}],                // sortable, order = default display order
   nodes: { albums:[Folder], nonalbum:[Folder], members:[Folder] },
   cards: [{id,image,sourceUrl,name,tags:[tagId],status,duplicate,price}],
-  viewOrders: { [contextKey]: [{type:'folder'|'card', id}] },   // custom drag order per folder-view
-  templates: [{id,name,contextKey,order:[{type,id}]}]           // saved/named orders, editable
+  viewOrders: { [contextKey]: [{type:'folder'|'card', id}] },   // custom drag order per folder-view (remembered automatically)
+  lastSortMode: '',                                              // last-used sort option for the folder/explorer view
+  lastListsSortMode: 'date-uploaded',                            // last-used sort option for the quick-lists view
+  folderTemplates: { [contextKey]: {image, updatedAt} }          // one uploaded reference photo per folder view
 }
 Folder = {id,title,thumb,linkedTags:[tagId],fixed,children:[Folder]}
 ================================================= */
@@ -1010,7 +1022,9 @@ function defaultData(){
     nodes: { albums:[sampleFolder], nonalbum:[], members:memberFolders },
     cards: [sampleCard],
     viewOrders: {},
-    templates: [],
+    lastSortMode: '',
+    lastListsSortMode: 'date-uploaded',
+    folderTemplates: {},
     binders: [],
     pageFlipEnabled: false
   };
@@ -1055,7 +1069,10 @@ function idbSet(key,value){
 let DATA = defaultData(); // synchronous placeholder; replaced once loadData() resolves, see initApp() below
 function applyMigrations(d){
     if(!d.viewOrders) d.viewOrders = {};
-    if(!d.templates) d.templates = [];
+    if(typeof d.lastSortMode !== 'string') d.lastSortMode = '';
+    if(typeof d.lastListsSortMode !== 'string') d.lastListsSortMode = 'date-uploaded';
+    if(!d.folderTemplates) d.folderTemplates = {};
+    delete d.templates; // old "save order as template" feature, replaced by remembered drag order + folder photo templates
     if(!d.binders) d.binders = [];
     if(typeof d.pageFlipEnabled !== 'boolean') d.pageFlipEnabled = false;
     let base = Date.now() - d.tags.length*1000;
@@ -1167,7 +1184,8 @@ function importData(event){
       return;
     }
     if(!d.viewOrders) d.viewOrders = {};
-    if(!d.templates) d.templates = [];
+    if(!d.folderTemplates) d.folderTemplates = {};
+    delete d.templates;
     if(!d.binders) d.binders = [];
     pendingImportData = d;
     function countFoldersDeep(list){ return (list||[]).reduce((n,f)=>n+1+countFoldersDeep(f.children||[]),0); }
@@ -1351,7 +1369,8 @@ function switchSection(sec){
   currentPath = [];
   miniSearchQuery = '';
   sortMemberFilter = '';
-  sortMode = sec==='allcards' ? 'date-uploaded' : '';
+  // Remember the last sort selection instead of resetting it every time.
+  sortMode = DATA.lastSortMode || (sec==='allcards' ? 'date-uploaded' : '');
   const sortSel = document.getElementById('sort-mode-select');
   if(sortSel) sortSel.value = sortMode;
   const miniInput = document.getElementById('mini-search-input');
@@ -1510,6 +1529,8 @@ function clearMiniSearch(){
 }
 function onSortModeChange(){
   sortMode = document.getElementById('sort-mode-select').value;
+  DATA.lastSortMode = sortMode;
+  save();
   currentPage = 1;
   renderExplorer();
 }
@@ -3730,73 +3751,82 @@ function showInfoModal(title, text){
   document.getElementById('info-modal').classList.remove('hidden');
 }
 
-/* ================= REORDER TEMPLATES ================= */
-function saveOrderAsTemplate(){
-  document.getElementById('template-name-input').value = '';
-  document.getElementById('save-template-modal').classList.remove('hidden');
-}
-function confirmSaveTemplate(){
-  const name = document.getElementById('template-name-input').value.trim();
-  if(!name){ alert('Give the template a name.'); return; }
-  const list = findFolderList(currentPath);
+/* ================= FOLDER PHOTO TEMPLATES =================
+   One reference photo per folder view (keyed the same way as the custom
+   drag order), uploaded at its full resolution — no cropping — so it's
+   viewable large and sharp. */
+function folderTemplateLabel(){
   const currentFolder = currentPath.length ? findFolder(currentPath) : null;
-  const cardsInView = currentFolder && currentFolder.linkedTags && currentFolder.linkedTags.length ? cardsForTags(currentFolder.linkedTags) : [];
-  const key = contextKey();
-  let order = DATA.viewOrders[key];
-  if(!order || !order.length){
-    order = [...list.map(f=>({type:'folder', id:f.id})), ...cardsInView.map(c=>({type:'card', id:c.id}))];
-  }
-  const existing = DATA.templates.find(t=>t.name===name && t.contextKey===key);
-  if(existing){ existing.order = order; }
-  else { DATA.templates.push({id:'tpl_'+Date.now(), name, contextKey:key, order}); }
-  save();
-  closeModal('save-template-modal');
-  alert('Template saved — find it anytime via Templates.');
+  return currentFolder ? currentFolder.title : 'this view';
 }
 function openTemplatesModal(){
-  renderTemplatesList();
+  document.getElementById('templates-modal-title').textContent = 'Photo Template — ' + folderTemplateLabel();
+  renderFolderTemplateModal();
   document.getElementById('templates-modal').classList.remove('hidden');
 }
-function renderTemplatesList(){
-  const wrap = document.getElementById('templates-list');
+function renderFolderTemplateModal(){
   const key = contextKey();
-  const list = DATA.templates.filter(t=>t.contextKey===key);
-  wrap.innerHTML = '';
-  if(list.length===0){
-    wrap.innerHTML = '<div class="empty-note">No templates saved for this folder yet.</div>';
-    return;
+  const tpl = DATA.folderTemplates[key];
+  const emptyEl = document.getElementById('folder-template-empty');
+  const previewEl = document.getElementById('folder-template-preview');
+  if(tpl && tpl.image){
+    emptyEl.classList.add('hidden');
+    previewEl.classList.remove('hidden');
+    document.getElementById('folder-template-img').src = tpl.image;
+  } else {
+    emptyEl.classList.remove('hidden');
+    previewEl.classList.add('hidden');
   }
-  list.forEach(t=>{
-    const row = document.createElement('div');
-    row.className = 'tpl-row';
-    row.innerHTML = `<span class="tn">${t.name}</span><button>Apply</button><button>Update</button><button>Delete</button>`;
-    const [nameEl, applyBtn, updateBtn, delBtn] = row.querySelectorAll('.tn, button');
-    applyBtn.onclick = ()=>applyTemplate(t.id);
-    updateBtn.onclick = ()=>updateTemplate(t.id);
-    delBtn.onclick = ()=>deleteTemplate(t.id);
-    wrap.appendChild(row);
+}
+function readFolderTemplateFile(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = ()=>reject(reader.error);
+    reader.readAsDataURL(file);
   });
 }
-function applyTemplate(id){
-  const t = DATA.templates.find(x=>x.id===id);
-  if(!t) return;
-  DATA.viewOrders[t.contextKey] = t.order;
-  save(); closeModal('templates-modal'); refreshCurrentView();
+async function onFolderTemplateFileChosen(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
+  try{
+    // Uploaded as-is (no crop/downscale) so it stays at its best available resolution for viewing.
+    const dataUrl = await readFolderTemplateFile(file);
+    DATA.folderTemplates[contextKey()] = { image: dataUrl, updatedAt: Date.now() };
+    save();
+    renderFolderTemplateModal();
+  }catch(e){
+    alert("Couldn't read that image file.");
+  }
 }
-function updateTemplate(id){
-  const t = DATA.templates.find(x=>x.id===id);
-  if(!t) return;
-  const order = DATA.viewOrders[contextKey()];
-  if(!order || !order.length){ alert('Drag items into the order you want first, then update the template.'); return; }
-  t.order = order;
+function removeFolderTemplate(){
+  if(!confirm('Remove the photo template for this folder?')) return;
+  delete DATA.folderTemplates[contextKey()];
   save();
-  alert('Template updated.');
+  renderFolderTemplateModal();
 }
-function deleteTemplate(id){
-  if(!confirm('Delete this template?')) return;
-  DATA.templates = DATA.templates.filter(t=>t.id!==id);
-  save(); renderTemplatesList();
+function initFolderTemplateDropzone(){
+  const zone = document.getElementById('folder-template-dropzone');
+  const input = document.getElementById('folder-template-file');
+  if(!zone || !input) return;
+  zone.addEventListener('click', ()=> input.click());
+  ['dragenter','dragover'].forEach(evt=>{
+    zone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover'); });
+  });
+  ['dragleave','dragend'].forEach(evt=>{
+    zone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover'); });
+  });
+  zone.addEventListener('drop', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(!file) return;
+    onFolderTemplateFileChosen({target:{files:[file], value:''}});
+  });
 }
+initFolderTemplateDropzone();
 
 /* ================= STATS ================= */
 function showStats(){
@@ -3907,6 +3937,8 @@ function onListsMiniSearch(){
 }
 function onListsSortModeChange(){
   listsSortMode = document.getElementById('lists-sort-mode-select').value;
+  DATA.lastListsSortMode = listsSortMode;
+  save();
   listsPage = 1;
   renderListsPanel();
 }
@@ -4378,6 +4410,7 @@ initDropzone('binder-dropzone','binder-file','binder');
   }
   document.getElementById('per-page-select').value = perPage;
   document.getElementById('lists-per-page-select').value = listsPerPage;
+  listsSortMode = DATA.lastListsSortMode || 'date-uploaded';
   document.getElementById('lists-sort-mode-select').value = listsSortMode;
   switchSection('albums');
   renderRecentFiles();
