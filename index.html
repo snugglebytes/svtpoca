@@ -69,7 +69,8 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
   nav>div{padding:10px 12px}
   .wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 }
-.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06);min-width:0}
+.tile{background:#fff;border-radius:14px;border:2px solid var(--line);padding:0 0 8px;cursor:pointer;position:relative;box-shadow:0 2px 8px rgba(122,107,118,.06);min-width:0;z-index:1}
+.tile.menu-open{z-index:30}
 .tile.folder .thumb{border-radius:12px 12px 0 0}
 .tile.card-tile .thumb{border-radius:12px 12px 10px 10px}
 .thumb{position:relative;background:#f6f2fb;border:none;font-size:11px;text-align:center;overflow:hidden;transition:transform .15s ease}
@@ -1883,13 +1884,13 @@ function renderFolderTile(f, list, cardsInView){
     currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
   };
   const menuEl = div.querySelector('.tile-menu');
-  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.toggle('hidden'); };
-  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.remove('hidden'); });
-  menuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openEditFolder(f); };
-  menuEl.querySelector('.tm-duplicate').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); duplicateFolder(f, list); };
-  menuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openMoveModal('folder', f.id); };
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(menuEl); toggleTileMenu(menuEl); };
+  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(menuEl); openTileMenu(menuEl); });
+  menuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); openEditFolder(f); };
+  menuEl.querySelector('.tm-duplicate').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); duplicateFolder(f, list); };
+  menuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); openMoveModal('folder', f.id); };
   const tmDelete = menuEl.querySelector('.tm-delete');
-  if(tmDelete) tmDelete.onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); deleteFolderNode(f); };
+  if(tmDelete) tmDelete.onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); deleteFolderNode(f); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
 
@@ -2000,11 +2001,11 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
     openFn();
   };
   const cardMenuEl = div.querySelector('.tile-menu');
-  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.toggle('hidden'); };
-  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.remove('hidden'); });
-  cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openCardModal(c); };
-  cardMenuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openMoveModal('card', c.id); };
-  cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); deleteCardById(c.id); };
+  div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); toggleTileMenu(cardMenuEl); };
+  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(cardMenuEl); openTileMenu(cardMenuEl); });
+  cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); openCardModal(c); };
+  cardMenuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); openMoveModal('card', c.id); };
+  cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); deleteCardById(c.id); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteCardById(c.id); };
 
@@ -2026,11 +2027,33 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   return div;
 }
 
-/* ---- tile dropdown menus (Edit / Duplicate / Move / Delete) ---- */
+/* ---- tile dropdown menus (Edit / Duplicate / Move / Delete) ----
+   The menu itself has a high z-index, but that alone doesn't help once it
+   overflows past the bottom of its own grid cell — the *next row* of tiles
+   still paints on top of it, since each .tile is its own grid item and
+   grid items stack by source order when z-index is auto. Bumping the open
+   tile's z-index (not just the menu's) lifts the whole tile — and the menu
+   inside it — above every row that follows. */
 function closeAllTileMenus(except){
-  document.querySelectorAll('.tile-menu').forEach(m=>{ if(m!==except) m.classList.add('hidden'); });
+  document.querySelectorAll('.tile-menu').forEach(m=>{
+    if(m===except) return;
+    m.classList.add('hidden');
+    const t = m.closest('.tile');
+    if(t) t.classList.remove('menu-open');
+  });
 }
 document.addEventListener('click', ()=>closeAllTileMenus());
+function openTileMenu(menuEl){
+  menuEl.classList.remove('hidden');
+  const t = menuEl.closest('.tile');
+  if(t) t.classList.add('menu-open');
+}
+function toggleTileMenu(menuEl){
+  const willOpen = menuEl.classList.contains('hidden');
+  menuEl.classList.toggle('hidden');
+  const t = menuEl.closest('.tile');
+  if(t) t.classList.toggle('menu-open', willOpen);
+}
 
 function refreshCurrentView(){
   renderExplorer();
