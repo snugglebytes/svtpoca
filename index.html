@@ -280,9 +280,10 @@ nav>div:active{background:#f8f3fa}
 .doodle-tools{display:flex;gap:6px}
 .doodle-tool-btn{width:32px;height:32px;border-radius:9px;border:2px solid var(--line);background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .doodle-tool-btn.active{background:var(--accent);border-color:#e3a9c2}
-.doodle-colors{display:flex;gap:5px}
-.doodle-color{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
-.doodle-color.active{border-color:#8a6b7c;box-shadow:0 0 0 2px #fff inset}
+.doodle-shapes{display:flex;gap:5px}
+.doodle-shape-btn{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.doodle-shape-btn.active{background:var(--accent);border-color:#e3a9c2}
+.doodle-colors{display:flex;align-items:center;gap:8px}
 #doodle-size{flex:1;min-width:80px}
 .doodle-actions{display:flex;gap:8px;margin-top:12px}
 .doodle-actions .btn{flex:1}
@@ -932,7 +933,7 @@ nav>div:active{background:#f8f3fa}
         <div class="template-zoom-hint">Tap to zoom</div>
       </div>
       <div class="template-actions">
-        <button class="btn small ghost" onclick="openDoodleEditor()">Doodle</button>
+        <button class="btn small ghost" onclick="openDoodleEditor()" aria-label="Doodle" title="Doodle">✏︎</button>
         <button class="btn small ghost" onclick="document.getElementById('folder-template-replace-file').click()">Replace</button>
         <button class="btn small danger" onclick="removeFolderTemplate()">Remove</button>
       </div>
@@ -945,26 +946,27 @@ nav>div:active{background:#f8f3fa}
 <div id="doodle-modal" class="modal-bg hidden">
   <div class="modal doodle-modal">
     <button class="close-x" onclick="closeDoodleEditor()">✕</button>
-    <div class="section-title">Doodle</div>
+    <div class="section-title" aria-label="Doodle" title="Doodle">✏︎</div>
     <div class="doodle-canvas-wrap">
       <canvas id="doodle-canvas"></canvas>
     </div>
     <div class="doodle-toolbar">
       <div class="doodle-tools">
         <button type="button" class="doodle-tool-btn active" data-tool="pen" onclick="setDoodleTool('pen')" title="Highlighter pen">🖊️</button>
-        <button type="button" class="doodle-tool-btn" data-tool="diamond" onclick="setDoodleTool('diamond')" title="Diamond sticker">💎</button>
+        <button type="button" class="doodle-tool-btn" data-tool="shape" onclick="setDoodleTool('shape')" title="Shape stamp">⬥</button>
       </div>
-      <div class="doodle-colors" id="doodle-colors">
-        <button type="button" class="doodle-color active" data-color="#fdf3a1" style="background:#fdf3a1" onclick="setDoodleColor('#fdf3a1')" title="Yellow"></button>
-        <button type="button" class="doodle-color" data-color="#ffb3d1" style="background:#ffb3d1" onclick="setDoodleColor('#ffb3d1')" title="Pink"></button>
-        <button type="button" class="doodle-color" data-color="#a8e3ff" style="background:#a8e3ff" onclick="setDoodleColor('#a8e3ff')" title="Blue"></button>
-        <button type="button" class="doodle-color" data-color="#baf5c4" style="background:#baf5c4" onclick="setDoodleColor('#baf5c4')" title="Green"></button>
-        <button type="button" class="doodle-color" data-color="#e2c2ff" style="background:#e2c2ff" onclick="setDoodleColor('#e2c2ff')" title="Purple"></button>
+      <div class="doodle-shapes hidden" id="doodle-shapes">
+        <button type="button" class="doodle-shape-btn active" data-shape="square" onclick="setDoodleShape('square')" title="Square">▢</button>
+        <button type="button" class="doodle-shape-btn" data-shape="diamond" onclick="setDoodleShape('diamond')" title="Diamond">◇</button>
+        <button type="button" class="doodle-shape-btn" data-shape="star" onclick="setDoodleShape('star')" title="Star">☆</button>
+        <button type="button" class="doodle-shape-btn" data-shape="circle" onclick="setDoodleShape('circle')" title="Circle">◯</button>
       </div>
-      <input type="range" id="doodle-size" min="4" max="44" value="16" oninput="onDoodleSizeChange()" title="Brush / sticker size">
+      <div class="doodle-colors" id="doodle-colors"></div>
+      <input type="range" id="doodle-size" min="4" max="44" value="16" oninput="onDoodleSizeChange()" title="Brush / stamp size">
     </div>
     <div class="doodle-actions">
-      <button class="btn small ghost" onclick="undoDoodle()">Undo</button>
+      <button class="btn small ghost" onclick="undoDoodle()" title="Undo (Ctrl+Z)">Undo</button>
+      <button class="btn small ghost" onclick="redoDoodle()" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">Redo</button>
       <button class="btn small ghost" onclick="clearDoodle()">Clear all</button>
       <button class="btn small" onclick="saveDoodle()">Save</button>
     </div>
@@ -4129,8 +4131,9 @@ function resetTemplateZoom(){
   viewport.addEventListener('touchend', ()=>{ tplZoomDrag = null; tplZoomPinch = null; });
 })();
 
-/* ================= DOODLE EDITOR (highlighter pen + diamond stickers on the template) ================= */
-let doodleState = null; // {canvas, ctx, tool, color, size, history:[dataURLs]}
+/* ================= DOODLE EDITOR (highlighter pen + freeform shape stamps on the template) ================= */
+let doodleState = null; // {canvas, ctx, tool, shape, color, size, history:[dataURLs], redoStack:[dataURLs]}
+let doodleLastColor = '#fdf3a1';
 function openDoodleEditor(){
   const entry = getFolderTemplateSlot(false);
   const tpl = entry ? entry[currentTemplateType] : null;
@@ -4145,10 +4148,15 @@ function openDoodleEditor(){
     doodleState = {
       canvas, ctx,
       tool: 'pen',
-      color: (document.querySelector('.doodle-color.active')||{}).dataset ? document.querySelector('.doodle-color.active').dataset.color : '#fdf3a1',
+      shape: 'square',
+      color: doodleLastColor,
       size: parseInt(document.getElementById('doodle-size').value, 10) || 16,
-      history: [canvas.toDataURL()]
+      history: [canvas.toDataURL()],
+      redoStack: []
     };
+    buildDoodleColorPicker(doodleState.color);
+    document.getElementById('doodle-shapes').classList.add('hidden');
+    document.querySelectorAll('.doodle-tool-btn').forEach(b=>b.classList.toggle('active', b.dataset.tool==='pen'));
     document.getElementById('doodle-modal').classList.remove('hidden');
   };
   img.onerror = ()=> alert("Couldn't open that photo for doodling.");
@@ -4158,14 +4166,47 @@ function closeDoodleEditor(){
   document.getElementById('doodle-modal').classList.add('hidden');
   doodleState = null;
 }
+function buildDoodleColorPicker(initial){
+  const row = document.getElementById('doodle-colors');
+  if(!row) return;
+  row.innerHTML = '';
+  const color = /^#[0-9a-f]{6}$/i.test(String(initial)) ? initial : '#fdf3a1';
+  const wrap = document.createElement('label');
+  wrap.className = 'color-picker-swatch';
+  wrap.title = 'Pick a color';
+  wrap.style.background = color;
+  wrap.dataset.color = color;
+  const input = document.createElement('input');
+  input.type = 'color';
+  input.value = color;
+  input.style.cssText = 'opacity:0;width:100%;height:100%;cursor:pointer;position:absolute;inset:0;border:none;padding:0';
+  input.oninput = ()=>{
+    const c = input.value;
+    wrap.style.background = c;
+    wrap.dataset.color = c;
+    hex.textContent = c.toUpperCase();
+    setDoodleColor(c);
+  };
+  wrap.appendChild(input);
+  const hex = document.createElement('span');
+  hex.className = 'color-picker-hex';
+  hex.textContent = color.toUpperCase();
+  row.appendChild(wrap);
+  row.appendChild(hex);
+}
 function setDoodleTool(tool){
   if(!doodleState) return;
   doodleState.tool = tool;
   document.querySelectorAll('.doodle-tool-btn').forEach(b=>b.classList.toggle('active', b.dataset.tool===tool));
+  document.getElementById('doodle-shapes').classList.toggle('hidden', tool!=='shape');
+}
+function setDoodleShape(shape){
+  if(doodleState) doodleState.shape = shape;
+  document.querySelectorAll('.doodle-shape-btn').forEach(b=>b.classList.toggle('active', b.dataset.shape===shape));
 }
 function setDoodleColor(c){
   if(doodleState) doodleState.color = c;
-  document.querySelectorAll('.doodle-color').forEach(b=>b.classList.toggle('active', b.dataset.color===c));
+  doodleLastColor = c;
 }
 function onDoodleSizeChange(){
   if(!doodleState) return;
@@ -4181,26 +4222,36 @@ function doodleCanvasPoint(e){
   const clientY = t ? t.clientY : e.clientY;
   return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
 }
-function drawDiamondSticker(ctx, x, y, size, color){
-  const r = size * 1.7;
+function drawDoodleShapeStamp(ctx, cx, cy, w, h, shape, color){
+  const rw = w/2, rh = h/2;
   ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(Math.PI/4);
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
+  ctx.translate(cx, cy);
   ctx.fillStyle = color;
   ctx.strokeStyle = 'rgba(255,255,255,.9)';
-  ctx.lineWidth = Math.max(2, size*0.12);
+  ctx.lineWidth = Math.max(2, Math.min(w,h)*0.1);
   ctx.beginPath();
-  ctx.rect(-r/2, -r/2, r, r);
+  if(shape==='diamond'){
+    ctx.moveTo(0,-rh); ctx.lineTo(rw,0); ctx.lineTo(0,rh); ctx.lineTo(-rw,0); ctx.closePath();
+  } else if(shape==='circle'){
+    ctx.ellipse(0,0,rw,rh,0,0,Math.PI*2);
+  } else if(shape==='star'){
+    const R = Math.min(rw, rh);
+    const inner = R*0.45;
+    for(let i=0;i<5;i++){
+      const angleOuter = -Math.PI/2 + i*(2*Math.PI/5);
+      const angleInner = angleOuter + Math.PI/5;
+      const xo = Math.cos(angleOuter)*R, yo = Math.sin(angleOuter)*R;
+      const xi = Math.cos(angleInner)*inner, yi = Math.sin(angleInner)*inner;
+      if(i===0) ctx.moveTo(xo,yo); else ctx.lineTo(xo,yo);
+      ctx.lineTo(xi,yi);
+    }
+    ctx.closePath();
+  } else { // square (default)
+    ctx.rect(-rw, -rh, w, h);
+  }
   ctx.fill();
-  ctx.stroke();
-  // little shine accent so it reads as a gem, not just a square
-  ctx.beginPath();
-  ctx.moveTo(-r/2, 0); ctx.lineTo(r/2, 0);
-  ctx.moveTo(0, -r/2); ctx.lineTo(0, r/2);
-  ctx.strokeStyle = 'rgba(255,255,255,.55)';
-  ctx.lineWidth = Math.max(1, size*0.06);
   ctx.stroke();
   ctx.restore();
 }
@@ -4208,6 +4259,7 @@ function pushDoodleHistory(){
   if(!doodleState) return;
   doodleState.history.push(doodleState.canvas.toDataURL());
   if(doodleState.history.length > 25) doodleState.history.shift();
+  doodleState.redoStack = [];
 }
 function restoreDoodleSnapshot(dataUrl){
   const img = new Image();
@@ -4219,14 +4271,22 @@ function restoreDoodleSnapshot(dataUrl){
 }
 function undoDoodle(){
   if(!doodleState || doodleState.history.length < 2) return;
-  doodleState.history.pop();
+  const popped = doodleState.history.pop();
+  doodleState.redoStack.push(popped);
   restoreDoodleSnapshot(doodleState.history[doodleState.history.length-1]);
+}
+function redoDoodle(){
+  if(!doodleState || !doodleState.redoStack.length) return;
+  const snap = doodleState.redoStack.pop();
+  doodleState.history.push(snap);
+  restoreDoodleSnapshot(snap);
 }
 function clearDoodle(){
   if(!doodleState) return;
   if(!confirm('Clear all doodles and go back to the original photo?')) return;
   restoreDoodleSnapshot(doodleState.history[0]);
   doodleState.history = [doodleState.history[0]];
+  doodleState.redoStack = [];
 }
 function saveDoodle(){
   if(!doodleState) return;
@@ -4237,41 +4297,68 @@ function saveDoodle(){
   closeDoodleEditor();
   renderFolderTemplateModal();
 }
+document.addEventListener('keydown', (e)=>{
+  if(!doodleState) return;
+  const modal = document.getElementById('doodle-modal');
+  if(!modal || modal.classList.contains('hidden')) return;
+  const key = e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey) && !e.shiftKey && key==='z'){ e.preventDefault(); undoDoodle(); }
+  else if((e.ctrlKey||e.metaKey) && (key==='y' || (key==='z' && e.shiftKey))){ e.preventDefault(); redoDoodle(); }
+});
 (function initDoodleCanvasEvents(){
   const canvas = document.getElementById('doodle-canvas');
   if(!canvas) return;
   let drawing = false;
+  let shapeStart = null;
+  let shapeBase = null;
   function start(e){
     if(!doodleState) return;
     e.preventDefault();
     const pt = doodleCanvasPoint(e);
-    if(doodleState.tool==='diamond'){
-      drawDiamondSticker(doodleState.ctx, pt.x, pt.y, doodleState.size, doodleState.color);
-      pushDoodleHistory();
+    const ctx = doodleState.ctx;
+    if(doodleState.tool==='shape'){
+      shapeStart = pt;
+      shapeBase = ctx.getImageData(0, 0, doodleState.canvas.width, doodleState.canvas.height);
+      drawDoodleShapeStamp(ctx, pt.x, pt.y, doodleState.size, doodleState.size, doodleState.shape, doodleState.color);
+      drawing = true;
       return;
     }
     drawing = true;
-    const ctx = doodleState.ctx;
     ctx.globalCompositeOperation = 'multiply';
     ctx.globalAlpha = 0.55;
     ctx.strokeStyle = doodleState.color;
     ctx.lineWidth = doodleState.size;
-    ctx.lineCap = 'round';
+    ctx.lineCap = 'square';
     ctx.lineJoin = 'round';
     ctx.beginPath();
     ctx.moveTo(pt.x, pt.y);
   }
   function move(e){
-    if(!drawing || !doodleState || doodleState.tool!=='pen') return;
+    if(!drawing || !doodleState) return;
     e.preventDefault();
     const pt = doodleCanvasPoint(e);
+    if(doodleState.tool==='shape'){
+      if(!shapeStart || !shapeBase) return;
+      const ctx = doodleState.ctx;
+      ctx.putImageData(shapeBase, 0, 0);
+      const w = Math.max(doodleState.size, Math.abs(pt.x - shapeStart.x) * 2);
+      const h = Math.max(doodleState.size, Math.abs(pt.y - shapeStart.y) * 2);
+      drawDoodleShapeStamp(ctx, shapeStart.x, shapeStart.y, w, h, doodleState.shape, doodleState.color);
+      return;
+    }
+    if(doodleState.tool!=='pen') return;
     doodleState.ctx.lineTo(pt.x, pt.y);
     doodleState.ctx.stroke();
   }
   function end(){
     if(drawing && doodleState){
-      doodleState.ctx.globalCompositeOperation = 'source-over';
-      doodleState.ctx.globalAlpha = 1;
+      if(doodleState.tool==='shape'){
+        shapeStart = null;
+        shapeBase = null;
+      } else {
+        doodleState.ctx.globalCompositeOperation = 'source-over';
+        doodleState.ctx.globalAlpha = 1;
+      }
       pushDoodleHistory();
     }
     drawing = false;
