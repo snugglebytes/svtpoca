@@ -258,9 +258,19 @@ nav>div:active{background:#f8f3fa}
 /* folder photo template — shown large, uncropped, at native resolution */
 .template-modal{max-width:640px}
 .template-image-wrap{position:relative;border-radius:14px;overflow:hidden;background:#f5eef2;display:flex;align-items:center;justify-content:center;margin-top:4px}
-.template-image-wrap img{display:block;width:100%;max-height:75vh;object-fit:contain;border-radius:14px}
+.template-image-wrap img{display:block;width:100%;max-height:75vh;object-fit:contain;border-radius:14px;cursor:zoom-in}
+.template-zoom-hint{position:absolute;bottom:8px;right:8px;background:rgba(50,35,48,.68);color:#fff;font-size:10px;padding:3px 8px;border-radius:10px;pointer-events:none}
 .template-actions{display:flex;gap:8px;margin-top:12px}
 .template-actions .btn{flex:1}
+.zoom-modal-bg{position:fixed;inset:0;background:rgba(20,14,18,.9);z-index:200;display:flex;align-items:center;justify-content:center}
+.zoom-modal-bg.hidden{display:none}
+.zoom-viewport{position:relative;width:100%;height:100%;overflow:hidden;touch-action:none;cursor:grab}
+.zoom-viewport.dragging{cursor:grabbing}
+.zoom-viewport img{position:absolute;top:50%;left:50%;max-width:92vw;max-height:88vh;width:auto;height:auto;transform-origin:center center;user-select:none;-webkit-user-drag:none;will-change:transform}
+.zoom-controls{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2}
+.zoom-controls button{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:#fff;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zoom-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.9);font-size:15px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
+.zoom-pct{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.85);color:var(--text);font-size:11px;padding:4px 9px;border-radius:10px;z-index:2}
 .field{margin-bottom:12px}
 .field-row{display:flex;gap:12px;margin-bottom:12px}
 .field-row .field{flex:1;min-width:0;margin-bottom:0}
@@ -891,7 +901,6 @@ nav>div:active{background:#f8f3fa}
   <div class="modal template-modal">
     <button class="close-x" onclick="closeModal('templates-modal')">✕</button>
     <div class="section-title" id="templates-modal-title">Photo Template</div>
-    <p class="import-choice-note" style="margin-top:-8px">A reference photo of the photocards for this folder, shown at its full uploaded resolution.</p>
 
     <div id="folder-template-empty">
       <div class="dropzone" id="folder-template-dropzone">
@@ -902,13 +911,30 @@ nav>div:active{background:#f8f3fa}
     </div>
 
     <div id="folder-template-preview" class="hidden">
-      <div class="template-image-wrap"><img id="folder-template-img" alt="Folder photo template"></div>
+      <div class="template-image-wrap">
+        <img id="folder-template-img" alt="Folder photo template" onclick="openTemplateZoom()">
+        <div class="template-zoom-hint">Tap to zoom</div>
+      </div>
       <div class="template-actions">
         <button class="btn small ghost" onclick="document.getElementById('folder-template-replace-file').click()">Replace</button>
         <button class="btn small danger" onclick="removeFolderTemplate()">Remove</button>
       </div>
       <input type="file" id="folder-template-replace-file" accept="image/*" class="hidden" onchange="onFolderTemplateFileChosen(event)">
     </div>
+  </div>
+</div>
+
+<!-- PHOTO TEMPLATE ZOOM VIEWER -->
+<div id="template-zoom-modal" class="zoom-modal-bg hidden">
+  <button class="zoom-close" onclick="closeTemplateZoom()">✕</button>
+  <div class="zoom-pct" id="template-zoom-pct">100%</div>
+  <div class="zoom-viewport" id="template-zoom-viewport">
+    <img id="template-zoom-img" src="" alt="Photo template zoomed in">
+  </div>
+  <div class="zoom-controls">
+    <button type="button" onclick="templateZoomBy(-0.4)" title="Zoom out">−</button>
+    <button type="button" onclick="resetTemplateZoom()" title="Reset">⟲</button>
+    <button type="button" onclick="templateZoomBy(0.4)" title="Zoom in">+</button>
   </div>
 </div>
 
@@ -1792,6 +1818,7 @@ function renderFolderTile(f, list, cardsInView){
   };
   const menuEl = div.querySelector('.tile-menu');
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.toggle('hidden'); };
+  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(menuEl); menuEl.classList.remove('hidden'); });
   menuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openEditFolder(f); };
   menuEl.querySelector('.tm-duplicate').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); duplicateFolder(f, list); };
   menuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); menuEl.classList.add('hidden'); openMoveModal('folder', f.id); };
@@ -1908,6 +1935,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   };
   const cardMenuEl = div.querySelector('.tile-menu');
   div.querySelector('.menu-dot').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.toggle('hidden'); };
+  div.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); closeAllTileMenus(cardMenuEl); cardMenuEl.classList.remove('hidden'); });
   cardMenuEl.querySelector('.tm-edit').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openCardModal(c); };
   cardMenuEl.querySelector('.tm-move').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); openMoveModal('card', c.id); };
   cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); cardMenuEl.classList.add('hidden'); deleteCardById(c.id); };
@@ -3786,15 +3814,60 @@ function readFolderTemplateFile(file){
     reader.readAsDataURL(file);
   });
 }
+/* Downscale + recompress the uploaded template photo so it doesn't bloat
+   storage. Caps the longest side at 1600px and re-encodes as JPEG at high
+   quality — plenty sharp for viewing/zooming, but a fraction of the size of
+   an untouched phone-camera photo. PNGs with transparency are left as PNG
+   (rare for a reference photo) since JPEG would flatten transparent areas. */
+function resizeTemplateImage(dataUrl, srcType){
+  const MAX_DIM = 1600;
+  const QUALITY = 0.85;
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let {width, height} = img;
+      const longest = Math.max(width, height);
+      if(longest > MAX_DIM){
+        const scale = MAX_DIM / longest;
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+      const outType = 'image/jpeg';
+      let out;
+      try{
+        out = canvas.toDataURL(outType, QUALITY);
+      }catch(e){
+        reject(e); return;
+      }
+      resolve(out);
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
 async function onFolderTemplateFileChosen(event){
   const file = event.target.files && event.target.files[0];
   event.target.value = '';
   if(!file) return;
   if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
   try{
-    // Uploaded as-is (no crop/downscale) so it stays at its best available resolution for viewing.
-    const dataUrl = await readFolderTemplateFile(file);
-    DATA.folderTemplates[contextKey()] = { image: dataUrl, updatedAt: Date.now() };
+    // Downscaled + recompressed on upload so the reference photo stays a
+    // reasonable size for storage while still looking crisp when zoomed in.
+    const rawDataUrl = await readFolderTemplateFile(file);
+    let finalDataUrl;
+    try{
+      finalDataUrl = await resizeTemplateImage(rawDataUrl, file.type);
+    }catch(e){
+      // If downscaling fails for any reason, fall back to the original upload.
+      finalDataUrl = rawDataUrl;
+    }
+    DATA.folderTemplates[contextKey()] = { image: finalDataUrl, updatedAt: Date.now() };
     save();
     renderFolderTemplateModal();
   }catch(e){
@@ -3827,6 +3900,126 @@ function initFolderTemplateDropzone(){
   });
 }
 initFolderTemplateDropzone();
+
+/* ================= PHOTO TEMPLATE ZOOM VIEWER ================= */
+let tplZoom = {scale:1, x:0, y:0, minScale:1, maxScale:6};
+let tplZoomDrag = null; // {startX, startY, origX, origY}
+let tplZoomPinch = null; // {startDist, startScale}
+
+function openTemplateZoom(){
+  const key = contextKey();
+  const tpl = DATA.folderTemplates[key];
+  if(!tpl || !tpl.image) return;
+  const img = document.getElementById('template-zoom-img');
+  img.src = tpl.image;
+  tplZoom = {scale:1, x:0, y:0, minScale:1, maxScale:6};
+  applyTemplateZoomTransform();
+  document.getElementById('template-zoom-modal').classList.remove('hidden');
+}
+function closeTemplateZoom(){
+  document.getElementById('template-zoom-modal').classList.add('hidden');
+  const img = document.getElementById('template-zoom-img');
+  img.src = '';
+}
+function applyTemplateZoomTransform(){
+  const img = document.getElementById('template-zoom-img');
+  img.style.transform = `translate(-50%, -50%) translate(${tplZoom.x}px, ${tplZoom.y}px) scale(${tplZoom.scale})`;
+  document.getElementById('template-zoom-pct').textContent = Math.round(tplZoom.scale * 100) + '%';
+}
+function clampTemplateZoomPan(){
+  // Simple soft clamp so the image can't be dragged wildly off-screen.
+  const viewport = document.getElementById('template-zoom-viewport');
+  if(!viewport) return;
+  const maxPan = Math.max(viewport.clientWidth, viewport.clientHeight) * tplZoom.scale;
+  tplZoom.x = Math.max(-maxPan, Math.min(maxPan, tplZoom.x));
+  tplZoom.y = Math.max(-maxPan, Math.min(maxPan, tplZoom.y));
+}
+function templateZoomBy(delta){
+  const prevScale = tplZoom.scale;
+  tplZoom.scale = Math.max(tplZoom.minScale, Math.min(tplZoom.maxScale, tplZoom.scale + delta));
+  if(tplZoom.scale === tplZoom.minScale){ tplZoom.x = 0; tplZoom.y = 0; }
+  else if(prevScale !== tplZoom.scale) clampTemplateZoomPan();
+  applyTemplateZoomTransform();
+}
+function resetTemplateZoom(){
+  tplZoom.scale = 1; tplZoom.x = 0; tplZoom.y = 0;
+  applyTemplateZoomTransform();
+}
+(function initTemplateZoomViewport(){
+  const viewport = document.getElementById('template-zoom-viewport');
+  if(!viewport) return;
+  const modalBg = document.getElementById('template-zoom-modal');
+
+  // click outside the image closes the viewer
+  modalBg.addEventListener('click', (e)=>{ if(e.target===modalBg) closeTemplateZoom(); });
+
+  // scroll wheel to zoom (desktop)
+  viewport.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    templateZoomBy(e.deltaY < 0 ? 0.3 : -0.3);
+  }, {passive:false});
+
+  // double-click to toggle zoomed in/out (desktop)
+  viewport.addEventListener('dblclick', (e)=>{
+    e.preventDefault();
+    if(tplZoom.scale > 1) resetTemplateZoom();
+    else templateZoomBy(2);
+  });
+
+  // drag to pan (desktop, when zoomed in)
+  viewport.addEventListener('mousedown', (e)=>{
+    if(tplZoom.scale <= 1) return;
+    tplZoomDrag = {startX:e.clientX, startY:e.clientY, origX:tplZoom.x, origY:tplZoom.y};
+    viewport.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', (e)=>{
+    if(!tplZoomDrag) return;
+    tplZoom.x = tplZoomDrag.origX + (e.clientX - tplZoomDrag.startX);
+    tplZoom.y = tplZoomDrag.origY + (e.clientY - tplZoomDrag.startY);
+    clampTemplateZoomPan();
+    applyTemplateZoomTransform();
+  });
+  window.addEventListener('mouseup', ()=>{ tplZoomDrag = null; viewport.classList.remove('dragging'); });
+
+  // touch: one-finger pan (when zoomed), two-finger pinch to zoom, tap to toggle zoom
+  let lastTapTime = 0;
+  viewport.addEventListener('touchstart', (e)=>{
+    if(e.touches.length===2){
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      tplZoomPinch = {startDist: Math.hypot(dx,dy), startScale: tplZoom.scale};
+      tplZoomDrag = null;
+    } else if(e.touches.length===1){
+      const now = Date.now();
+      if(now - lastTapTime < 300){
+        if(tplZoom.scale > 1) resetTemplateZoom(); else templateZoomBy(2);
+      }
+      lastTapTime = now;
+      if(tplZoom.scale > 1){
+        tplZoomDrag = {startX:e.touches[0].clientX, startY:e.touches[0].clientY, origX:tplZoom.x, origY:tplZoom.y};
+      }
+    }
+  }, {passive:true});
+  viewport.addEventListener('touchmove', (e)=>{
+    if(e.touches.length===2 && tplZoomPinch){
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx,dy);
+      const ratio = dist / tplZoomPinch.startDist;
+      tplZoom.scale = Math.max(tplZoom.minScale, Math.min(tplZoom.maxScale, tplZoomPinch.startScale * ratio));
+      if(tplZoom.scale === tplZoom.minScale){ tplZoom.x = 0; tplZoom.y = 0; }
+      applyTemplateZoomTransform();
+    } else if(e.touches.length===1 && tplZoomDrag){
+      e.preventDefault();
+      tplZoom.x = tplZoomDrag.origX + (e.touches[0].clientX - tplZoomDrag.startX);
+      tplZoom.y = tplZoomDrag.origY + (e.touches[0].clientY - tplZoomDrag.startY);
+      clampTemplateZoomPan();
+      applyTemplateZoomTransform();
+    }
+  }, {passive:false});
+  viewport.addEventListener('touchend', ()=>{ tplZoomDrag = null; tplZoomPinch = null; });
+})();
 
 /* ================= STATS ================= */
 function showStats(){
@@ -4408,6 +4601,12 @@ initDropzone('binder-dropzone','binder-file','binder');
     console.error('Data load failed, starting with defaults:', e);
     DATA = defaultData();
   }
+  // Sort order (main explorer + quick lists) always starts back at its
+  // default/custom order on a fresh page load. Only the actual drag order
+  // of the items themselves is remembered across refreshes; whichever sort
+  // dropdown option was selected before is forgotten.
+  DATA.lastSortMode = '';
+  DATA.lastListsSortMode = '';
   document.getElementById('per-page-select').value = perPage;
   document.getElementById('lists-per-page-select').value = listsPerPage;
   listsSortMode = DATA.lastListsSortMode || 'date-uploaded';
