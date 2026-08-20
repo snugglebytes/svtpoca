@@ -933,7 +933,7 @@ nav>div:active{background:#f8f3fa}
         <div class="template-zoom-hint">Tap to zoom</div>
       </div>
       <div class="template-actions">
-        <button class="btn small ghost" onclick="openDoodleEditor()" aria-label="Doodle" title="Doodle">✏︎</button>
+        <button class="btn small ghost" onclick="openDoodleEditor()">Edit</button>
         <button class="btn small ghost" onclick="document.getElementById('folder-template-replace-file').click()">Replace</button>
         <button class="btn small danger" onclick="removeFolderTemplate()">Remove</button>
       </div>
@@ -4225,12 +4225,10 @@ function doodleCanvasPoint(e){
 function drawDoodleShapeStamp(ctx, cx, cy, w, h, shape, color){
   const rw = w/2, rh = h/2;
   ctx.save();
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 0.55;
   ctx.globalCompositeOperation = 'source-over';
   ctx.translate(cx, cy);
   ctx.fillStyle = color;
-  ctx.strokeStyle = 'rgba(255,255,255,.9)';
-  ctx.lineWidth = Math.max(2, Math.min(w,h)*0.1);
   ctx.beginPath();
   if(shape==='diamond'){
     ctx.moveTo(0,-rh); ctx.lineTo(rw,0); ctx.lineTo(0,rh); ctx.lineTo(-rw,0); ctx.closePath();
@@ -4252,7 +4250,6 @@ function drawDoodleShapeStamp(ctx, cx, cy, w, h, shape, color){
     ctx.rect(-rw, -rh, w, h);
   }
   ctx.fill();
-  ctx.stroke();
   ctx.restore();
 }
 function pushDoodleHistory(){
@@ -4319,12 +4316,13 @@ document.addEventListener('keydown', (e)=>{
     if(doodleState.tool==='shape'){
       shapeStart = pt;
       shapeBase = ctx.getImageData(0, 0, doodleState.canvas.width, doodleState.canvas.height);
-      drawDoodleShapeStamp(ctx, pt.x, pt.y, doodleState.size, doodleState.size, doodleState.shape, doodleState.color);
+      const s = doodleState.size;
+      drawDoodleShapeStamp(ctx, pt.x + s/2, pt.y + s/2, s, s, doodleState.shape, doodleState.color);
       drawing = true;
       return;
     }
     drawing = true;
-    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 0.55;
     ctx.strokeStyle = doodleState.color;
     ctx.lineWidth = doodleState.size;
@@ -4341,9 +4339,11 @@ document.addEventListener('keydown', (e)=>{
       if(!shapeStart || !shapeBase) return;
       const ctx = doodleState.ctx;
       ctx.putImageData(shapeBase, 0, 0);
-      const w = Math.max(doodleState.size, Math.abs(pt.x - shapeStart.x) * 2);
-      const h = Math.max(doodleState.size, Math.abs(pt.y - shapeStart.y) * 2);
-      drawDoodleShapeStamp(ctx, shapeStart.x, shapeStart.y, w, h, doodleState.shape, doodleState.color);
+      const w = Math.max(doodleState.size, Math.abs(pt.x - shapeStart.x));
+      const h = Math.max(doodleState.size, Math.abs(pt.y - shapeStart.y));
+      const x0 = Math.min(shapeStart.x, pt.x);
+      const y0 = Math.min(shapeStart.y, pt.y);
+      drawDoodleShapeStamp(ctx, x0 + w/2, y0 + h/2, w, h, doodleState.shape, doodleState.color);
       return;
     }
     if(doodleState.tool!=='pen') return;
