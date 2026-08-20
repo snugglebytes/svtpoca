@@ -500,7 +500,8 @@ nav>div:active{background:#f8f3fa}
       <button class="btn small ghost" id="bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
     </div>
     <div class="toolbar-center" id="explorer-toolbar-center">
-      <button class="btn small ghost" id="templates-btn" onclick="openTemplatesModal()">Templates</button>
+      <button class="btn small ghost" id="templates-btn-album" onclick="openTemplatesModal('album')">Album</button>
+      <button class="btn small ghost" id="templates-btn-extra" onclick="openTemplatesModal('extra')">Extra Cards</button>
     </div>
     <div class="toolbar-right pg-nav" id="pg-nav-bottom"></div>
   </div>
@@ -1016,7 +1017,7 @@ DATA = {
   viewOrders: { [contextKey]: [{type:'folder'|'card', id}] },   // custom drag order per folder-view (remembered automatically)
   lastSortMode: '',                                              // last-used sort option for the folder/explorer view
   lastListsSortMode: 'date-uploaded',                            // last-used sort option for the quick-lists view
-  folderTemplates: { [contextKey]: {image, updatedAt} }          // one uploaded reference photo per folder view
+  folderTemplates: { [contextKey]: {album:{image,updatedAt}|null, extra:{image,updatedAt}|null} }  // two uploaded reference photo slots per folder view
 }
 Folder = {id,title,thumb,linkedTags:[tagId],fixed,children:[Folder]}
 ================================================= */
@@ -1098,6 +1099,17 @@ function applyMigrations(d){
     if(typeof d.lastSortMode !== 'string') d.lastSortMode = '';
     if(typeof d.lastListsSortMode !== 'string') d.lastListsSortMode = 'date-uploaded';
     if(!d.folderTemplates) d.folderTemplates = {};
+    // Migrate old single-slot template format ({image, updatedAt}) into the
+    // new two-slot {album, extra} shape, keeping the existing photo as "Album".
+    Object.keys(d.folderTemplates).forEach(k=>{
+      const entry = d.folderTemplates[k];
+      if(entry && entry.image && !('album' in entry) && !('extra' in entry)){
+        d.folderTemplates[k] = {album: entry, extra: null};
+      } else if(entry){
+        if(!('album' in entry)) entry.album = null;
+        if(!('extra' in entry)) entry.extra = null;
+      }
+    });
     delete d.templates; // old "save order as template" feature, replaced by remembered drag order + folder photo templates
     if(!d.binders) d.binders = [];
     if(typeof d.pageFlipEnabled !== 'boolean') d.pageFlipEnabled = false;
@@ -1211,6 +1223,15 @@ function importData(event){
     }
     if(!d.viewOrders) d.viewOrders = {};
     if(!d.folderTemplates) d.folderTemplates = {};
+    Object.keys(d.folderTemplates).forEach(k=>{
+      const entry = d.folderTemplates[k];
+      if(entry && entry.image && !('album' in entry) && !('extra' in entry)){
+        d.folderTemplates[k] = {album: entry, extra: null};
+      } else if(entry){
+        if(!('album' in entry)) entry.album = null;
+        if(!('extra' in entry)) entry.extra = null;
+      }
+    });
     delete d.templates;
     if(!d.binders) d.binders = [];
     pendingImportData = d;
@@ -3787,14 +3808,27 @@ function folderTemplateLabel(){
   const currentFolder = currentPath.length ? findFolder(currentPath) : null;
   return currentFolder ? currentFolder.title : 'this view';
 }
-function openTemplatesModal(){
-  document.getElementById('templates-modal-title').textContent = 'Photo Template — ' + folderTemplateLabel();
+let currentTemplateType = 'album'; // 'album' or 'extra' — which of the two template slots is open
+const TEMPLATE_TYPE_LABELS = {album:'Album Photo Template', extra:'Extra Cards Photo Template'};
+function getFolderTemplateSlot(create){
+  const key = contextKey();
+  let entry = DATA.folderTemplates[key];
+  if(!entry){
+    if(!create) return null;
+    entry = {album:null, extra:null};
+    DATA.folderTemplates[key] = entry;
+  }
+  return entry;
+}
+function openTemplatesModal(type){
+  currentTemplateType = type==='extra' ? 'extra' : 'album';
+  document.getElementById('templates-modal-title').textContent = TEMPLATE_TYPE_LABELS[currentTemplateType] + ' — ' + folderTemplateLabel();
   renderFolderTemplateModal();
   document.getElementById('templates-modal').classList.remove('hidden');
 }
 function renderFolderTemplateModal(){
-  const key = contextKey();
-  const tpl = DATA.folderTemplates[key];
+  const entry = getFolderTemplateSlot(false);
+  const tpl = entry ? entry[currentTemplateType] : null;
   const emptyEl = document.getElementById('folder-template-empty');
   const previewEl = document.getElementById('folder-template-preview');
   if(tpl && tpl.image){
@@ -3867,7 +3901,8 @@ async function onFolderTemplateFileChosen(event){
       // If downscaling fails for any reason, fall back to the original upload.
       finalDataUrl = rawDataUrl;
     }
-    DATA.folderTemplates[contextKey()] = { image: finalDataUrl, updatedAt: Date.now() };
+    DATA.folderTemplates[contextKey()] = DATA.folderTemplates[contextKey()] || {album:null, extra:null};
+    DATA.folderTemplates[contextKey()][currentTemplateType] = { image: finalDataUrl, updatedAt: Date.now() };
     save();
     renderFolderTemplateModal();
   }catch(e){
@@ -3875,8 +3910,13 @@ async function onFolderTemplateFileChosen(event){
   }
 }
 function removeFolderTemplate(){
-  if(!confirm('Remove the photo template for this folder?')) return;
-  delete DATA.folderTemplates[contextKey()];
+  const label = currentTemplateType==='extra' ? 'extra cards' : 'album';
+  if(!confirm(`Remove the ${label} photo template for this folder?`)) return;
+  const entry = getFolderTemplateSlot(false);
+  if(entry){
+    entry[currentTemplateType] = null;
+    if(!entry.album && !entry.extra) delete DATA.folderTemplates[contextKey()];
+  }
   save();
   renderFolderTemplateModal();
 }
@@ -3907,8 +3947,8 @@ let tplZoomDrag = null; // {startX, startY, origX, origY}
 let tplZoomPinch = null; // {startDist, startScale}
 
 function openTemplateZoom(){
-  const key = contextKey();
-  const tpl = DATA.folderTemplates[key];
+  const entry = getFolderTemplateSlot(false);
+  const tpl = entry ? entry[currentTemplateType] : null;
   if(!tpl || !tpl.image) return;
   const img = document.getElementById('template-zoom-img');
   img.src = tpl.image;
