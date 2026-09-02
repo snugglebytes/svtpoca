@@ -112,7 +112,12 @@ body.bulk-edit .del-x{display:flex}
 .tile.card-tile.st-wishlist .thumb::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
 .tile.card-tile.st-stbo .thumb::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
 .tile.card-tile.is-rarefind .thumb::after{background:rgba(248,237,199,.45);box-shadow:inset 0 0 0 3px rgba(201,166,74,.65)}
-.tile.card-tile.is-popular.is-rarefind .thumb::after{background:linear-gradient(135deg,rgba(227,210,245,.4),rgba(248,237,199,.4));box-shadow:inset 0 0 0 3px rgba(184,150,110,.65)}
+.tile.card-tile.is-popular.is-rarefind .thumb::after{background:linear-gradient(135deg,rgba(226,215,247,.4),rgba(255,225,240,.4) 50%,rgba(248,237,199,.45));border:3px solid transparent;border-image:linear-gradient(135deg,#b9a3e0,#f3cbe0 50%,#d9b76a) 1;box-sizing:border-box}
+.tile.card-tile.st-have.is-popular{background-image:none}
+.tile.card-tile.st-have.is-rarefind{background-image:none}
+.tile.card-tile.st-have.is-popular.is-rarefind{background-image:none}
+.tile.card-tile.st-have.is-rarefind .thumb::after{background:none;box-shadow:none;border:none}
+.tile.card-tile.st-have.is-popular.is-rarefind .thumb::after{background:none;box-shadow:none;border:none}
 /* pagination / per-page bar */
 .pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .pagebar .pp-select{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
@@ -143,7 +148,12 @@ body.bulk-edit .del-x{display:flex}
   background-image:linear-gradient(135deg,#f8edc7,#fff8e6);
 }
 .tile.card-tile.is-popular.is-rarefind{
-  background-image:linear-gradient(135deg,#e3d2f5 0%,#e3d2f5 42%,#f8edc7 58%,#f8edc7 100%);
+  background-image:linear-gradient(135deg,#e3d2f5 0%,#ffe1f0 50%,#f8edc7 100%);
+}
+.tile.card-tile.is-popular.is-rarefind .tile-title{
+  background:linear-gradient(90deg,#e3d2f5,#ffe1f0 50%,#f8edc7);
+  border-radius:6px;
+  padding:2px 6px;
 }
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
