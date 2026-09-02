@@ -3765,8 +3765,16 @@ function renderBinderViewer(turnDirection){
     return;
   }
   if(atBackCover){
-    // left panel imitates the "back of the last page", right panel is the back cover (always plain color).
-    sidesWrap.appendChild(buildFakeBackSideEl());
+    // left panel is the back of the last page. For back-to-back binders that's a real
+    // sleeve (the last page's back side genuinely holds a card); for single-sided
+    // binders there's nothing printed back there, so it stays a fake/no-add panel.
+    if(b.backToBack){
+      const lastBackSideIndex = b.pages*2 - 1;
+      const slotsDiv = buildSlotsShape(g=>buildRealSlot(lastBackSideIndex, g));
+      sidesWrap.appendChild(buildSideEl(slotsDiv));
+    } else {
+      sidesWrap.appendChild(buildFakeBackSideEl());
+    }
     sidesWrap.appendChild(buildCoverPageEl(true));
     applyPageTurn();
     return;
@@ -3777,7 +3785,7 @@ function renderBinderViewer(turnDirection){
     // which sits flush against the inside of the front cover and has no sleeve
     // (there's no page underneath it to hold a card), so it's shown blank instead.
     for(let s=0; s<2; s++){
-      const isPage1Back = viewingBinderPage===0 && s===1;
+      const isPage1Back = viewingBinderPage===0 && s===0;
       if(isPage1Back){
         sidesWrap.appendChild(buildBlankCoverEl());
       } else {
