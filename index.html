@@ -26,7 +26,7 @@ body{margin:0;background:var(--bg);font-family:"Poppins",sans-serif;color:var(--
 header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(122,107,118,.06)}
 h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px}
+.icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px;transition:transform .1s ease}
 .header-icons .data-btn{white-space:nowrap}
 .wrap{padding:10px 10px calc(96px + env(safe-area-inset-bottom));max-width:680px;margin:0 auto}
 .search{margin:8px 0;display:flex;gap:6px}
@@ -39,6 +39,70 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .btn.danger{background:var(--red)}
 .btn.small{padding:5px 8px;font-size:10px}
 .btn:disabled{opacity:.4;cursor:default}
+/* soft hover pop + click press for all button-like controls */
+@media (hover:hover){
+  .btn:not(:disabled):hover,
+  .icon-btn:hover,
+  .menu-dot:hover,
+  .pagebar-add-btn:hover,
+  .pagebar .pg-nav button:not(:disabled):hover,
+  .pg-nav button:not(:disabled):hover,
+  .zoom-controls button:hover,
+  .zoom-close:hover,
+  .doodle-tool-btn:hover,
+  .doodle-shape-btn:hover,
+  .close-x:hover,
+  .del-x:hover,
+  .fab:hover,
+  .tile-menu button:hover,
+  .dup-badge:hover,
+  .add-tile:hover,
+  .sort-select:hover,
+  .move-sec-tab:hover,
+  .list-tabs .opt:hover,
+  .section-toggle .opt:hover,
+  .status-picker .opt:hover,
+  .tag-picker .opt:hover,
+  .seg-row .opt:hover,
+  .taglist-row button:hover,
+  .tag-row button:hover,
+  .tpl-row button:hover,
+  .color-picker-swatch:hover,
+  .combo-chip button:hover{
+    transform:scale(1.05);
+  }
+}
+.icon-btn:active,
+.menu-dot:active,
+.pagebar-add-btn:active,
+.pagebar .pg-nav button:active,
+.pg-nav button:active,
+.zoom-controls button:active,
+.zoom-close:active,
+.doodle-tool-btn:active,
+.doodle-shape-btn:active,
+.close-x:active,
+.fab:active,
+.tile-menu button:active,
+.dup-badge:active,
+.add-tile:active,
+.sort-select:active,
+.move-sec-tab:active,
+.list-tabs .opt:active,
+.section-toggle .opt:active,
+.status-picker .opt:active,
+.tag-picker .opt:active,
+.seg-row .opt:active,
+.taglist-row button:active,
+.tag-row button:active,
+.tpl-row button:active,
+.color-picker-swatch:active,
+.combo-chip button:active{
+  transform:scale(.94);
+}
+.pagebar-add-btn,.pagebar .pg-nav button,.pg-nav button,.zoom-controls button,.zoom-close,.doodle-tool-btn,.doodle-shape-btn,.close-x,.fab,.tile-menu button,.dup-badge,.add-tile,.sort-select,.move-sec-tab,.list-tabs .opt,.section-toggle .opt,.status-picker .opt,.tag-picker .opt,.seg-row .opt,.taglist-row button,.tag-row button,.tpl-row button,.color-picker-swatch,.combo-chip button{
+  transition:transform .1s ease;
+}
 .toolbar-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px}
 .toolbar-row .toolbar-left{display:flex;gap:6px;flex-wrap:wrap}
 .toolbar-row .toolbar-center{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
