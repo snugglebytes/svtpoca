@@ -111,6 +111,8 @@ body.bulk-edit .del-x{display:flex}
 .tile.card-tile .thumb::after{content:'';position:absolute;inset:0;pointer-events:none}
 .tile.card-tile.st-wishlist .thumb::after{background:rgba(226,215,247,.42);box-shadow:inset 0 0 0 3px rgba(153,124,208,.65)}
 .tile.card-tile.st-stbo .thumb::after{background:rgba(207,238,255,.45);box-shadow:inset 0 0 0 3px rgba(95,168,217,.65)}
+.tile.card-tile.is-rarefind .thumb::after{background:rgba(248,237,199,.45);box-shadow:inset 0 0 0 3px rgba(201,166,74,.65)}
+.tile.card-tile.is-popular.is-rarefind .thumb::after{background:linear-gradient(135deg,rgba(227,210,245,.4),rgba(248,237,199,.4));box-shadow:inset 0 0 0 3px rgba(184,150,110,.65)}
 /* pagination / per-page bar */
 .pagebar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .pagebar .pp-select{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
@@ -132,8 +134,8 @@ body.bulk-edit .del-x{display:flex}
 .popular-badge .badge-text{color:#8a8390}
 .rarefind-badge{border-color:#e6d29c;background:linear-gradient(135deg,#f8edc7,#fff8e6);box-shadow:0 1px 4px rgba(214,186,110,.35);color:#c7ab5c}
 .rarefind-badge .badge-text{color:#a8863c}
-.popular-rarefind-badge{border-color:#d8c3ea;background:linear-gradient(135deg,#e3d2f5,#f8edc7);box-shadow:0 1px 4px rgba(190,158,214,.35);color:#b092c9}
-.popular-rarefind-badge .badge-text{color:#8f6ba8}
+.popular-rarefind-badge{border:2px solid transparent;border-image:linear-gradient(90deg,#b9a3e0,#d9b76a) 1;background:linear-gradient(90deg,#e3d2f5 0%,#e3d2f5 42%,#f8edc7 58%,#f8edc7 100%);box-shadow:0 1px 4px rgba(190,158,214,.35);color:#8f6ba8}
+.popular-rarefind-badge .badge-text{background:linear-gradient(90deg,#8f6ba8,#a8863c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tile.card-tile.is-popular{
   background-image:linear-gradient(135deg,#ffd3ea,#d8f0ff);
 }
@@ -141,7 +143,7 @@ body.bulk-edit .del-x{display:flex}
   background-image:linear-gradient(135deg,#f8edc7,#fff8e6);
 }
 .tile.card-tile.is-popular.is-rarefind{
-  background-image:linear-gradient(135deg,#e0d0f5,#f8edc7);
+  background-image:linear-gradient(135deg,#e3d2f5 0%,#e3d2f5 42%,#f8edc7 58%,#f8edc7 100%);
 }
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
@@ -2009,7 +2011,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   div.innerHTML = `
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
-    <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${(c.popular && c.rareFind) ? '<div class="popular-rarefind-badge"><span class="badge-text">Popular · Rare Find</span></div>' : `${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}`}</div>` : ''}</div>
+    <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
     <div class="tile-title-row"><div class="tile-title" title="${escAttr(c.name||'Untitled')}">${c.name ? formatNameHtml(c.name) : 'Untitled'}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
