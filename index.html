@@ -1986,7 +1986,6 @@ function renderFolderTile(f, list, cardsInView){
   div.className = 'tile folder' + (isDraggedNow ? ' touch-dragging' : '');
   div.dataset.key = 'folder:'+f.id;
   div.draggable = true;
-  const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${escAttr(tagName(tid))}</span>`).join('');
   div.innerHTML = `
     <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : ''}</div>
     <div class="tile-title-row"><div class="tile-title" title="${escAttr(f.title)}">${escAttr(f.title)}</div>
@@ -2000,7 +1999,7 @@ function renderFolderTile(f, list, cardsInView){
         </div>
       </div>
     </div>
-    <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}${tagPills?`<br>${tagPills}`:''}</div>
+    <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}</div>
     ${f.fixed ? '' : '<div class="del-x">✕</div>'}
   `;
   div.querySelector('.thumb').addEventListener('click', (e)=>{
