@@ -211,20 +211,23 @@ body.bulk-edit .del-x{display:flex}
   background-image:linear-gradient(135deg,#f8edc7,#fff8e6);
 }
 .tile.card-tile.is-popular.is-rarefind{
-  background-image:linear-gradient(135deg,#e3d2f5 0%,#ffe1f0 50%,#f8edc7 100%);
   border:3px solid transparent;
-  border-image:linear-gradient(135deg,#b9a3e0,#f3cbe0 50%,#d9b76a) 1;
+  background-image:
+    linear-gradient(135deg,#e3d2f5 0%,#ffe1f0 50%,#f8edc7 100%),
+    linear-gradient(135deg,#b9a3e0,#f3cbe0 50%,#d9b76a);
+  background-origin:border-box;
+  background-clip:padding-box,border-box;
   box-sizing:border-box;
 }
 .tile.card-tile.st-have.is-popular.is-rarefind{
   border:2px solid var(--line);
+  background-image:linear-gradient(#fff,#fff);
+  background-origin:padding-box;
+  background-clip:padding-box;
 }
 .tile.card-tile.is-popular.is-rarefind .tile-title-row{
-  background:linear-gradient(90deg,#e3d2f5,#ffe1f0 50%,#f8edc7);
   margin-top:6px;
   padding:5px 8px;
-  width:100%;
-  box-sizing:border-box;
 }
 /* grid density variants */
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
