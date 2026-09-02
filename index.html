@@ -205,6 +205,14 @@ body.bulk-edit .del-x{display:flex}
 .combo-list .ci:hover,.combo-list .ci.hi{background:var(--pink)}
 .combo-list .ci .match{font-weight:700}
 .combo-list .ci-create{color:#5b8fb0;font-style:italic}
+.lists-tag-filter{position:relative;flex:1;min-width:120px}
+.lists-tag-filter .mini-chips{margin-bottom:0;gap:4px}
+.lists-tag-filter .mini-chips:empty{display:none}
+.lists-tag-filter .combo-chip{padding:2px 5px 2px 8px;font-size:10px;border-radius:8px}
+.lists-tag-filter .combo-chip button{font-size:11px}
+.lists-tag-filter input{margin-top:0}
+.lists-tag-filter .mini-chips:not(:empty)+input{margin-top:4px}
+.lists-tag-filter .combo-list{max-height:140px}
 /* lists panel tabs */
 .list-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .list-tabs .opt{flex:1;min-width:70px;text-align:center;padding:9px 4px;background:#f8f3fa;border-radius:10px;border:2px solid var(--line);cursor:pointer;font-size:12px;font-weight:600}
@@ -221,7 +229,7 @@ body.bulk-edit .del-x{display:flex}
 @keyframes pageFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .page-fade{animation:pageFadeIn .28s ease both}
 .tile-enter{animation:pageFadeIn .3s ease both}
-.tile{transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.tile{transition:transform .28s cubic-bezier(.22,.8,.24,1)}
 .tile.touch-dragging{background:transparent;box-shadow:none;border:2px dashed #cbb4c6;transition:none}
 .tile.touch-dragging>*{visibility:hidden}
 .touch-drag-ghost{position:fixed;pointer-events:none;z-index:9999;margin:0;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 30px rgba(122,107,118,.4);border-radius:14px;opacity:.96;transition:transform .12s ease}
@@ -552,6 +560,11 @@ nav>div:active{background:#f8f3fa}
   </div>
   <div class="pagebar">
     <input id="lists-mini-search-input" class="mini-search-inline" placeholder="Find within this list..." oninput="onListsMiniSearch()">
+    <div class="combo lists-tag-filter" id="lists-tag-filter-combo">
+      <div class="combo-chips mini-chips" id="lists-tag-filter-chips"></div>
+      <input id="lists-tag-filter-input" class="mini-search-inline" placeholder="Filter by tag..." autocomplete="off">
+      <div class="combo-list hidden" id="lists-tag-filter-list"></div>
+    </div>
     <div class="pp-select">Show
       <select id="lists-per-page-select" onchange="onListsPerPageChange()">
         <option value="4">4</option>
@@ -1431,6 +1444,7 @@ let listsTab = 'stbo';
 let listsPerPage = defaultPerPage();
 let listsPage = 1;
 let listsMiniSearchQuery = '';
+let listsTagFilterIds = new Set();
 let listsSortMode = 'date-uploaded';
 let dragged = null; // {type:'folder'|'card', id}
 let dragHoverKey = null; // last hovered tile key during a drag, to avoid redundant reorders
@@ -1686,18 +1700,33 @@ function saveCustomOrderFromDom(list, cards){
 
 /* Called continuously while a drag is hovering over a new tile (mouse dragover
    or touch-drag hit-testing). Live-reorders the grid so tiles shuffle out of
-   the way in real time, instead of showing a static drop-line indicator. */
-function handleDragHover(list, cardsInView, toType, toId){
+   the way in real time, instead of showing a static drop-line indicator.
+   `insertAfter` reflects which half of the hovered tile the pointer is over,
+   so dropping in the middle of a row always lands where you'd expect
+   regardless of whether you're dragging forward or backward through the list. */
+function handleDragHover(list, cardsInView, toType, toId, insertAfter){
   if(!dragged) return;
-  const hoverKey = toType+':'+toId;
-  if(hoverKey === (dragged.type+':'+dragged.id)) return;
+  if(toType===dragged.type && toId===dragged.id) return;
+  const hoverKey = toType+':'+toId+':'+(insertAfter?1:0);
   if(hoverKey === dragHoverKey) return;
   const isSameView = dragged.type==='folder'
     ? list.some(x=>x.id===dragged.id)
     : (cardsInView||[]).some(x=>x.id===dragged.id);
   if(!isSameView) return; // cross-view drop (e.g. tagging a card into a folder) is handled on release, not preview
   dragHoverKey = hoverKey;
-  reorderWithinView(list, cardsInView, dragged, {type:toType, id:toId});
+  reorderWithinView(list, cardsInView, dragged, {type:toType, id:toId}, insertAfter);
+}
+/* Works out whether the pointer is over the left/top or right/bottom half of
+   a tile, so hovering near either edge gives a clear, predictable drop side
+   instead of the item snapping to one fixed spot on the tile. */
+function dragInsertAfter(targetEl, clientX, clientY){
+  if(!targetEl) return false;
+  const r = targetEl.getBoundingClientRect();
+  const dx = (clientX - r.left) / r.width;
+  const dy = (clientY - r.top) / r.height;
+  // tiles wrap into rows, so blend horizontal and vertical position within
+  // the tile rather than relying on x alone (which breaks at row edges)
+  return (dx + dy) > 1;
 }
 function renderExplorer(){
   if(currentSection==='allcards'){ renderAllCardsExplorer(); return; }
@@ -1901,11 +1930,11 @@ function renderFolderTile(f, list, cardsInView){
   // drag & drop (mouse) — tiles live-shuffle as you hover, like a phone home screen
   div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; setTimeout(()=>div.classList.add('touch-dragging'),0); });
   div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
-  div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'folder', f.id); });
+  div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'folder', f.id, dragInsertAfter(div, e.clientX, e.clientY)); });
   div.addEventListener('drop', (e)=>{
     e.preventDefault();
     if(!dragged) return;
-    handleDragHover(list, cardsInView, 'folder', f.id);
+    handleDragHover(list, cardsInView, 'folder', f.id, dragInsertAfter(div, e.clientX, e.clientY));
     commitLiveOrder();
     if(dragged.type==='card'){
       const isSameView = (cardsInView||[]).some(x=>x.id===dragged.id);
@@ -2018,11 +2047,11 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; setTimeout(()=>div.classList.add('touch-dragging'),0); });
   div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
   if(list){
-    div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'card', c.id); });
+    div.addEventListener('dragover', (e)=>{ e.preventDefault(); handleDragHover(list, cardsInView, 'card', c.id, dragInsertAfter(div, e.clientX, e.clientY)); });
     div.addEventListener('drop', (e)=>{
       e.preventDefault();
       if(!dragged) return;
-      handleDragHover(list, cardsInView, 'card', c.id);
+      handleDragHover(list, cardsInView, 'card', c.id, dragInsertAfter(div, e.clientX, e.clientY));
       commitLiveOrder();
       dragged=null; dragHoverKey=null;
     });
@@ -2065,6 +2094,8 @@ function refreshCurrentView(){
   if(listsPanel && !listsPanel.classList.contains('hidden')) renderListsPanel();
   const binderViewerModal = document.getElementById('binder-viewer-modal');
   if(binderViewerModal && !binderViewerModal.classList.contains('hidden')) renderBinderViewer();
+  const searchResultsPanel = document.getElementById('search-results-panel');
+  if(searchResultsPanel && !searchResultsPanel.classList.contains('hidden')) runSearch();
   renderRecentFiles();
 }
 
@@ -2303,7 +2334,7 @@ document.addEventListener('drop', clearMouseEdgeTimer);
 
 function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
   let timer=null, startX=0, startY=0, primed=false, active=false, ghost=null;
-  let edgeZone=null, edgeTimer=null;
+  let edgeZone=null, edgeTimer=null, hoverRAF=null, lastTouchX=0, lastTouchY=0;
   const clearTimer = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
   const clearEdgeTimer = ()=>{ if(edgeTimer){ clearInterval(edgeTimer); edgeTimer=null; } edgeZone=null; };
 
@@ -2324,20 +2355,31 @@ function attachTouchDrag(el, type, id, list, cardsInView, onRelease){
       return;
     }
     e.preventDefault();
+    lastTouchX = t.clientX; lastTouchY = t.clientY;
     moveGhost(t.clientX, t.clientY);
     checkEdgePaging(t.clientX, t.clientY);
     if(edgeZone) return; // don't reorder tiles while hovering the page-turn edge
-    const under = document.elementFromPoint(t.clientX, t.clientY);
-    const tile = under && under.closest ? under.closest('.tile[data-key]') : null;
-    if(tile && tile.dataset.key !== (type+':'+id)){
-      const [tt, tid] = tile.dataset.key.split(':');
-      handleDragHover(list, cardsInView, tt, tid);
+    // hit-testing + reordering is pushed to a rAF tick (see below) rather than
+    // running on every touchmove, which fires far more often than the screen
+    // repaints — batching it keeps the live shuffle from stuttering.
+    if(!hoverRAF){
+      hoverRAF = requestAnimationFrame(()=>{
+        hoverRAF = null;
+        if(!active || edgeZone) return;
+        const under = document.elementFromPoint(lastTouchX, lastTouchY);
+        const tile = under && under.closest ? under.closest('.tile[data-key]') : null;
+        if(tile && tile.dataset.key !== (type+':'+id)){
+          const [tt, tid] = tile.dataset.key.split(':');
+          handleDragHover(list, cardsInView, tt, tid, dragInsertAfter(tile, lastTouchX, lastTouchY));
+        }
+      });
     }
   }, {passive:false});
 
   const finish = ()=>{
     primed=false; clearTimer();
     clearEdgeTimer();
+    if(hoverRAF){ cancelAnimationFrame(hoverRAF); hoverRAF=null; }
     if(!active) return;
     active=false;
     document.body.classList.remove('no-scroll');
@@ -2428,12 +2470,18 @@ function commitLiveOrder(){
 }
 function discardLiveOrder(){ liveOrder = null; liveOrderKey = null; }
 
-function reorderWithinView(list, cardsInView, fromItem, toItem){
+function reorderWithinView(list, cardsInView, fromItem, toItem, insertAfter){
   const order = ensureLiveOrder(list, cardsInView);
   const fromIdx = order.findIndex(o=>o.type===fromItem.type && o.id===fromItem.id);
-  const toIdx = order.findIndex(o=>o.type===toItem.type && o.id===toItem.id);
-  if(fromIdx<0 || toIdx<0) return;
+  if(fromIdx<0) return;
   const [moved] = order.splice(fromIdx,1);
+  // recompute the target's index now that the dragged item has been pulled
+  // out — otherwise inserting at the pre-removal index silently shifts the
+  // drop a slot forward whenever you drag left-to-right, which is what made
+  // mid-list drops feel inconsistent depending on drag direction.
+  let toIdx = order.findIndex(o=>o.type===toItem.type && o.id===toItem.id);
+  if(toIdx<0){ order.splice(fromIdx,0,moved); return; }
+  if(insertAfter) toIdx++;
   order.splice(toIdx,0,moved);
   livePreviewReorderDOM(order);
 }
@@ -2653,6 +2701,17 @@ function setupCardTagCombo(){
     getSelected: ()=>selectedCardTagIds,
     onAdd: (id)=>{ selectedCardTagIds.add(id); },
     onRemove: (id)=>{ selectedCardTagIds.delete(id); }
+  });
+}
+/* Quick-lists tag filter: multi-select combo next to the mini search bar.
+   Narrows whichever list tab is open (Owned/Wishlist/STBO/etc) down to cards
+   carrying every selected tag, re-filtering live as tags are added/removed. */
+function setupListsTagFilterCombo(){
+  setupTagCombo({
+    chipsId:'lists-tag-filter-chips', inputId:'lists-tag-filter-input', listId:'lists-tag-filter-list', multi:true,
+    getSelected: ()=>listsTagFilterIds,
+    onAdd: (id)=>{ listsTagFilterIds.add(id); listsPage=1; renderListsPanel(); },
+    onRemove: (id)=>{ listsTagFilterIds.delete(id); listsPage=1; renderListsPanel(); }
   });
 }
 function confirmSaveFolder(){
@@ -4472,6 +4531,7 @@ function showListsPanel(tab){
   listsMiniSearchQuery = '';
   const miniInput = document.getElementById('lists-mini-search-input');
   if(miniInput) miniInput.value = '';
+  resetListsTagFilter();
   renderListsPanel();
 }
 function switchListsTab(tab){
@@ -4480,8 +4540,16 @@ function switchListsTab(tab){
   listsMiniSearchQuery = '';
   const miniInput = document.getElementById('lists-mini-search-input');
   if(miniInput) miniInput.value = '';
+  resetListsTagFilter();
   document.querySelectorAll('.list-tabs .opt').forEach(o=>o.classList.toggle('active', o.dataset.list===tab));
   renderListsPanel();
+}
+function resetListsTagFilter(){
+  listsTagFilterIds.clear();
+  const chips = document.getElementById('lists-tag-filter-chips');
+  if(chips) chips.innerHTML = '';
+  const tagInput = document.getElementById('lists-tag-filter-input');
+  if(tagInput) tagInput.value = '';
 }
 function onListsPerPageChange(){
   listsPerPage = parseInt(document.getElementById('lists-per-page-select').value, 10);
@@ -4514,6 +4582,13 @@ function renderListsPanel(){
     cards = cards.filter(c=>matchesSearchTerms(listsMiniSearchQuery, {type:'card', data:c}));
   }
 
+  if(listsTagFilterIds.size){
+    cards = cards.filter(c=>{
+      const cardTags = new Set(c.tags||[]);
+      return [...listsTagFilterIds].every(tid=>cardTags.has(tid));
+    });
+  }
+
   if(listsSortMode==='az'){
     cards = [...cards].sort((a,b)=>(a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase()));
   } else if(listsSortMode==='za'){
@@ -4533,9 +4608,10 @@ function renderListsPanel(){
     const note = document.createElement('div');
     note.className='empty-note';
     const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='popular' ? 'Popular' : listsTab==='rarefind' ? 'Rare Find' : listsTab==='have' ? 'Owned' : listsTab;
+    const tagNote = listsTagFilterIds.size ? ` tagged "${[...listsTagFilterIds].map(tagName).join('", "')}"` : '';
     note.textContent = listsMiniSearchQuery
-      ? `No ${label} cards match "${listsMiniSearchQuery}".`
-      : `No cards marked as ${label} yet.`;
+      ? `No ${label} cards${tagNote} match "${listsMiniSearchQuery}".`
+      : `No cards marked as ${label} yet${tagNote}.`;
     grid.appendChild(note);
   } else {
     pageCards.forEach(c=>grid.appendChild(renderCardTile(c)));
@@ -4976,6 +5052,7 @@ initDropzone('binder-dropzone','binder-file','binder');
   document.getElementById('lists-per-page-select').value = listsPerPage;
   listsSortMode = DATA.lastListsSortMode || 'date-uploaded';
   document.getElementById('lists-sort-mode-select').value = listsSortMode;
+  setupListsTagFilterCombo();
   switchSection('albums');
   renderRecentFiles();
 })();
