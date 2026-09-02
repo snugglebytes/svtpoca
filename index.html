@@ -3773,11 +3773,18 @@ function renderBinderViewer(turnDirection){
   }
 
   if(b.backToBack){
-    // pages genuinely have real content on both sides — show front & back as-is
+    // pages genuinely have real content on both sides — except page 1's back,
+    // which sits flush against the inside of the front cover and has no sleeve
+    // (there's no page underneath it to hold a card), so it's shown blank instead.
     for(let s=0; s<2; s++){
-      const sideIndex = viewingBinderPage*2 + s;
-      const slotsDiv = buildSlotsShape(g=>buildRealSlot(sideIndex, g));
-      sidesWrap.appendChild(buildSideEl(slotsDiv));
+      const isPage1Back = viewingBinderPage===0 && s===1;
+      if(isPage1Back){
+        sidesWrap.appendChild(buildBlankCoverEl());
+      } else {
+        const sideIndex = viewingBinderPage*2 + s;
+        const slotsDiv = buildSlotsShape(g=>buildRealSlot(sideIndex, g));
+        sidesWrap.appendChild(buildSideEl(slotsDiv));
+      }
     }
   } else {
     // single-sided binder: always render a 2-page spread. The "other" side has
