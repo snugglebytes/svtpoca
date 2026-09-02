@@ -1661,7 +1661,7 @@ function populateSortMemberSelect(cards){
   const eligible = DATA.nodes.members.filter(f=>f.linkedTags && f.linkedTags[0] && presentTagIds.has(f.linkedTags[0]));
   if(row) row.classList.toggle('hidden', eligible.length===0);
   sel.innerHTML = '<option value="">Default order</option>' +
-    eligible.map(f=>`<option value="${f.linkedTags[0]}">${f.title}</option>`).join('');
+    eligible.map(f=>`<option value="${f.linkedTags[0]}">${escAttr(f.title)}</option>`).join('');
   sel.value = eligible.some(f=>f.linkedTags[0]===prev) ? prev : '';
   sortMemberFilter = sel.value;
 }
@@ -1886,10 +1886,10 @@ function renderFolderTile(f, list, cardsInView){
   div.className = 'tile folder' + (isDraggedNow ? ' touch-dragging' : '');
   div.dataset.key = 'folder:'+f.id;
   div.draggable = true;
-  const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${tagName(tid)}</span>`).join('');
+  const tagPills = (f.linkedTags||[]).map(tid=>`<span class="tag-pill">${escAttr(tagName(tid))}</span>`).join('');
   div.innerHTML = `
     <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : ''}</div>
-    <div class="tile-title-row"><div class="tile-title" title="${escAttr(f.title)}">${f.title}</div>
+    <div class="tile-title-row"><div class="tile-title" title="${escAttr(f.title)}">${escAttr(f.title)}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Folder options">⋯</div>
         <div class="tile-menu hidden">
@@ -2006,7 +2006,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
     <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
-    <div class="tile-title-row"><div class="tile-title" title="${escAttr(c.name||'Untitled')}">${c.name||'Untitled'}</div>
+    <div class="tile-title-row"><div class="tile-title" title="${escAttr(c.name||'Untitled')}">${escAttr(c.name||'Untitled')}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
         <div class="tile-menu hidden">
@@ -2223,7 +2223,7 @@ function renderMoveBrowser(){
       const row = document.createElement('div');
       row.className = 'tpl-row';
       const tagNote = moveContext.type==='card' ? (f.linkedTags && f.linkedTags.length ? '' : ' <span style="color:#c79bb0">(no tags linked)</span>') : '';
-      row.innerHTML = `<span class="tn">${f.title}${tagNote}</span><button type="button">Open</button>`;
+      row.innerHTML = `<span class="tn">${escAttr(f.title)}${tagNote}</span><button type="button">Open</button>`;
       row.querySelector('button').onclick = ()=>{ movePath = [...movePath, f.id]; renderMoveBrowser(); };
       listEl.appendChild(row);
     });
@@ -2619,7 +2619,7 @@ function setupTagCombo({chipsId, inputId, listId, multi, getSelected, onAdd, onR
     ids.forEach(id=>{
       const chip = document.createElement('span');
       chip.className='combo-chip';
-      chip.innerHTML = `${tagName(id)} <button type="button">✕</button>`;
+      chip.innerHTML = `${escAttr(tagName(id))} <button type="button">✕</button>`;
       chip.querySelector('button').onclick = ()=>{ onRemove(id); renderChips(); };
       chipsEl.appendChild(chip);
     });
@@ -2876,7 +2876,7 @@ function renderCardUploadFolderBrowser(){
       const row = document.createElement('div');
       row.className = 'tpl-row';
       const tagNote = f.linkedTags && f.linkedTags.length ? '' : ' <span style="color:#c79bb0">(no tags linked)</span>';
-      row.innerHTML = `<span class="tn">${f.title}${tagNote}</span><button type="button">Open</button>`;
+      row.innerHTML = `<span class="tn">${escAttr(f.title)}${tagNote}</span><button type="button">Open</button>`;
       row.querySelector('button').onclick = ()=>{ cardUploadPath = [...cardUploadPath, f.id]; renderCardUploadFolderBrowser(); };
       listEl.appendChild(row);
     });
@@ -3212,7 +3212,7 @@ function renderBindersPanel(){
     const sides = b.backToBack ? b.pages*2 : b.pages;
     div.innerHTML = `
       <div class="binder-cover" style="${coverBg}">${coverImg}${coverLabel}</div>
-      <div class="binder-tile-title">${b.name||'Untitled Binder'}</div>
+      <div class="binder-tile-title">${escAttr(b.name||'Untitled Binder')}</div>
       <div class="binder-tile-meta">${b.pages} page${b.pages===1?'':'s'} · ${b.grids}/side · ${sides} side${sides===1?'':'s'}</div>
     `;
     div.onclick = ()=>openBinderViewer(b.id);
@@ -3820,7 +3820,7 @@ function renderCardPickerList(){
   cards.forEach(c=>{
     const item = document.createElement('div');
     item.className = 'card-picker-item' + (c.status==='wishlist' ? ' st-wishlist' : c.status==='stbo' ? ' st-stbo' : '');
-    item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name" title="${escAttr(c.name||'Untitled')}">${c.name||'Untitled'}</div>`;
+    item.innerHTML = `${c.image?`<img src="${c.image}">`:''}<div class="cpi-name" title="${escAttr(c.name||'Untitled')}">${escAttr(c.name||'Untitled')}</div>`;
     item.onclick = ()=>{
       const b = DATA.binders.find(x=>x.id===cardPickerTarget.binderId);
       if(b){ b.slots[cardPickerTarget.slotIndex] = c.id; b.updatedAt = Date.now(); save(); }
@@ -3863,7 +3863,7 @@ function renderTagsPage(){
     const row = document.createElement('div');
     row.className = 'tag-row';
     row.innerHTML = `
-      <span class="tn">${t.name}</span>
+      <span class="tn">${escAttr(t.name)}</span>
       <button type="button" class="btn small ghost" title="Rename">Rename</button>
       <button type="button" class="btn small danger" title="Delete">Delete</button>
     `;
@@ -3880,7 +3880,7 @@ function renderTagsPage(){
 }
 function startRenameTag(row, t){
   const nameSpan = row.querySelector('.tn');
-  nameSpan.innerHTML = `<input value="${t.name.replace(/"/g,'&quot;')}">`;
+  nameSpan.innerHTML = `<input value="${escAttr(t.name)}">`;
   const input = nameSpan.querySelector('input');
   input.focus(); input.select();
   const commit = ()=>{
@@ -4753,7 +4753,7 @@ function renderSrFolders(){
   srFolderMatches.slice(start, start+SR_PER_PAGE).forEach(({f,section,trail})=>{
     const div = document.createElement('div');
     div.className='tile folder';
-    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:''}</div><div class="tile-title" title="${escAttr(f.title)}">${f.title}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
+    div.innerHTML = `<div class="thumb">${f.thumb?`<img src="${f.thumb}">`:''}</div><div class="tile-title" title="${escAttr(f.title)}">${escAttr(f.title)}</div><div class="tile-sub">${sectionLabel(section)}</div>`;
     if(trail && trail.length){
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'folder-pills';
@@ -4883,7 +4883,7 @@ function renderRecentFiles(){
     item.className = 'rf-item';
     item.innerHTML = `
       <div class="rf-thumb">${c.image ? `<img src="${c.image}">` : '🂠'}</div>
-      <div class="rf-title">${c.name||'Untitled'}</div>
+      <div class="rf-title">${escAttr(c.name||'Untitled')}</div>
     `;
     item.onclick = ()=> jumpToCardLocation(c);
     scroll.appendChild(item);
@@ -4892,7 +4892,7 @@ function renderRecentFiles(){
   recentFolders.forEach(({section, folder})=>{
     const pill = document.createElement('div');
     pill.className = 'rf-pill';
-    pill.innerHTML = `${folder.thumb ? `<img src="${folder.thumb}">` : ''}<span>${folder.title}</span>`;
+    pill.innerHTML = `${folder.thumb ? `<img src="${folder.thumb}">` : ''}<span>${escAttr(folder.title)}</span>`;
     pill.onclick = ()=> jumpToFolder(section, folder.id);
     folderRow.appendChild(pill);
   });
