@@ -150,6 +150,13 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .menu-dot:active{transform:scale(.92)}
 .tile-title{font-size:13px;margin-top:4px;font-weight:600;overflow-wrap:break-word;word-break:break-word;min-width:0;cursor:pointer;transition:opacity .12s ease;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tile-title .name-bracket{opacity:.55;font-weight:500;font-size:calc(1em - 3px);text-transform:uppercase}
+/* photocard tile titles: a <> tag (if present) gets its own line above the
+   main name; the main name itself stays a single line, truncated with an
+   ellipsis, and auto-scrolls sideways on hover if it's too long to fit. */
+.tile-title.card-name{display:flex;flex-direction:column;gap:1px;-webkit-box-orient:unset;-webkit-line-clamp:unset}
+.tile-title.card-name .name-bracket-line{opacity:.55;font-weight:500;font-size:calc(1em - 3px);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile-title.card-name .tile-title-main{overflow:hidden;white-space:nowrap;position:relative;display:block}
+.tile-title.card-name .tile-title-main-inner{display:inline-block;transform:translateX(0);transition:transform 1.1s linear}
 .tile-title:active{opacity:.6}
 .tile-sub{font-size:11px;color:#a493a0;padding:0 8px}
 .tile-location{overflow:hidden;white-space:nowrap;position:relative}
@@ -2071,9 +2078,9 @@ function renderFolderTile(f, list, cardsInView){
    line no matter how deep the path is; on hover it auto-scrolls to reveal
    the rest, then eases back when the mouse leaves — instead of the tile
    growing taller to fit a wrapped path. */
-function attachLocationScroll(el){
+function attachLocationScroll(el, innerSelector){
   if(!el) return;
-  const inner = el.querySelector('.loc-inner');
+  const inner = el.querySelector(innerSelector || '.loc-inner');
   if(!inner) return;
   el.addEventListener('mouseenter', ()=>{
     const overflow = inner.scrollWidth - el.clientWidth;
@@ -2099,7 +2106,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
     <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
-    <div class="tile-title-row"><div class="tile-title" title="${escAttr(c.name||'Untitled')}">${c.name ? formatNameHtml(c.name) : 'Untitled'}</div>
+    <div class="tile-title-row"><div class="tile-title card-name" title="${escAttr(c.name||'Untitled')}">${c.name ? formatNameHtml(c.name) : 'Untitled'}</div>
       <div class="menu-wrap">
         <div class="menu-dot" title="Photocard options">⋯</div>
         <div class="tile-menu hidden">
@@ -2136,6 +2143,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteCardById(c.id); };
 
   attachLocationScroll(div.querySelector('.tile-location'));
+  attachLocationScroll(div.querySelector('.tile-title.card-name .tile-title-main'), '.tile-title-main-inner');
 
   div.addEventListener('dragstart', (e)=>{ dragged={type:'card', id:c.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; setTimeout(()=>div.classList.add('touch-dragging'),0); });
   div.addEventListener('dragend', ()=>{ commitLiveOrder(); dragged=null; dragHoverKey=null; renderExplorer(); });
@@ -2617,7 +2625,18 @@ function tagName(id){ const t=DATA.tags.find(x=>x.id===id); return t?t.name:'—
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function formatNameHtml(s){
-  return escHtml(s).replace(/(\[[^\[\]]*\]|&lt;[^&]*?&gt;|\{[^{}]*\})/g, '<span class="name-bracket">$1</span>');
+  const escaped = escHtml(s);
+  // pull the first <...> tag (if any) out onto its own line above the main name
+  const angleMatch = escaped.match(/&lt;[^&]*?&gt;/);
+  let bracketLine = '';
+  let rest = escaped;
+  if(angleMatch){
+    bracketLine = `<span class="name-bracket-line">${angleMatch[0]}</span>`;
+    rest = (escaped.slice(0, angleMatch.index) + escaped.slice(angleMatch.index + angleMatch[0].length)).trim();
+  }
+  rest = rest.replace(/(\[[^\[\]]*\]|\{[^{}]*\})/g, '<span class="name-bracket">$1</span>');
+  const mainLine = `<span class="tile-title-main"><span class="tile-title-main-inner">${rest || '&nbsp;'}</span></span>`;
+  return bracketLine + mainLine;
 }
 
 /* ================= FAB ================= */
