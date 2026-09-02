@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#fbe4ec">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 @font-face{
   font-family:"Ticketing";
@@ -22,9 +22,9 @@
 :root{--bg:#fdf9fb;--pink:#fbe4ec;--blue:#e5f4fc;--card:#fff;--line:#ecdff0;--text:#7a6b76;--green:#e3f3e1;--yellow:#fdf3d9;--red:#fbe2e2;--accent:#f0c3d6;--purple:#e9e0f8}
 *{box-sizing:border-box}
 html{height:100%;overflow-x:hidden}
-body{margin:0;background:var(--bg);font-family:"Pixelify Sans",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body{margin:0;background:var(--bg);font-family:"Poppins",sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 header{padding:16px;background:linear-gradient(90deg,var(--pink),var(--blue));position:sticky;top:0;border-bottom:2px solid var(--line);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(122,107,118,.06)}
-h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
+h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spacing:.5px;margin:0;cursor:pointer;user-select:none;color:#8a6b7c}
 .header-icons{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px}
 .header-icons .data-btn{white-space:nowrap}
@@ -32,7 +32,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .search{margin:8px 0;display:flex;gap:6px}
 .search input{flex:1;padding:8px 9px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
 .mini-search-inline{flex:1;min-width:64px;padding:5px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:11px}
-.btn{border:2px solid var(--line);border-radius:9px;background:var(--pink);color:#7a6b76;padding:7px 11px;font-family:"Ticketing",cursive;font-weight:normal;font-size:12px;letter-spacing:.3px;cursor:pointer;transition:transform .1s ease;text-align:center}
+.btn{border:2px solid var(--line);border-radius:9px;background:var(--pink);color:#7a6b76;padding:7px 11px;font-family:"Poppins",sans-serif;font-weight:normal;font-size:12px;letter-spacing:.3px;cursor:pointer;transition:transform .1s ease;text-align:center}
 .btn:active{transform:scale(.97)}
 .btn.alt{background:var(--blue)}
 .btn.ghost{background:#fff}
@@ -53,7 +53,7 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 .breadcrumb span{cursor:pointer;padding:2px 4px}
 .breadcrumb span.current{font-weight:700;color:var(--text);cursor:default}
 .breadcrumb .sep{color:#d9c8d3}
-.section-title{font-family:'Ticketing',cursive;font-weight:normal;font-size:16px;letter-spacing:.3px;margin:0 0 10px;color:#8a6b7c}
+.section-title{font-family:"Poppins",sans-serif;font-weight:normal;font-size:16px;letter-spacing:.3px;margin:0 0 10px;color:#8a6b7c}
 .title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .tags-header-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .tags-header-actions input{width:110px;padding:6px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;font-size:12px;background:#fdfaff;color:var(--text)}
@@ -97,13 +97,13 @@ h1{font-family:"Ticketing",cursive;font-weight:normal;font-size:22px;letter-spac
 body.bulk-edit .del-x{display:flex}
 .tile-title-edit{width:calc(100% - 12px);font-size:13px;font-weight:600;padding:3px 5px;margin:4px 6px 0;border:2px solid var(--accent);border-radius:6px;font-family:inherit;box-sizing:border-box;background:#fff;color:var(--text)}
 #bulk-edit-btn.active,#lists-bulk-edit-btn.active{background:var(--accent)}
-.sort-select{border:2px solid var(--line);border-radius:9px;background:#fff;color:#7a6b76;font-family:"Ticketing",cursive;font-size:10px;padding:5px 6px;cursor:pointer}
+.sort-select{border:2px solid var(--line);border-radius:9px;background:#fff;color:#7a6b76;font-family:"Poppins",sans-serif;font-size:10px;padding:5px 6px;cursor:pointer}
 .tm-delete{color:#c0596f}
-.status-badge{position:absolute;top:6px;left:6px;font-size:10px;padding:3px 8px;border-radius:8px;border:2px solid;font-family:'Ticketing',cursive;letter-spacing:.3px;z-index:3}
+.status-badge{position:absolute;top:6px;left:6px;font-size:10px;padding:3px 8px;border-radius:8px;border:2px solid;font-family:"Poppins",sans-serif;letter-spacing:.3px;z-index:3}
 .status-have{background:var(--green);border-color:#7fbf7a}
 .status-wishlist{background:var(--purple);border-color:#b9a3e0;color:#5f4a8c}
 .status-stbo{background:var(--blue);border-color:#5fa8d9;color:#1d4f6e}
-.dup-badge{position:absolute;top:6px;right:6px;font-size:10px;padding:3px 7px;border-radius:8px;border:2px solid #bfe0f2;background:var(--blue);font-family:'Ticketing',cursive;cursor:pointer;z-index:3}
+.dup-badge{position:absolute;top:6px;right:6px;font-size:10px;padding:3px 7px;border-radius:8px;border:2px solid #bfe0f2;background:var(--blue);font-family:"Poppins",sans-serif;cursor:pointer;z-index:3}
 .card-price{font-size:11px;color:#8b7a88;padding:0 8px}
 /* status overlays on card thumbnail */
 .tile.card-tile .thumb{position:relative}
@@ -126,7 +126,7 @@ body.bulk-edit .del-x{display:flex}
 .sort-member-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:8px}
 .sort-member-row select{border:2px solid var(--line);font-family:inherit;font-size:10px;padding:4px;background:#fff;border-radius:7px;flex:1}
 .badge-stack{position:absolute;bottom:6px;left:6px;right:6px;z-index:3;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
-.popular-badge,.rarefind-badge{font-size:9px;padding:3px 9px;border-radius:20px;border:2px solid;font-family:'Ticketing',cursive;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.popular-badge,.rarefind-badge{font-size:9px;padding:3px 9px;border-radius:20px;border:2px solid;font-family:"Poppins",sans-serif;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:3px;white-space:nowrap}
 .popular-badge{border-color:#f3cbe0;background:linear-gradient(135deg,#ffe1f0,#eaf2ff);box-shadow:0 1px 4px rgba(219,158,196,.35);color:#e3a9c2}
 .popular-badge .badge-text{color:#8a8390}
 .rarefind-badge{border-color:#e6d29c;background:linear-gradient(135deg,#f8edc7,#fff8e6);box-shadow:0 1px 4px rgba(214,186,110,.35);color:#c7ab5c}
@@ -236,7 +236,7 @@ body.no-scroll{overflow:hidden;touch-action:none}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;border-bottom:1px dashed var(--line);padding-bottom:6px;color:#7a6b76}
 .stats-heading{font-size:11px;color:#8b7a88;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px}
 .stats-heading:first-child{margin-top:0}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Ticketing",cursive;color:#a493a0;box-sizing:border-box;z-index:30}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--line);box-shadow:0 -4px 14px rgba(122,107,118,.06);display:flex;justify-content:space-around;align-items:center;padding:10px 6px calc(10px + env(safe-area-inset-bottom));font:12px "Poppins",sans-serif;color:#a493a0;box-sizing:border-box;z-index:30}
 nav>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;line-height:1.3}
 nav>div:active{background:#f8f3fa}
 .fab-wrap{position:fixed;right:16px;bottom:78px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
@@ -247,14 +247,14 @@ nav>div:active{background:#f8f3fa}
 .modal-bg{position:fixed;inset:0;background:rgba(122,107,118,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .binder-viewer-modal{z-index:40}
 .modal{background:#fff;border-radius:18px;border:2px solid var(--line);padding:20px;text-align:left;max-width:360px;width:100%;box-shadow:0 8px 26px rgba(122,107,118,.16);max-height:88vh;overflow:auto}
-.modal .big{font-family:'Ticketing',cursive;font-weight:normal;font-size:20px;letter-spacing:.3px;line-height:1.8;margin-bottom:10px;text-align:center;color:#8a6b7c}
+.modal .big{font-family:"Poppins",sans-serif;font-weight:normal;font-size:20px;letter-spacing:.3px;line-height:1.8;margin-bottom:10px;text-align:center;color:#8a6b7c}
 .modal .sub{font-size:13px;color:#a493a0;text-align:center}
 .preview-modal{max-width:420px;padding:0;text-align:center;overflow:auto;position:relative}
 .preview-modal .close-x{position:absolute;top:10px;right:10px;float:none;z-index:2;background:rgba(255,255,255,.85);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(122,107,118,.25)}
 .preview-image-wrap{position:relative;overflow:hidden;border-radius:0 0 16px 16px;margin:0}
 .preview-image-wrap::before{content:'';display:block;padding-top:150%}
 .preview-image-wrap img{position:absolute;inset:0;width:100%;height:100%;border-radius:0;object-fit:cover;box-shadow:none;display:block}
-.preview-title{font-family:"Ticketing",cursive;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
+.preview-title{font-family:"Poppins",sans-serif;font-weight:normal;font-size:16px;color:#8a6b7c;margin:12px 14px 4px}
 .preview-meta{font-size:12px;color:var(--text);padding:0 14px 14px}
 /* folder photo template — shown large, uncropped, at native resolution */
 .template-modal{max-width:640px}
@@ -299,7 +299,7 @@ nav>div:active{background:#f8f3fa}
 .status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e9d38f;font-weight:700}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
-.beta-badge{font-family:'Ticketing',cursive;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
+.beta-badge{font-family:"Poppins",sans-serif;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
 .swatch-row{display:flex;align-items:center;gap:10px;margin-top:4px}
 .color-picker-swatch{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px #fff inset}
 .color-picker-hex{font-size:13px;font-family:ui-monospace,monospace;letter-spacing:.02em;color:var(--text);text-transform:uppercase}
@@ -316,12 +316,12 @@ nav>div:active{background:#f8f3fa}
 .binder-cover{position:relative;background:#f6f2fb;overflow:hidden}
 .binder-cover::before{content:'';display:block;padding-top:120%}
 .binder-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-label{position:absolute;left:10%;right:10%;top:10%;transform:rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:12px;line-height:1.3;word-break:break-word;z-index:2;padding:5px 8px;border-radius:5px;border:2px solid #3a2a35;box-shadow:2px 2px 0 #3a2a35;image-rendering:pixelated}
+.binder-cover-label{position:absolute;left:10%;right:10%;top:10%;transform:rotate(-4deg);text-align:center;font-family:"Poppins",sans-serif;font-weight:600;font-size:12px;line-height:1.3;word-break:break-word;z-index:2;padding:5px 8px;border-radius:5px;border:2px solid #3a2a35;box-shadow:2px 2px 0 #3a2a35;image-rendering:pixelated}
 .binder-cover-page{flex:1;position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#f6f2fb}
 .binder-cover-spacer{visibility:hidden}
 .binder-cover-overlay{position:absolute;inset:0}
 .binder-cover-overlay img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.binder-cover-page-text{position:absolute;left:12%;right:12%;top:8%;transform:rotate(-4deg);text-align:center;font-family:"Pixelify Sans",sans-serif;font-weight:600;font-size:18px;line-height:1.4;word-break:break-word;z-index:2;padding:9px 16px;border-radius:6px;border:3px solid #3a2a35;box-shadow:3px 3px 0 #3a2a35}
+.binder-cover-page-text{position:absolute;left:12%;right:12%;top:8%;transform:rotate(-4deg);text-align:center;font-family:"Poppins",sans-serif;font-weight:600;font-size:18px;line-height:1.4;word-break:break-word;z-index:2;padding:9px 16px;border-radius:6px;border:3px solid #3a2a35;box-shadow:3px 3px 0 #3a2a35}
 .binder-slot-name-pill{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:94%;width:max-content;font-size:9px;line-height:1.25;padding:2px 6px;border-radius:8px;text-align:center;white-space:normal;overflow-wrap:break-word;word-break:break-word;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .binder-tile-title{padding:6px 8px 2px;font-size:12px;font-weight:600}
 .binder-tile-meta{padding:0 8px 8px;font-size:10px;color:#a493a0}
@@ -526,6 +526,7 @@ nav>div:active{background:#f8f3fa}
 <div class="panel hidden" id="home-lists-bar">
   <div class="lb-label">Quick lists</div>
   <div class="list-tabs">
+    <div class="opt" data-list="have" onclick="showListsPanel('have')">Owned</div>
     <div class="opt" data-list="stbo" onclick="showListsPanel('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="showListsPanel('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="showListsPanel('wishlist')">Wishlist</div>
@@ -540,8 +541,9 @@ nav>div:active{background:#f8f3fa}
 </div>
 
 <div class="panel hidden" id="lists-panel">
-  <div class="title-row"><b class="section-title">Wishlist / Duplicates / STBO / Popular / Rare Find</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
+  <div class="title-row"><b class="section-title">Owned / Wishlist / Duplicates / STBO / Popular / Rare Find</b><button class="btn small ghost" onclick="goHome()">Close</button></div>
   <div class="list-tabs">
+    <div class="opt" data-list="have" onclick="switchListsTab('have')">Owned</div>
     <div class="opt" data-list="stbo" onclick="switchListsTab('stbo')">STBO</div>
     <div class="opt" data-list="duplicate" onclick="switchListsTab('duplicate')">Duplicates</div>
     <div class="opt" data-list="wishlist" onclick="switchListsTab('wishlist')">Wishlist</div>
@@ -4530,7 +4532,7 @@ function renderListsPanel(){
   if(pageCards.length===0){
     const note = document.createElement('div');
     note.className='empty-note';
-    const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='popular' ? 'Popular' : listsTab==='rarefind' ? 'Rare Find' : listsTab;
+    const label = listsTab==='duplicate' ? 'Duplicate' : listsTab==='popular' ? 'Popular' : listsTab==='rarefind' ? 'Rare Find' : listsTab==='have' ? 'Owned' : listsTab;
     note.textContent = listsMiniSearchQuery
       ? `No ${label} cards match "${listsMiniSearchQuery}".`
       : `No cards marked as ${label} yet.`;
