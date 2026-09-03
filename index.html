@@ -328,6 +328,11 @@ body.bulk-edit .del-x{display:flex}
 .tile[draggable="true"]{cursor:grab}
 .tile.dragging{opacity:.35}
 @keyframes pageFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardPickerBgFade{from{opacity:0}to{opacity:1}}
+@keyframes cardPickerPopIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+#card-picker-modal.popping-in{animation:cardPickerBgFade .16s ease both}
+#card-picker-modal.popping-in .modal{animation:cardPickerPopIn .18s cubic-bezier(.34,1.56,.64,1) both}
+#card-picker-modal.popping-in .card-picker-list{pointer-events:none}
 .page-fade{animation:pageFadeIn .28s ease both}
 .tile-enter{animation:pageFadeIn .3s ease both}
 .tile{transition:transform .28s cubic-bezier(.22,.8,.24,1)}
@@ -528,12 +533,13 @@ nav>div:active{background:#f8f3fa}
 /* card picker modal: drag the bottom-right corner to expand it. Photocard
    tiles have exactly two fixed sizes - one for mobile, one for desktop - so
    resizing the modal changes the column count, never the card size itself. */
-#card-picker-modal .modal{resize:both;overflow:auto;display:flex;flex-direction:column;min-width:320px;width:336px;min-height:360px;max-width:min(96vw,680px);max-height:92vh}
+#card-picker-modal .modal{resize:both;overflow:auto;display:flex;flex-direction:column;min-width:280px;width:448px;min-height:360px;max-width:min(96vw,680px);max-height:92vh}
 #card-picker-modal .card-picker-list{flex:1;min-height:120px;max-height:none}
 .card-picker-item{width:96px;height:144px;cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
 @media(max-width:767px){
   .card-picker-list{grid-template-columns:repeat(auto-fill,80px)}
   .card-picker-item{width:80px;height:120px}
+  #card-picker-modal .modal{width:296px}
 }
 .card-picker-item::before{content:'';display:block;padding-top:150%}
 .card-picker-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -1038,7 +1044,7 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('card-picker-modal')">✕</button>
     <div class="section-title">Choose a photocard</div>
     <button type="button" class="btn small alt" style="width:100%;margin-bottom:8px" onclick="openCardModalForBinderUpload()">+ Upload new photocard</button>
-    <input id="card-picker-search" class="mini-search-inline" placeholder="Search your photocards..." oninput="renderCardPickerList()" style="width:100%;box-sizing:border-box">
+    <input id="card-picker-search" class="mini-search-inline" placeholder="Search your photocards..." oninput="renderCardPickerList()" style="width:100%;box-sizing:border-box;flex:0 0 auto">
     <div class="card-picker-list" id="card-picker-list"></div>
   </div>
 </div>
@@ -4146,7 +4152,10 @@ function binderSlotRemove(){
 function openCardPicker(binderId, slotIndex){
   cardPickerTarget = {binderId, slotIndex};
   document.getElementById('card-picker-search').value = '';
-  document.getElementById('card-picker-modal').classList.remove('hidden');
+  const modalBg = document.getElementById('card-picker-modal');
+  modalBg.classList.remove('hidden');
+  modalBg.classList.add('popping-in');
+  setTimeout(()=>modalBg.classList.remove('popping-in'), 180);
   renderCardPickerList();
 }
 function renderCardPickerList(){
