@@ -526,12 +526,15 @@ nav>div:active{background:#f8f3fa}
 .binder-slot-empty-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(122,107,118,.35)}
 .card-picker-list{max-height:280px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,96px);justify-content:space-between;gap:8px;margin-top:8px}
 /* card picker modal: drag the bottom-right corner to expand it. Photocard
-   tiles stay a fixed 96px so resizing changes the column count (more cards
-   per row), never the card size. Starts at 3-per-row width and can't grow
-   past the main photocard grid's own max width. */
+   tiles have exactly two fixed sizes - one for mobile, one for desktop - so
+   resizing the modal changes the column count, never the card size itself. */
 #card-picker-modal .modal{resize:both;overflow:auto;display:flex;flex-direction:column;min-width:320px;width:336px;min-height:360px;max-width:min(96vw,680px);max-height:92vh}
 #card-picker-modal .card-picker-list{flex:1;min-height:120px;max-height:none}
-.card-picker-item{cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
+.card-picker-item{width:96px;height:144px;cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid var(--line);position:relative}
+@media(max-width:767px){
+  .card-picker-list{grid-template-columns:repeat(auto-fill,80px)}
+  .card-picker-item{width:80px;height:120px}
+}
 .card-picker-item::before{content:'';display:block;padding-top:150%}
 .card-picker-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card-picker-item .cpi-name{position:absolute;left:0;right:0;bottom:0;background:rgba(50,35,48,.72);color:#fff;font-size:9px;padding:2px 4px;line-height:1.2;max-height:2.4em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
