@@ -5093,7 +5093,7 @@ function renderSrFolders(){
       pillsWrap.className = 'folder-pills';
       const pill = document.createElement('span');
       pill.className = 'folder-pill';
-      pill.textContent = trail.join(' › ');
+      pill.textContent = trail.slice(1).join(' › ');
       pillsWrap.appendChild(pill);
       div.querySelector('.thumb').appendChild(pillsWrap);
     }
@@ -5119,7 +5119,8 @@ function renderSrCards(){
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'folder-pills';
       folders.forEach(({trail})=>{
-        const label = trail.join(' › ');
+        const label = trail.slice(1).join(' › ');
+        if(!label) return;
         const pill = document.createElement('span');
         pill.className = 'folder-pill';
         pill.textContent = label;
