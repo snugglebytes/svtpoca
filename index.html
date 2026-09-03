@@ -531,9 +531,10 @@ nav>div:active{background:#f8f3fa}
 .card-upload-folder-list{max-height:150px;overflow:auto;margin-bottom:6px}
 .binder-slot.drag-over{box-shadow:inset 0 0 0 3px var(--blue, #5fa8d9);border-color:#5fa8d9}
 .binder-slot[draggable="true"]{cursor:grab}
-.crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px}
+.crop-wrap{position:relative;width:100%;aspect-ratio:2/3;background:#2b2530;border-radius:10px;overflow:hidden;touch-action:none;margin-bottom:8px;perspective:700px}
 .crop-wrap.square{aspect-ratio:1}
 .crop-wrap img{position:absolute;top:0;left:0;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.crop-tilt-hint{display:flex;justify-content:space-between;font-size:9px;color:#a493a0;margin-top:-4px;margin-bottom:6px}
 .file-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px}
 .file-row input[type=file]{flex:1;font-size:11px}
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:70}
@@ -777,7 +778,9 @@ nav>div:active{background:#f8f3fa}
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
-        <div class="field"><label>Tilt</label><input type="range" id="folder-crop-tilt" min="-45" max="45" value="0"></div>
+        <div class="field"><label>Rotate</label><input type="range" id="folder-crop-tilt" min="-45" max="45" value="0"></div>
+        <div class="field"><label>Tilt</label><input type="range" id="folder-crop-tiltshift" min="-45" max="45" value="0"></div>
+        <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
           <span class="crop-check hidden" id="folder-crop-check">✓</span>
@@ -816,7 +819,9 @@ nav>div:active{background:#f8f3fa}
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
       <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
-      <div class="field"><label>Tilt</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field"><label>Rotate</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field"><label>Tilt</label><input type="range" id="crop-tiltshift" min="-45" max="45" value="0"></div>
+      <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
       <div class="crop-actions">
         <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
         <span class="crop-check hidden" id="card-crop-check">✓</span>
@@ -930,7 +935,9 @@ nav>div:active{background:#f8f3fa}
       <div id="binder-crop-area" class="hidden">
         <div class="crop-wrap" id="binder-crop-wrap"><img id="binder-crop-img"></div>
         <div class="field"><label>Zoom</label><input type="range" id="binder-crop-zoom" min="100" max="300" value="100"></div>
-        <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
+        <div class="field"><label>Rotate</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
+        <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tiltshift" min="-45" max="45" value="0"></div>
+        <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
           <span class="crop-check hidden" id="binder-crop-check">✓</span>
@@ -3105,15 +3112,15 @@ let croppedFolderThumbDataUrl = null;
 let activeCrop = null; // {target,wrapId,imgId,zoomId,areaId,outW,outH}
 function startCropFor(target){
   if(target==='folder'){
-    activeCrop = {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', tiltId:'folder-crop-tilt', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300};
+    activeCrop = {target:'folder', wrapId:'folder-crop-wrap', imgId:'folder-crop-img', zoomId:'folder-crop-zoom', tiltId:'folder-crop-tilt', tiltShiftId:'folder-crop-tiltshift', areaId:'folder-crop-area', checkId:'folder-crop-check', outW:300, outH:300};
   } else if(target==='binder'){
     // 12 and 13-grid binders use a square cover crop; all other grid counts use a
     // photocard-style 2:3 portrait crop, matching how the cover is actually displayed.
     const isSquare = isSquareBinderCover();
-    activeCrop = {target:'binder', wrapId:'binder-crop-wrap', imgId:'binder-crop-img', zoomId:'binder-crop-zoom', tiltId:'binder-crop-tilt', areaId:'binder-crop-area', checkId:'binder-crop-check', outW: isSquare?340:300, outH: isSquare?340:450};
+    activeCrop = {target:'binder', wrapId:'binder-crop-wrap', imgId:'binder-crop-img', zoomId:'binder-crop-zoom', tiltId:'binder-crop-tilt', tiltShiftId:'binder-crop-tiltshift', areaId:'binder-crop-area', checkId:'binder-crop-check', outW: isSquare?340:300, outH: isSquare?340:450};
     document.getElementById('binder-crop-wrap').classList.toggle('square', isSquare);
   } else {
-    activeCrop = {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', tiltId:'crop-tilt', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
+    activeCrop = {target:'card', wrapId:'crop-wrap', imgId:'crop-img', zoomId:'crop-zoom', tiltId:'crop-tilt', tiltShiftId:'crop-tiltshift', areaId:'crop-area', checkId:'card-crop-check', outW:300, outH:450};
   }
 }
 function isSquareBinderCover(){
@@ -3161,7 +3168,7 @@ function loadCropFromFile(target, event){
   reader.readAsDataURL(file);
   event.target.value = '';
 }
-let cropState = {x:0,y:0,scale:1,tilt:0,dragging:false,startX:0,startY:0};
+let cropState = {x:0,y:0,scale:1,tilt:0,tiltShift:0,dragging:false,startX:0,startY:0};
 
 /* Crop now saves itself as you adjust it — no "Apply Crop" button to
    remember to click. Debounced so a mid-drag/mid-slide doesn't spam the
@@ -3179,6 +3186,7 @@ function fitCropImage(){
   const ratio = Math.max(r.width/img.naturalWidth, r.height/img.naturalHeight);
   cropState.scale = ratio;
   cropState.tilt = 0;
+  cropState.tiltShift = 0;
   img.style.width = (img.naturalWidth*ratio)+'px';
   img.style.height = (img.naturalHeight*ratio)+'px';
   cropState.x = (r.width - img.naturalWidth*ratio)/2;
@@ -3187,12 +3195,16 @@ function fitCropImage(){
   document.getElementById(activeCrop.zoomId).value = 100;
   const tiltEl = document.getElementById(activeCrop.tiltId);
   if(tiltEl) tiltEl.value = 0;
+  const tiltShiftEl = document.getElementById(activeCrop.tiltShiftId);
+  if(tiltShiftEl) tiltShiftEl.value = 0;
   scheduleAutoApplyCrop(); // capture the default centered crop right away, even if the user never touches zoom/tilt
 }
 function updateCropPos(){
   const img = document.getElementById(activeCrop.imgId);
   img.style.left = cropState.x+'px'; img.style.top = cropState.y+'px';
-  img.style.transform = 'rotate('+(cropState.tilt||0)+'deg)';
+  // "Rotate" spins the photo in-plane; "Tilt" leans it forward/backward in 3D
+  // (a perspective/keystone effect), like a tiny tilt-shift adjustment.
+  img.style.transform = 'rotate('+(cropState.tilt||0)+'deg) perspective(700px) rotateX('+(cropState.tiltShift||0)+'deg)';
 }
 function setupCropDrag(){
   const wrap = document.getElementById(activeCrop.wrapId);
@@ -3219,6 +3231,8 @@ function setupCropDrag(){
   };
   const tiltEl = document.getElementById(activeCrop.tiltId);
   if(tiltEl) tiltEl.oninput=(e)=>{ cropState.tilt = parseFloat(e.target.value)||0; updateCropPos(); scheduleAutoApplyCrop(); };
+  const tiltShiftEl = document.getElementById(activeCrop.tiltShiftId);
+  if(tiltShiftEl) tiltShiftEl.oninput=(e)=>{ cropState.tiltShift = parseFloat(e.target.value)||0; updateCropPos(); scheduleAutoApplyCrop(); };
 }
 function applyCrop(){
   const wrap = document.getElementById(activeCrop.wrapId);
@@ -3240,11 +3254,31 @@ function applyCrop(){
   }
   ctx.drawImage(img, cropState.x*sx, cropState.y*sy, iw, ih);
   ctx.restore();
-  const dataUrl = canvas.toDataURL('image/jpeg',0.7);
+  const dataUrl = applyTiltShiftKeystone(canvas, cropState.tiltShift||0).toDataURL('image/jpeg',0.7);
   if(activeCrop.target==='folder'){ croppedFolderThumbDataUrl = dataUrl; }
   else if(activeCrop.target==='binder'){ croppedBinderCoverDataUrl = dataUrl; }
   else { croppedDataUrl = dataUrl; }
   showCropCheck();
+}
+/* Bakes the "Tilt" (forward/backward lean) preview into the exported crop as a
+   keystone effect: each horizontal row is scaled a little narrower toward one
+   edge and a little wider toward the other, approximating the trapezoid a real
+   forward/backward tilt would produce, then re-centered so nothing shifts off-canvas. */
+function applyTiltShiftKeystone(sourceCanvas, tiltShiftDeg){
+  if(!tiltShiftDeg) return sourceCanvas;
+  const w = sourceCanvas.width, h = sourceCanvas.height;
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  const octx = out.getContext('2d');
+  const k = Math.sin(tiltShiftDeg*Math.PI/180) * 0.35; // max ~35% width spread at 45deg
+  for(let y=0; y<h; y++){
+    const t = h<=1 ? 0 : y/(h-1);
+    const rowScale = 1 + k*(2*t - 1);
+    const rowW = w*rowScale;
+    const dx = (w - rowW)/2;
+    octx.drawImage(sourceCanvas, 0, y, w, 1, dx, y, rowW, 1);
+  }
+  return out;
 }
 function showCropCheck(){
   const el = document.getElementById(activeCrop.checkId);
