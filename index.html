@@ -419,6 +419,9 @@ nav>div:active{background:#f8f3fa}
 .field-row{display:flex;gap:12px;margin-bottom:12px}
 .field-row .field{flex:1;min-width:0;margin-bottom:0}
 .field input[type=range]{width:100%;padding:0;border:none;height:20px;margin:2px 0}
+.field.crop-slider{margin-bottom:0}
+.field.crop-slider label{margin-bottom:0}
+.field.crop-slider input[type=range]{margin:0}
 .dropdown{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:14px;color:var(--text);font-family:inherit;cursor:pointer}
 .field label{display:block;font-size:12px;font-weight:600;margin-bottom:2px}
 .field input:not([type=checkbox]),.field select{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px}
@@ -823,9 +826,9 @@ nav>div:active{background:#f8f3fa}
       </div>
       <div id="folder-crop-area" class="hidden">
         <div class="crop-wrap square" id="folder-crop-wrap"><img id="folder-crop-img"></div>
-        <div class="field"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
-        <div class="field"><label>Rotate</label><input type="range" id="folder-crop-tilt" min="-45" max="45" value="0"></div>
-        <div class="field"><label>Tilt</label><input type="range" id="folder-crop-tiltshift" min="-45" max="45" value="0"></div>
+        <div class="field crop-slider"><label>Zoom</label><input type="range" id="folder-crop-zoom" min="100" max="300" value="100"></div>
+      <div class="field crop-slider"><label>Rotate</label><input type="range" id="folder-crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field crop-slider"><label>Tilt</label><input type="range" id="folder-crop-tiltshift" min="-45" max="45" value="0"></div>
         <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
@@ -885,9 +888,9 @@ nav>div:active{background:#f8f3fa}
     <p class="import-choice-note">Uploading a file avoids sites that block hotlinking, and the photo gets saved directly inside your JSON backup — no external link needed.</p>
     <div id="crop-area" class="hidden">
       <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
-      <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
-      <div class="field"><label>Rotate</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
-      <div class="field"><label>Tilt</label><input type="range" id="crop-tiltshift" min="-45" max="45" value="0"></div>
+      <div class="field crop-slider"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
+      <div class="field crop-slider"><label>Rotate</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field crop-slider"><label>Tilt</label><input type="range" id="crop-tiltshift" min="-45" max="45" value="0"></div>
       <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
       <div class="crop-actions">
         <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
@@ -974,9 +977,9 @@ nav>div:active{background:#f8f3fa}
       <p class="import-choice-note">Covers are resized and compressed automatically to keep your backup file small.</p>
       <div id="binder-crop-area" class="hidden">
         <div class="crop-wrap" id="binder-crop-wrap"><img id="binder-crop-img"></div>
-        <div class="field"><label>Zoom</label><input type="range" id="binder-crop-zoom" min="100" max="300" value="100"></div>
-        <div class="field"><label>Rotate</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
-        <div class="field"><label>Tilt</label><input type="range" id="binder-crop-tiltshift" min="-45" max="45" value="0"></div>
+        <div class="field crop-slider"><label>Zoom</label><input type="range" id="binder-crop-zoom" min="100" max="300" value="100"></div>
+      <div class="field crop-slider"><label>Rotate</label><input type="range" id="binder-crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field crop-slider"><label>Tilt</label><input type="range" id="binder-crop-tiltshift" min="-45" max="45" value="0"></div>
         <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
         <div class="crop-actions">
           <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
@@ -2966,6 +2969,7 @@ function openCardModal(card){
   // slot" flow (see openCardModalForBinderUpload); a plain add/edit never shows it.
   document.getElementById('card-upload-folder-section').classList.toggle('hidden', !cardUploadMode);
   document.getElementById('card-modal').classList.remove('hidden');
+  document.getElementById('card-modal-scroll').scrollTop = 0;
 }
 function closeCardEditor(){
   closeModal('card-modal');
