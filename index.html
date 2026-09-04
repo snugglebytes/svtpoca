@@ -428,6 +428,9 @@ nav>div:active{background:#f8f3fa}
 .status-picker .opt.sel,.tag-picker .opt.sel{background:var(--yellow);border-color:#e9d38f;font-weight:700}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
 .modal-actions .btn{flex:1}
+#card-modal .modal{display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
+#card-modal .modal-scroll{overflow:auto;flex:1;min-height:0;padding-right:2px;margin-right:-2px}
+#card-modal .modal-actions{position:sticky;bottom:0;left:0;right:0;background:#fff;margin:0 -20px;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:2px solid var(--line);z-index:2}
 .beta-badge{font-family:"Poppins",sans-serif;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
 .swatch-row{display:flex;align-items:center;gap:10px;margin-top:4px}
 .color-picker-swatch{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px #fff inset}
@@ -843,12 +846,13 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeCardEditor()">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
+    <div class="modal-scroll" id="card-modal-scroll">
     <div class="field"><label>Name / label</label><input id="card-name" placeholder="e.g. Seungkwan FML ver.A"></div>
     <div class="field">
       <label>Tags (this card appears in every folder linked to a tag below)</label>
       <div class="combo" id="card-tag-combo">
-        <div class="combo-chips" id="card-tag-chips"></div>
         <input id="card-tag-input" placeholder="Type to search or add tags..." autocomplete="off">
+        <div class="combo-chips" id="card-tag-chips"></div>
         <div class="combo-list hidden" id="card-tag-list"></div>
       </div>
     </div>
@@ -871,7 +875,6 @@ nav>div:active{background:#f8f3fa}
     <div class="field hidden" id="dup-count-row"><label>How many extra copies?</label><input id="card-dup-count" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
     <div class="field checkbox-row"><input type="checkbox" id="card-popular"> <label style="margin:0" for="card-popular">Mark as Popular</label></div>
     <div class="field checkbox-row"><input type="checkbox" id="card-rarefind"> <label style="margin:0" for="card-rarefind">Mark as Rare Find</label></div>
-    <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
     <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
     <div class="field-or">— or —</div>
@@ -890,6 +893,8 @@ nav>div:active{background:#f8f3fa}
         <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
         <span class="crop-check hidden" id="card-crop-check">✓</span>
       </div>
+    </div>
+    <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
     </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
