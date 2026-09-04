@@ -29,9 +29,9 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px;transition:transform .1s ease}
 .header-icons .data-btn{white-space:nowrap}
 .wrap{padding:10px 10px calc(96px + env(safe-area-inset-bottom));max-width:680px;margin:0 auto}
-@media(min-width:900px){.wrap{max-width:920px;padding-left:20px;padding-right:20px}}
-@media(min-width:1200px){.wrap{max-width:1180px}}
-@media(min-width:1600px){.wrap{max-width:1440px}}
+@media(min-width:900px){.wrap{max-width:690px;padding-left:20px;padding-right:20px}}
+@media(min-width:1200px){.wrap{max-width:885px}}
+@media(min-width:1600px){.wrap{max-width:1080px}}
 .search{margin:8px 0;display:flex;gap:6px}
 .search input{flex:1;padding:8px 9px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
 .mini-search-inline{flex:1;min-width:64px;padding:5px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:11px}
@@ -802,6 +802,14 @@ nav>div:active{background:#f8f3fa}
     <div class="section-title" id="folder-modal-title">New Folder</div>
     <div class="field"><label>Folder title</label><input id="folder-title" placeholder="e.g. BSS, FML era, Hip-Hop Unit"></div>
     <div class="field">
+      <label>Linked tags (a card must have ALL of these tags to show inside)</label>
+      <div class="combo" id="folder-tag-combo">
+        <div class="combo-chips" id="folder-tag-chips"></div>
+        <input id="folder-tag-input" placeholder="Type to search or add a tag..." autocomplete="off">
+        <div class="combo-list hidden" id="folder-tag-list"></div>
+      </div>
+    </div>
+    <div class="field">
       <label>Thumbnail image (square)</label>
       <input id="folder-thumb" placeholder="Paste image URL...">
       <div class="field" style="margin-top:6px"><button class="btn small alt" onclick="loadCropFromUrl('folder')">Load / Update Image</button></div>
@@ -822,14 +830,6 @@ nav>div:active{background:#f8f3fa}
         </div>
       </div>
     </div>
-    <div class="field">
-      <label>Linked tags (a card must have ALL of these tags to show inside)</label>
-      <div class="combo" id="folder-tag-combo">
-        <div class="combo-chips" id="folder-tag-chips"></div>
-        <input id="folder-tag-input" placeholder="Type to search or add a tag..." autocomplete="off">
-        <div class="combo-list hidden" id="folder-tag-list"></div>
-      </div>
-    </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="confirmSaveFolder()">Save</button>
       <button class="btn ghost hidden" id="move-folder-btn-modal" onclick="openMoveModal('folder', editingFolderId)">Move</button>
@@ -843,25 +843,6 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeCardEditor()">✕</button>
     <div class="section-title" id="card-modal-title">Photocard</div>
-    <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
-    <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
-    <div class="field-or">— or —</div>
-    <div class="dropzone" id="card-dropzone">
-      <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
-      <input type="file" id="card-file" accept="image/*" class="hidden" onchange="loadCropFromFile('card', event)">
-    </div>
-    <p class="import-choice-note">Uploading a file avoids sites that block hotlinking, and the photo gets saved directly inside your JSON backup — no external link needed.</p>
-    <div id="crop-area" class="hidden">
-      <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
-      <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
-      <div class="field"><label>Rotate</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
-      <div class="field"><label>Tilt</label><input type="range" id="crop-tiltshift" min="-45" max="45" value="0"></div>
-      <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
-      <div class="crop-actions">
-        <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
-        <span class="crop-check hidden" id="card-crop-check">✓</span>
-      </div>
-    </div>
     <div class="field"><label>Name / label</label><input id="card-name" placeholder="e.g. Seungkwan FML ver.A"></div>
     <div class="field">
       <label>Tags (this card appears in every folder linked to a tag below)</label>
@@ -891,6 +872,25 @@ nav>div:active{background:#f8f3fa}
     <div class="field checkbox-row"><input type="checkbox" id="card-popular"> <label style="margin:0" for="card-popular">Mark as Popular</label></div>
     <div class="field checkbox-row"><input type="checkbox" id="card-rarefind"> <label style="margin:0" for="card-rarefind">Mark as Rare Find</label></div>
     <div class="field"><label>Price paid (optional)</label><input id="card-price" placeholder="e.g. 450" inputmode="decimal"></div>
+    <div class="field"><label>Image URL</label><input id="card-url" placeholder="Paste image URL..."></div>
+    <div class="field"><button class="btn small alt" onclick="loadCropFromUrl('card')">Load / Update Image</button></div>
+    <div class="field-or">— or —</div>
+    <div class="dropzone" id="card-dropzone">
+      <div>Drag &amp; drop an image, or <span class="dropzone-link">click to upload</span></div>
+      <input type="file" id="card-file" accept="image/*" class="hidden" onchange="loadCropFromFile('card', event)">
+    </div>
+    <p class="import-choice-note">Uploading a file avoids sites that block hotlinking, and the photo gets saved directly inside your JSON backup — no external link needed.</p>
+    <div id="crop-area" class="hidden">
+      <div class="crop-wrap" id="crop-wrap"><img id="crop-img"></div>
+      <div class="field"><label>Zoom</label><input type="range" id="crop-zoom" min="100" max="300" value="100"></div>
+      <div class="field"><label>Rotate</label><input type="range" id="crop-tilt" min="-45" max="45" value="0"></div>
+      <div class="field"><label>Tilt</label><input type="range" id="crop-tiltshift" min="-45" max="45" value="0"></div>
+      <div class="crop-tilt-hint"><span>◀ Backward</span><span>Forward ▶</span></div>
+      <div class="crop-actions">
+        <button class="btn small ghost" onclick="rotateCropImage()">⟳ Rotate</button>
+        <span class="crop-check hidden" id="card-crop-check">✓</span>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="saveCard()">Save</button>
       <button class="btn ghost hidden" id="move-card-btn-modal" onclick="openMoveModal('card', editingCardId)">Move</button>
