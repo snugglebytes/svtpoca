@@ -434,6 +434,9 @@ nav>div:active{background:#f8f3fa}
 #card-modal .modal{display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
 #card-modal .modal-scroll{overflow:auto;flex:1;min-height:0;padding-right:2px;margin-right:-2px}
 #card-modal .modal-actions{position:sticky;bottom:0;left:0;right:0;background:#fff;margin:0 -20px;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);z-index:2}
+#add-folder-modal .modal{display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
+#add-folder-modal .modal-scroll{overflow:auto;flex:1;min-height:0;padding-right:2px;margin-right:-2px}
+#add-folder-modal .modal-actions{position:sticky;bottom:0;left:0;right:0;background:#fff;margin:0 -20px;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);z-index:2}
 .beta-badge{font-family:"Poppins",sans-serif;font-size:7px;letter-spacing:.4px;background:var(--yellow);border:1px solid #e0b94a;border-radius:6px;padding:1px 4px;margin-top:1px;line-height:1.3}
 .swatch-row{display:flex;align-items:center;gap:10px;margin-top:4px}
 .color-picker-swatch{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px #fff inset}
@@ -806,12 +809,13 @@ nav>div:active{background:#f8f3fa}
   <div class="modal">
     <button class="close-x" onclick="closeModal('add-folder-modal')">✕</button>
     <div class="section-title" id="folder-modal-title">New Folder</div>
+    <div class="modal-scroll" id="folder-modal-scroll">
     <div class="field"><label>Folder title</label><input id="folder-title" placeholder="e.g. BSS, FML era, Hip-Hop Unit"></div>
     <div class="field">
       <label>Linked tags (a card must have ALL of these tags to show inside)</label>
       <div class="combo" id="folder-tag-combo">
-        <div class="combo-chips" id="folder-tag-chips"></div>
         <input id="folder-tag-input" placeholder="Type to search or add a tag..." autocomplete="off">
+        <div class="combo-chips" id="folder-tag-chips"></div>
         <div class="combo-list hidden" id="folder-tag-list"></div>
       </div>
     </div>
@@ -835,6 +839,7 @@ nav>div:active{background:#f8f3fa}
           <span class="crop-check hidden" id="folder-crop-check">✓</span>
         </div>
       </div>
+    </div>
     </div>
     <div class="modal-actions">
       <button class="btn alt" onclick="confirmSaveFolder()">Save</button>
@@ -2725,6 +2730,7 @@ function openAddFolderModal(){
   document.getElementById('delete-folder-btn').classList.add('hidden');
   document.getElementById('move-folder-btn-modal').classList.add('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
+  document.getElementById('folder-modal-scroll').scrollTop = 0;
 }
 function openEditFolder(f){
   if(f.fixed){ alert("This is a fixed member folder linked to the group's lineup — its tags can't be changed, but you can still add subfolders inside it."); }
@@ -2741,6 +2747,7 @@ function openEditFolder(f){
   document.getElementById('delete-folder-btn').classList.toggle('hidden', !!f.fixed);
   document.getElementById('move-folder-btn-modal').classList.remove('hidden');
   document.getElementById('add-folder-modal').classList.remove('hidden');
+  document.getElementById('folder-modal-scroll').scrollTop = 0;
 }
 /* ---- fuzzy matching helpers ---- */
 function normalizeStr(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
