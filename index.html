@@ -29,6 +29,9 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .icon-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:4px;transition:transform .1s ease}
 .header-icons .data-btn{white-space:nowrap}
 .wrap{padding:10px 10px calc(96px + env(safe-area-inset-bottom));max-width:680px;margin:0 auto}
+@media(min-width:900px){.wrap{max-width:920px;padding-left:20px;padding-right:20px}}
+@media(min-width:1200px){.wrap{max-width:1180px}}
+@media(min-width:1600px){.wrap{max-width:1440px}}
 .search{margin:8px 0;display:flex;gap:6px}
 .search input{flex:1;padding:8px 9px;border:2px solid var(--line);border-radius:9px;font-family:inherit;background:#fff;color:var(--text);font-size:13px}
 .mini-search-inline{flex:1;min-width:64px;padding:5px 8px;border:2px solid var(--line);border-radius:7px;font-family:inherit;background:#fdfaff;color:var(--text);font-size:11px}
@@ -124,6 +127,8 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .tags-search-full{width:100%;box-sizing:border-box;margin:8px 0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr);gap:12px}}
+@media(min-width:1200px){.grid{grid-template-columns:repeat(5,1fr)}}
 @media(max-width:767px){
   .grid,.search-results{overflow-x:auto;-webkit-overflow-scrolling:touch}
 }
@@ -243,15 +248,24 @@ body.bulk-edit .del-x{display:flex}
 .grid.pp-4{grid-template-columns:repeat(2,1fr)}
 .grid.pp-6{grid-template-columns:repeat(3,1fr)}
 .grid.pp-9{grid-template-columns:repeat(3,1fr)}
+.grid.pp-12{grid-template-columns:repeat(3,1fr)}
+@media(min-width:480px){.grid.pp-12{grid-template-columns:repeat(4,1fr)}}
 .grid.pp-13{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-13{grid-template-columns:repeat(4,1fr)}}
 .grid-row-center{display:flex;justify-content:center}
 .grid.pp-15{grid-template-columns:repeat(3,1fr)}
 @media(min-width:480px){.grid.pp-15{grid-template-columns:repeat(5,1fr)}}
-.grid.pp-13 .tile-title,.grid.pp-15 .tile-title{font-size:11px}
-.grid.pp-13 .tile-sub,.grid.pp-15 .tile-sub{font-size:9px}
-.grid.pp-9 .tag-pill,.grid.pp-13 .tag-pill,.grid.pp-15 .tag-pill{font-size:9px;padding:1px 5px;margin-top:2px;margin-right:2px}
-.grid.pp-13 .tag-pill,.grid.pp-15 .tag-pill{font-size:8px;padding:0px 4px}
+@media(min-width:900px){
+  .grid.pp-6{grid-template-columns:repeat(3,1fr)}
+  .grid.pp-9{grid-template-columns:repeat(3,1fr)}
+  .grid.pp-12{grid-template-columns:repeat(4,1fr)}
+  .grid.pp-13{grid-template-columns:repeat(4,1fr)}
+  .grid.pp-15{grid-template-columns:repeat(5,1fr)}
+}
+.grid.pp-12 .tile-title,.grid.pp-13 .tile-title,.grid.pp-15 .tile-title{font-size:11px}
+.grid.pp-12 .tile-sub,.grid.pp-13 .tile-sub,.grid.pp-15 .tile-sub{font-size:9px}
+.grid.pp-9 .tag-pill,.grid.pp-12 .tag-pill,.grid.pp-13 .tag-pill,.grid.pp-15 .tag-pill{font-size:9px;padding:1px 5px;margin-top:2px;margin-right:2px}
+.grid.pp-12 .tag-pill,.grid.pp-13 .tag-pill,.grid.pp-15 .tag-pill{font-size:8px;padding:0px 4px}
 .menu-wrap{position:relative;flex-shrink:0}
 .tile-menu{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:2px solid var(--line);border-radius:10px;box-shadow:3px 3px #eadff3;z-index:15;min-width:136px;overflow:hidden}
 .tile-menu button{display:flex;align-items:center;gap:6px;width:100%;background:none;border:none;text-align:left;padding:8px 10px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--text)}
@@ -630,6 +644,7 @@ nav>div:active{background:#f8f3fa}
         <option value="4">4</option>
         <option value="6">6</option>
         <option value="9">9</option>
+        <option value="12">12</option>
         <option value="13">13</option>
         <option value="15">15</option>
       </select>
@@ -704,6 +719,7 @@ nav>div:active{background:#f8f3fa}
         <option value="4">4</option>
         <option value="6">6</option>
         <option value="9">9</option>
+        <option value="12">12</option>
         <option value="13">13</option>
         <option value="15">15</option>
       </select>
