@@ -1696,6 +1696,29 @@ function switchSection(sec){
   goHome();
 }
 
+/* Like switchSection(), but keeps currentSection/currentPath as already set
+   by the caller instead of resetting to that section's root. Used after a
+   move so the user lands back where the moved item(s) used to be, rather
+   than always being dropped at the section home screen. */
+function switchSectionKeepPath(){
+  const sec = currentSection;
+  miniSearchQuery = '';
+  sortMemberFilter = '';
+  sortMode = DATA.lastSortMode || (sec==='allcards' ? 'date-uploaded' : '');
+  const sortSel = document.getElementById('sort-mode-select');
+  if(sortSel) sortSel.value = sortMode;
+  const miniInput = document.getElementById('mini-search-input');
+  if(miniInput) miniInput.value = '';
+  document.querySelectorAll('.section-toggle .opt').forEach(o=>o.classList.toggle('active', o.dataset.section===sec));
+  const isAllCards = sec==='allcards';
+  const toolbarCenter = document.getElementById('explorer-toolbar-center');
+  if(toolbarCenter) toolbarCenter.classList.toggle('hidden', isAllCards);
+  const fabFolderBtn = document.getElementById('fab-add-folder-btn');
+  if(fabFolderBtn) fabFolderBtn.classList.toggle('hidden', isAllCards);
+  const pagebarFolderBtn = document.querySelector('#explorer-panel .pagebar-add-btn[title="Add folder"]');
+  if(pagebarFolderBtn) pagebarFolderBtn.classList.toggle('hidden', isAllCards);
+  goHome();
+}
 function goHome(){
   document.getElementById('stats-panel').classList.add('hidden');
   document.getElementById('lists-panel').classList.add('hidden');
@@ -2412,6 +2435,8 @@ function bulkMoveSelected(){
   if(!items.length) return;
   moveContext = { multi: true, items: items.map(it=>({type:it.type, id:it.id})) };
   moveSection = currentSection==='allcards' ? 'albums' : currentSection;
+  moveOriginSection = moveSection;
+  moveOriginPath = [...currentPath];
   movePath = [];
   moveSearchQuery = '';
   const searchInput = document.getElementById('move-search-input');
@@ -2475,6 +2500,8 @@ let moveContext = null; // {type:'folder'|'card', id}
 let moveSection = 'albums';
 let movePath = [];
 let moveSearchQuery = '';
+let moveOriginSection = 'albums';
+let moveOriginPath = [];
 function onMoveSearch(){
   moveSearchQuery = document.getElementById('move-search-input').value.trim();
   renderMoveBrowser();
@@ -2482,6 +2509,8 @@ function onMoveSearch(){
 function openMoveModal(type, id){
   moveContext = {type, id};
   moveSection = currentSection;
+  moveOriginSection = currentSection;
+  moveOriginPath = [...currentPath];
   movePath = [];
   moveSearchQuery = '';
   const searchInput = document.getElementById('move-search-input');
@@ -2639,7 +2668,7 @@ function confirmMove(){
     closeModal('move-modal');
     moveContext = null;
     exitSelectMode();
-    if(movedFolders){ currentPath = []; switchSection(moveSection); }
+    if(movedFolders){ currentSection = moveOriginSection; currentPath = [...moveOriginPath]; switchSectionKeepPath(); }
     else refreshCurrentView();
     alert(`Moved ${taggedCards+movedFolders} item${(taggedCards+movedFolders)===1?'':'s'}.`);
     return;
@@ -2673,8 +2702,9 @@ function confirmMove(){
     targetList.push(node);
     save();
     closeModal('move-modal');
-    currentPath = [];
-    switchSection(moveSection);
+    currentSection = moveOriginSection;
+    currentPath = [...moveOriginPath];
+    switchSectionKeepPath();
     alert(`Moved "${node.title}".`);
   }
   moveContext = null;
