@@ -172,6 +172,17 @@ h1{font-family:"Poppins",sans-serif;font-weight:normal;font-size:22px;letter-spa
 .del-x{position:absolute;top:5px;right:5px;background:var(--red);border:2px solid #fff;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;line-height:1;z-index:2;display:none;align-items:center;justify-content:center;padding:0;transition:transform .12s ease}
 .del-x:active{transform:scale(.85)}
 body.bulk-edit .del-x{display:flex}
+.sel-check{position:absolute;top:5px;left:5px;width:19px;height:19px;border-radius:6px;background:#fff;border:2px solid var(--line);z-index:6;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:#fff;transition:transform .1s ease}
+.sel-check:active{transform:scale(.88)}
+body.select-mode .sel-check{display:flex}
+body.select-mode .tile{cursor:pointer}
+.tile.selected{outline:2px solid var(--accent);outline-offset:-2px;background:#fdf2f7}
+.tile.selected .sel-check{background:var(--accent);border-color:var(--accent)}
+#select-mode-btn.active{background:var(--accent)}
+.selection-bar{display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--purple);border:2px solid var(--line);border-radius:9px;padding:6px 10px;margin:6px 0}
+body.select-mode .selection-bar{display:flex}
+.selection-bar .sel-count{font-size:12px;font-weight:600}
+.selection-bar .sel-actions{display:flex;gap:6px;flex-wrap:wrap}
 .tile-title-edit{width:calc(100% - 12px);font-size:13px;font-weight:600;padding:3px 5px;margin:4px 6px 0;border:2px solid var(--accent);border-radius:6px;font-family:inherit;box-sizing:border-box;background:#fff;color:var(--text)}
 #bulk-edit-btn.active,#lists-bulk-edit-btn.active{background:var(--accent)}
 .sort-select{border:2px solid var(--line);border-radius:9px;background:#fff;color:#7a6b76;font-family:"Poppins",sans-serif;font-size:10px;padding:5px 6px;cursor:pointer}
@@ -667,6 +678,15 @@ nav>div:active{background:#f8f3fa}
       <option value="">Default order</option>
     </select>
   </div>
+  <div class="selection-bar" id="selection-bar">
+    <span class="sel-count" id="selection-count">0 selected</span>
+    <div class="sel-actions">
+      <button type="button" class="btn small alt" onclick="selectAllVisible()">Select all</button>
+      <button type="button" class="btn small ghost" onclick="bulkMoveSelected()">Move</button>
+      <button type="button" class="btn small danger" onclick="bulkDeleteSelected()">Delete</button>
+      <button type="button" class="btn small ghost" onclick="exitSelectMode()">Cancel</button>
+    </div>
+  </div>
   <div class="grid pp-6" id="explorer-grid"></div>
   <div class="toolbar-row">
     <div class="toolbar-left">
@@ -678,6 +698,7 @@ nav>div:active{background:#f8f3fa}
         <option value="date-edited">Date edited</option>
       </select>
       <button class="btn small ghost" id="bulk-edit-btn" onclick="toggleBulkEditMode()" title="Bulk edit">Bulk Edit</button>
+      <button class="btn small ghost" id="select-mode-btn" onclick="toggleSelectMode()" title="Select multiple">Select</button>
     </div>
     <div class="toolbar-center" id="explorer-toolbar-center">
       <button class="btn small ghost" id="templates-btn-album" onclick="openTemplatesModal('album')">Album</button>
@@ -1624,6 +1645,8 @@ let dragHoverKey = null; // last hovered tile key during a drag, to avoid redund
 let miniSearchQuery = '';
 let sortMode = '';
 let bulkEditMode = false;
+let selectMode = false;
+let selectedKeys = new Set(); // 'folder:id' or 'card:id'
 const FUZZY_THRESHOLD = 6; // fuzzy tolerance for "closest result" matching, case/punctuation-insensitive
 
 function tree(){ return DATA.nodes[currentSection]; }
@@ -2060,6 +2083,7 @@ function renderFolderTile(f, list, cardsInView){
   div.dataset.key = 'folder:'+f.id;
   div.draggable = true;
   div.innerHTML = `
+    <div class="sel-check">✓</div>
     <div class="thumb">${f.thumb ? `<img src="${f.thumb}">` : ''}</div>
     <div class="tile-title-row"><div class="tile-title" title="${escAttr(f.title)}">${escAttr(f.title)}</div>
       <div class="menu-wrap">
@@ -2075,10 +2099,15 @@ function renderFolderTile(f, list, cardsInView){
     <div class="tile-sub">${f.children.length} subfolder${f.children.length===1?'':'s'}</div>
     ${f.fixed ? '' : '<div class="del-x">✕</div>'}
   `;
+  const folderKey = 'folder:'+f.id;
+  if(selectMode && selectedKeys.has(folderKey)) div.classList.add('selected');
+  div.querySelector('.sel-check').onclick = (e)=>{ e.stopPropagation(); toggleSelectKey(folderKey); };
   div.querySelector('.thumb').addEventListener('click', (e)=>{
+    if(selectMode){ toggleSelectKey(folderKey); return; }
     currentPath = [...currentPath, f.id]; currentPage=1; clearMiniSearch(); renderExplorer();
   });
   div.querySelector('.tile-title').onclick = (e)=>{
+    if(selectMode){ e.stopPropagation(); toggleSelectKey(folderKey); return; }
     if(bulkEditMode){
       e.stopPropagation();
       startInlineRename(div.querySelector('.tile-title'), f.title, (val)=>{
@@ -2098,6 +2127,7 @@ function renderFolderTile(f, list, cardsInView){
   if(tmDelete) tmDelete.onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); deleteFolderNode(f); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteFolderNode(f); };
+  div.addEventListener('click', (e)=>{ if(selectMode && e.target===div){ toggleSelectKey(folderKey); } });
 
   // drag & drop (mouse) — tiles live-shuffle as you hover, like a phone home screen
   div.addEventListener('dragstart', (e)=>{ dragged={type:'folder', id:f.id}; dragHoverKey=null; e.dataTransfer.effectAllowed='move'; setTimeout(()=>div.classList.add('touch-dragging'),0); });
@@ -2175,6 +2205,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   div.dataset.key = 'card:'+c.id;
   div.draggable = true;
   div.innerHTML = `
+    <div class="sel-check">✓</div>
     <div class="status-badge status-${c.status}">${c.status.toUpperCase()}</div>
     ${c.duplicate ? `<div class="dup-badge">DUP${c.dupCount>1?' ×'+c.dupCount:''}</div>` : ''}
     <div class="thumb">${c.image ? `<img src="${c.image}">` : ''}${(c.popular || c.rareFind) ? `<div class="badge-stack">${c.popular ? '<div class="popular-badge"><span class="badge-text">Popular</span></div>' : ''}${c.rareFind ? '<div class="rarefind-badge"><span class="badge-text">Rare Find</span></div>' : ''}</div>` : ''}</div>
@@ -2192,10 +2223,17 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
     ${c.price ? `<div class="card-price">₱${c.price}</div>` : ''}
     <div class="del-x">✕</div>
   `;
+  const cardKey = 'card:'+c.id;
+  if(selectMode && selectedKeys.has(cardKey)) div.classList.add('selected');
+  div.querySelector('.sel-check').onclick = (e)=>{ e.stopPropagation(); toggleSelectKey(cardKey); };
   const dupBadge = div.querySelector('.dup-badge');
   if(dupBadge) dupBadge.onclick = (e)=>{ e.stopPropagation(); pendingDupCardId=c.id; document.getElementById('dup-modal').classList.remove('hidden'); };
-  div.querySelector('.thumb').addEventListener('click', openFn);
+  div.querySelector('.thumb').addEventListener('click', (e)=>{
+    if(selectMode){ toggleSelectKey(cardKey); return; }
+    openFn(e);
+  });
   div.querySelector('.tile-title').onclick = (e)=>{
+    if(selectMode){ e.stopPropagation(); toggleSelectKey(cardKey); return; }
     if(bulkEditMode){
       e.stopPropagation();
       startInlineRename(div.querySelector('.tile-title'), c.name||'', (val)=>{
@@ -2213,6 +2251,7 @@ function renderCardTile(c, list, cardsInView, onOpen, opts){
   cardMenuEl.querySelector('.tm-delete').onclick = (e)=>{ e.stopPropagation(); closeAllTileMenus(); deleteCardById(c.id); };
   const delX = div.querySelector('.del-x');
   if(delX) delX.onclick = (e)=>{ e.stopPropagation(); deleteCardById(c.id); };
+  div.addEventListener('click', (e)=>{ if(selectMode && e.target===div){ toggleSelectKey(cardKey); } });
 
   attachLocationScroll(div.querySelector('.tile-location'));
   attachLocationScroll(div.querySelector('.tile-title.card-name .tile-title-main'), '.tile-title-main-inner');
@@ -2280,6 +2319,98 @@ function toggleBulkEditMode(){
   if(btn1) btn1.classList.toggle('active', bulkEditMode);
   if(btn2) btn2.classList.toggle('active', bulkEditMode);
   refreshCurrentView();
+}
+
+function toggleSelectMode(){
+  selectMode = !selectMode;
+  selectedKeys.clear();
+  document.body.classList.toggle('select-mode', selectMode);
+  const btn = document.getElementById('select-mode-btn');
+  if(btn) btn.classList.toggle('active', selectMode);
+  updateSelectionBar();
+  refreshCurrentView();
+}
+function exitSelectMode(){
+  if(selectMode) toggleSelectMode();
+}
+function toggleSelectKey(key){
+  if(selectedKeys.has(key)) selectedKeys.delete(key);
+  else selectedKeys.add(key);
+  updateSelectionBar();
+  refreshCurrentView();
+}
+function updateSelectionBar(){
+  const countEl = document.getElementById('selection-count');
+  if(countEl) countEl.textContent = selectedKeys.size + ' selected';
+}
+function selectAllVisible(){
+  document.querySelectorAll('#explorer-grid .tile[data-key]').forEach(t=>{
+    selectedKeys.add(t.dataset.key);
+  });
+  updateSelectionBar();
+  refreshCurrentView();
+}
+function selectedItemsList(){
+  const out = [];
+  selectedKeys.forEach(key=>{
+    const [type, id] = key.split(':');
+    if(type==='folder'){ const f = findFolderById(id); if(f) out.push({type:'folder', id, node:f}); }
+    else { const c = DATA.cards.find(x=>x.id===id); if(c) out.push({type:'card', id, node:c}); }
+  });
+  return out;
+}
+function findFolderById(id){
+  function search(list){
+    for(const f of (list||[])){
+      if(f.id===id) return f;
+      const found = search(f.children);
+      if(found) return found;
+    }
+    return null;
+  }
+  for(const sec of ['albums','nonalbum','members']){
+    const found = search(DATA.nodes[sec]);
+    if(found) return found;
+  }
+  return null;
+}
+function bulkDeleteSelected(){
+  const items = selectedItemsList();
+  if(!items.length) return;
+  const deletableFolders = items.filter(it=>it.type==='folder' && !it.node.fixed);
+  const skippedFixed = items.some(it=>it.type==='folder' && it.node.fixed);
+  const cardCount = items.filter(it=>it.type==='card').length;
+  const msg = `Delete ${items.length} selected item${items.length===1?'':'s'}?`
+    + (skippedFixed ? ' (Fixed folders will be kept.)' : '')
+    + ' This can\'t be undone.';
+  if(!confirm(msg)) return;
+  // delete cards
+  const cardIds = new Set(items.filter(it=>it.type==='card').map(it=>it.id));
+  if(cardIds.size) DATA.cards = DATA.cards.filter(c=>!cardIds.has(c.id));
+  // delete folders (non-fixed only)
+  const folderIds = new Set(deletableFolders.map(it=>it.id));
+  function pruneTree(list){
+    return (list||[]).filter(f=>{
+      if(folderIds.has(f.id)) return false;
+      f.children = pruneTree(f.children);
+      return true;
+    });
+  }
+  for(const sec of ['albums','nonalbum','members']){
+    DATA.nodes[sec] = pruneTree(DATA.nodes[sec]);
+  }
+  save();
+  exitSelectMode();
+}
+function bulkMoveSelected(){
+  const items = selectedItemsList();
+  if(!items.length) return;
+  moveContext = { multi: true, items: items.map(it=>({type:it.type, id:it.id})) };
+  moveSection = currentSection==='allcards' ? 'albums' : currentSection;
+  movePath = [];
+  document.getElementById('move-modal-title').textContent = `Move ${items.length} item${items.length===1?'':'s'}`;
+  document.getElementById('move-modal').classList.remove('hidden');
+  renderMoveBrowser();
 }
 
 function startInlineRename(titleEl, currentValue, onSave){
@@ -2386,8 +2517,10 @@ function renderMoveBrowser(){
   bc.innerHTML = `<div class="move-sec-tabs">${secTabs}</div><div class="move-path">${pathHtml}</div>`;
 
   const currentList = moveFolderList();
-  const excludeId = moveContext.type==='folder' ? moveContext.id : null;
-  const items = (currentList||[]).filter(f=>!excludeId || !isDescendantOrSelf(f, excludeId));
+  const excludeIds = moveContext.multi
+    ? moveContext.items.filter(it=>it.type==='folder').map(it=>it.id)
+    : (moveContext.type==='folder' ? [moveContext.id] : []);
+  const items = (currentList||[]).filter(f=>!excludeIds.some(exId=>isDescendantOrSelf(f, exId)));
   listEl.innerHTML = '';
   if(items.length===0){
     listEl.innerHTML = '<div class="empty-note">No subfolders here.</div>';
@@ -2406,7 +2539,24 @@ function renderMoveBrowser(){
   const noteEl = document.getElementById('move-here-note');
   const here = currentMoveFolder();
   const secLabel = moveSection==='albums'?'Albums':moveSection==='nonalbum'?'Non-Album':'Members';
-  if(moveContext.type==='card'){
+  if(moveContext.multi){
+    const hasCards = moveContext.items.some(it=>it.type==='card');
+    const hasFolders = moveContext.items.some(it=>it.type==='folder');
+    const ok = hasCards ? !!(here && here.linkedTags && here.linkedTags.length) : true;
+    moveBtn.disabled = !ok;
+    moveBtn.textContent = here ? `Move here (${here.title})` : (hasCards ? 'Move here' : 'Move to top level');
+    if(hasCards && !here){
+      noteEl.textContent = 'Navigate into a tagged folder to move the selected photocard(s) there.';
+    } else if(hasCards && !ok){
+      noteEl.textContent = `"${here.title}" isn't linked to any tags yet, so photocards can't be moved here.`;
+    } else if(hasCards && hasFolders){
+      noteEl.textContent = `Folders will be nested here; photocards will be tagged to match "${here.title}".`;
+    } else if(hasCards){
+      noteEl.textContent = `Selected photocards will be tagged to match "${here.title}", so they'll show up inside it.`;
+    } else {
+      noteEl.textContent = here ? `Selected folders will become subfolders of "${here.title}".` : `Selected folders will move to the top level of ${secLabel}.`;
+    }
+  } else if(moveContext.type==='card'){
     const ok = !!(here && here.linkedTags && here.linkedTags.length);
     moveBtn.disabled = !ok;
     moveBtn.textContent = here ? `Move here (${here.title})` : 'Move here';
@@ -2430,9 +2580,49 @@ function renderMoveBrowser(){
     el.onclick = ()=>{ const idx=parseInt(el.dataset.idx,10); movePath = movePath.slice(0, idx+1); renderMoveBrowser(); };
   });
 }
+function moveOneFolderNode(id, targetList){
+  function removeFromTree(list){
+    const idx = (list||[]).findIndex(x=>x.id===id);
+    if(idx>-1) return list.splice(idx,1)[0];
+    for(const f of (list||[])){
+      const found = removeFromTree(f.children||[]);
+      if(found) return found;
+    }
+    return null;
+  }
+  let node = null;
+  for(const sec of ['albums','nonalbum','members']){
+    node = removeFromTree(DATA.nodes[sec]);
+    if(node) break;
+  }
+  if(node) targetList.push(node);
+  return node;
+}
 function confirmMove(){
   if(!moveContext) return;
   const here = currentMoveFolder();
+  if(moveContext.multi){
+    const hasCards = moveContext.items.some(it=>it.type==='card');
+    if(hasCards && (!here || !here.linkedTags || !here.linkedTags.length)) return;
+    const targetList = moveFolderList();
+    let movedFolders = 0, taggedCards = 0;
+    moveContext.items.forEach(it=>{
+      if(it.type==='card'){
+        const c = DATA.cards.find(x=>x.id===it.id);
+        if(c && here){ c.tags = Array.from(new Set([...(c.tags||[]), ...here.linkedTags])); taggedCards++; }
+      } else {
+        if(moveOneFolderNode(it.id, targetList)) movedFolders++;
+      }
+    });
+    save();
+    closeModal('move-modal');
+    moveContext = null;
+    exitSelectMode();
+    if(movedFolders){ currentPath = []; switchSection(moveSection); }
+    else refreshCurrentView();
+    alert(`Moved ${taggedCards+movedFolders} item${(taggedCards+movedFolders)===1?'':'s'}.`);
+    return;
+  }
   if(moveContext.type==='card'){
     if(!here || !here.linkedTags || !here.linkedTags.length) return;
     const c = DATA.cards.find(x=>x.id===moveContext.id);
