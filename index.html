@@ -1203,6 +1203,7 @@ nav>div:active{background:#f8f3fa}
     <button class="close-x" onclick="closeModal('move-modal')">✕</button>
     <div class="section-title" id="move-modal-title">Move</div>
     <div id="move-breadcrumb"></div>
+    <input id="move-search-input" class="mini-search-inline" placeholder="Search folders..." oninput="onMoveSearch()" style="width:100%;margin:6px 0">
     <div id="move-folder-list"></div>
     <div class="modal-actions">
       <button class="btn alt" id="move-here-btn" onclick="confirmMove()">Move here</button>
@@ -2409,6 +2410,9 @@ function bulkMoveSelected(){
   moveContext = { multi: true, items: items.map(it=>({type:it.type, id:it.id})) };
   moveSection = currentSection==='allcards' ? 'albums' : currentSection;
   movePath = [];
+  moveSearchQuery = '';
+  const searchInput = document.getElementById('move-search-input');
+  if(searchInput) searchInput.value = '';
   document.getElementById('move-modal-title').textContent = `Move ${items.length} item${items.length===1?'':'s'}`;
   document.getElementById('move-modal').classList.remove('hidden');
   renderMoveBrowser();
@@ -2467,10 +2471,18 @@ function duplicateFolder(f, list){
 let moveContext = null; // {type:'folder'|'card', id}
 let moveSection = 'albums';
 let movePath = [];
+let moveSearchQuery = '';
+function onMoveSearch(){
+  moveSearchQuery = document.getElementById('move-search-input').value.trim();
+  renderMoveBrowser();
+}
 function openMoveModal(type, id){
   moveContext = {type, id};
   moveSection = currentSection;
   movePath = [];
+  moveSearchQuery = '';
+  const searchInput = document.getElementById('move-search-input');
+  if(searchInput) searchInput.value = '';
   document.getElementById('move-modal-title').textContent = type==='folder' ? 'Move folder' : 'Move photocard';
   document.getElementById('move-modal').classList.remove('hidden');
   renderMoveBrowser();
@@ -2521,7 +2533,12 @@ function renderMoveBrowser(){
   const excludeIds = moveContext.multi
     ? moveContext.items.filter(it=>it.type==='folder').map(it=>it.id)
     : (moveContext.type==='folder' ? [moveContext.id] : []);
-  const items = (currentList||[]).filter(f=>!excludeIds.some(exId=>isDescendantOrSelf(f, exId)));
+  const excludeNodes = excludeIds.map(id=>findFolderById(id)).filter(Boolean);
+  let items = (currentList||[]).filter(f=>!excludeNodes.some(exNode=>isDescendantOrSelf(exNode, f.id)));
+  if(moveSearchQuery){
+    const q = moveSearchQuery.toLowerCase();
+    items = items.filter(f=>f.title.toLowerCase().includes(q));
+  }
   listEl.innerHTML = '';
   if(items.length===0){
     listEl.innerHTML = '<div class="empty-note">No subfolders here.</div>';
@@ -2573,12 +2590,12 @@ function renderMoveBrowser(){
   }
 
   bc.querySelectorAll('.move-sec-tab').forEach(tab=>{
-    tab.onclick = ()=>{ moveSection = tab.dataset.sec; movePath=[]; renderMoveBrowser(); };
+    tab.onclick = ()=>{ moveSection = tab.dataset.sec; movePath=[]; moveSearchQuery=''; const si=document.getElementById('move-search-input'); if(si) si.value=''; renderMoveBrowser(); };
   });
   const homeCrumb = bc.querySelector('.move-crumb-home');
-  if(homeCrumb) homeCrumb.onclick = ()=>{ movePath=[]; renderMoveBrowser(); };
+  if(homeCrumb) homeCrumb.onclick = ()=>{ movePath=[]; moveSearchQuery=''; const si=document.getElementById('move-search-input'); if(si) si.value=''; renderMoveBrowser(); };
   bc.querySelectorAll('.move-crumb').forEach(el=>{
-    el.onclick = ()=>{ const idx=parseInt(el.dataset.idx,10); movePath = movePath.slice(0, idx+1); renderMoveBrowser(); };
+    el.onclick = ()=>{ const idx=parseInt(el.dataset.idx,10); movePath = movePath.slice(0, idx+1); moveSearchQuery=''; const si=document.getElementById('move-search-input'); if(si) si.value=''; renderMoveBrowser(); };
   });
 }
 function moveOneFolderNode(id, targetList){
