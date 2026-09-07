@@ -2339,7 +2339,9 @@ function toggleSelectKey(key){
   if(selectedKeys.has(key)) selectedKeys.delete(key);
   else selectedKeys.add(key);
   updateSelectionBar();
-  refreshCurrentView();
+  document.querySelectorAll(`.tile[data-key="${key}"]`).forEach(t=>{
+    t.classList.toggle('selected', selectedKeys.has(key));
+  });
 }
 function updateSelectionBar(){
   const countEl = document.getElementById('selection-count');
@@ -2348,9 +2350,9 @@ function updateSelectionBar(){
 function selectAllVisible(){
   document.querySelectorAll('#explorer-grid .tile[data-key]').forEach(t=>{
     selectedKeys.add(t.dataset.key);
+    t.classList.add('selected');
   });
   updateSelectionBar();
-  refreshCurrentView();
 }
 function selectedItemsList(){
   const out = [];
